@@ -1,199 +1,526 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gâprée — Commune de l'Orne, Normandie</title>
-  <meta name="description" content="Site officiel de la commune de Gâprée (61390, Orne, Normandie). 144 habitants, savoir-faire artisanaux, actualités et histoire de la commune.">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Instrument+Sans:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gâprée — Six directions visuelles pour le site de la commune</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #faf7f0;
+    color: #1d1c19;
+    line-height: 1.6;
+    padding: 60px 40px 80px;
+  }
+  .container { max-width: 1480px; margin: 0 auto; }
+  .header {
+    margin-bottom: 50px;
+    border-bottom: 1px solid #d4c8a8;
+    padding-bottom: 36px;
+  }
+  .header .eyebrow {
+    font-size: 12px;
+    letter-spacing: .25em;
+    text-transform: uppercase;
+    color: #8a5e1e;
+    margin-bottom: 16px;
+  }
+  .header h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 300;
+    font-size: 60px;
+    line-height: 1;
+    letter-spacing: -.025em;
+    margin-bottom: 16px;
+  }
+  .header h1 em { font-style: italic; color: #b08234; }
+  .header p {
+    font-size: 16px;
+    color: #4a4640;
+    max-width: 820px;
+    line-height: 1.55;
+  }
+  .header .legend {
+    margin-top: 28px;
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    font-size: 12px;
+    color: #767676;
+  }
+  .header .legend .pill {
+    background: #f3eedd;
+    border: 1px solid #e5dcc4;
+    padding: 6px 12px;
+    border-radius: 999px;
+  }
+  .header .legend .pill.dev {
+    background: #1d1c19;
+    color: #faf7f0;
+    border-color: #1d1c19;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+  .card {
+    background: white;
+    border: 1px solid #e5dcc4;
+    border-radius: 14px;
+    overflow: hidden;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    transition: transform .25s, box-shadow .25s, border-color .25s;
+  }
+  .card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 30px 50px rgba(75, 50, 20, .12);
+    border-color: #b08234;
+  }
+  .card .preview {
+    aspect-ratio: 4 / 3;
+    background: #f3eedd;
+    border-bottom: 1px solid #e5dcc4;
+    position: relative;
+    overflow: hidden;
+  }
+  .card .preview svg { width: 100%; height: 100%; display: block; }
+  .card .preview .num {
+    position: absolute;
+    top: 18px; left: 18px;
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.92);
+    color: #1d1c19;
+    font-family: 'Fraunces', serif;
+    font-size: 18px;
+    font-style: italic;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,.1);
+    z-index: 2;
+  }
+  .card .preview .badge {
+    position: absolute;
+    top: 18px; right: 18px;
+    background: #1d1c19;
+    color: #faf7f0;
+    font-size: 9px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    font-weight: 600;
+    padding: 5px 10px;
+    border-radius: 999px;
+    z-index: 2;
+  }
+  .card .preview .badge.photo { background: #2a7458; }
+
+  .card.style-multi .preview { background: #f7f1e3; }
+  .card.style-2 .preview { background: #ebd9b8; }
+  .card.style-3 .preview { background: #0c2e22; }
+  .card.style-4 .preview { background: #15140f; }
+  .card.style-5 .preview { background: #f5f1e8; }
+  .card.style-6 .preview { background: #e8efde; }
+
+  .preview-photo {
+    position: absolute; inset: 0;
+    background-size: cover;
+    background-position: center top;
+  }
+  .preview-photo.dim::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(0,0,0,.10) 0%, rgba(0,0,0,.55) 100%);
+  }
+  .preview-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    display: flex;
+    align-items: flex-end;
+    padding: 22px 22px;
+    color: white;
+  }
+  .preview-overlay .ovw {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 28px;
+    font-weight: 400;
+    line-height: 1;
+    letter-spacing: -.01em;
+    text-shadow: 0 2px 12px rgba(0,0,0,.4);
+  }
+
+  .card .body { padding: 24px 24px 26px; flex: 1; display: flex; flex-direction: column; }
+  .card .tag {
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    color: #8a5e1e;
+    margin-bottom: 10px;
+  }
+  .card.style-multi .tag { color: #1d1c19; }
+  .card h2 {
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-size: 24px;
+    line-height: 1.18;
+    letter-spacing: -.01em;
+    margin-bottom: 12px;
+  }
+  .card p {
+    font-size: 14px;
+    color: #4a4640;
+    line-height: 1.55;
+    margin-bottom: 18px;
+    flex: 1;
+  }
+  .card .palette {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+  .card .palette .swatch {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    border: 1px solid rgba(0,0,0,.1);
+  }
+  .card .meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    border-top: 1px solid #e5dcc4;
+    padding-top: 14px;
+    font-size: 12px;
+  }
+  .meta .item .lab {
+    color: #767676;
+    font-size: 9.5px;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    margin-bottom: 2px;
+  }
+  .meta .item .val {
+    color: #1d1c19;
+    font-weight: 500;
+  }
+  .open-link {
+    margin-top: 16px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #8a5e1e;
+  }
+  .card.style-multi .open-link { color: #1d1c19; }
+  .card:hover .open-link { color: #1d1c19; }
+
+  .note {
+    margin-top: 70px;
+    padding: 24px 28px;
+    background: #fff;
+    border: 1px solid #e5dcc4;
+    border-left: 4px solid #b08234;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #4a4640;
+    max-width: 980px;
+    line-height: 1.65;
+  }
+  .note strong { color: #1d1c19; }
+  .note .lab {
+    display: inline-block;
+    font-size: 10.5px;
+    letter-spacing: .25em;
+    text-transform: uppercase;
+    color: #8a5e1e;
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+
+  .footer {
+    margin-top: 50px;
+    padding-top: 28px;
+    border-top: 1px solid #d4c8a8;
+    font-size: 13px;
+    color: #767676;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .footer a { color: #8a5e1e; text-decoration: none; }
+
+  @media (max-width: 1024px) {
+    body { padding: 40px 22px 60px; }
+    .header h1 { font-size: 42px; }
+    .grid { grid-template-columns: 1fr; }
+  }
+</style>
 </head>
 <body>
-
-  <header class="topbar">
-    <a href="index.html" class="brand">
-      <span class="crest">Commune de</span>
-      <span class="name">Gâprée</span>
-    </a>
-    <nav class="nav" id="nav">
-      <a href="index.html">Accueil</a>
-      <a href="histoire.html">Histoire</a>
-      <a href="artisanat.html">Artisanat</a>
-      <a href="actualites.html">Actualités</a>
-      <a href="mairie.html">La mairie</a>
-      <a href="journal.html">Le journal</a>
-    </nav>
-    <button class="nav-toggle" aria-label="Menu" onclick="document.getElementById('nav').classList.toggle('open')">☰</button>
-  </header>
-
-  <section class="hero">
-    <div class="hero-illu" aria-hidden="true">
-      <svg viewBox="0 0 600 600" preserveAspectRatio="xMaxYMid slice">
-        <g fill="none" stroke="#3d5544" stroke-width="1" opacity="0.55">
-          <path d="M0 420 Q100 380 200 405 T400 395 T600 410"/>
-          <path d="M0 460 Q150 430 300 450 T600 460"/>
-          <path d="M0 495 Q200 475 400 490 T600 500"/>
-        </g>
-        <g fill="#3d5544" opacity="0.35">
-          <circle cx="140" cy="395" r="14"/><path d="M140 395 v40" stroke="#3d5544" stroke-width="2"/>
-          <circle cx="230" cy="375" r="22"/><path d="M230 375 v55" stroke="#3d5544" stroke-width="2"/>
-          <circle cx="340" cy="385" r="16"/><path d="M340 385 v45" stroke="#3d5544" stroke-width="2"/>
-          <circle cx="460" cy="370" r="24"/><path d="M460 370 v60" stroke="#3d5544" stroke-width="2"/>
-          <circle cx="520" cy="395" r="14"/><path d="M520 395 v40" stroke="#3d5544" stroke-width="2"/>
-        </g>
-        <g fill="#8a3a2d" opacity="0.5">
-          <circle cx="225" cy="370" r="3"/><circle cx="240" cy="380" r="3"/><circle cx="455" cy="365" r="3"/><circle cx="470" cy="375" r="3"/>
-        </g>
-        <g fill="none" stroke="#2a3338" stroke-width="1.5" opacity="0.7">
-          <path d="M260 300 l25 -45 l25 45 z"/>
-          <path d="M270 300 v30 h30 v-30"/>
-          <path d="M283 255 v-15 l8 -4 v18"/>
-        </g>
-      </svg>
-    </div>
-    <div class="hero-inner">
-      <div>
-        <span class="eyebrow">Orne · Normandie · 61390</span>
-        <h1>G<em>â</em>prée</h1>
-        <p class="hero-tagline">Un village normand où l'on prend le temps. Cent quarante-cinq habitants, dix kilomètres carrés de bocage, des artisans qui transmettent leurs gestes et une cathédrale du XIIIᵉ siècle à neuf kilomètres.</p>
-        <div style="margin-top:32px;display:flex;gap:12px;flex-wrap:wrap;">
-          <a class="btn" href="#pourquoi">Pourquoi venir</a>
-          <a class="btn btn-ghost" href="artisanat.html">Rencontrer les artisans</a>
-        </div>
+  <div class="container">
+    <header class="header">
+      <div class="eyebrow">Moodboard · 6 directions</div>
+      <h1>Six caps possibles pour <em>Gâprée</em>.</h1>
+      <p>Six directions visuelles distinctes pour le site de la commune. La première propose un site multi-pages déjà développé (avec accueil, histoire, artisans, actualités, journal et mairie). Les cinq suivantes sont des explorations stylistiques au format mockup d'accueil — typographie, illustration, photographie. Le but est de choisir un cap, pas de cocher six cases.</p>
+      <div class="legend">
+        <span class="pill dev">★ Mockup #1 · multi-pages développé</span>
+        <span class="pill">Mockups #2 à #6 · explorations d'accueil</span>
       </div>
-      <dl class="hero-meta">
-        <div><dt>Département</dt><dd>Orne (61)</dd></div>
-        <div><dt>Canton</dt><dd>Courtomer</dd></div>
-        <div><dt>Maire</dt><dd>Mme Laëtitia Raimbourg</dd></div>
-        <div><dt>Surface</dt><dd>10,07 km²</dd></div>
-      </dl>
-    </div>
-  </section>
+    </header>
 
-  <section class="kpi-strip">
-    <div class="kpi-inner">
-      <div class="kpi"><div class="num">145</div><div class="lab">Habitants</div></div>
-      <div class="kpi"><div class="num">21</div><div class="lab">Entreprises locales</div></div>
-      <div class="kpi"><div class="num">11</div><div class="lab">Exploitations agricoles</div></div>
-      <div class="kpi"><div class="num serif italic" style="font-size:32px;line-height:1.6;">Natura 2000</div><div class="lab">Zone protégée</div></div>
-    </div>
-  </section>
+    <div class="grid">
 
-  <!-- Pourquoi Gâprée -->
-  <section class="section" id="pourquoi">
-    <div class="container">
-      <div style="display:grid;grid-template-columns:1fr 1.4fr;gap:60px;align-items:end;margin-bottom:50px;">
-        <div>
-          <span class="eyebrow text-mousse">Pourquoi venir</span>
-          <h2 class="section-title">Cinq raisons de <em>pousser la grille</em></h2>
+      <!-- ============ Card 1 — Site multi-pages ============ -->
+      <a class="card style-multi" href="site/index.html">
+        <div class="preview">
+          <span class="num">1</span>
+          <span class="badge">★ Multi-pages</span>
+          <div class="preview-photo" style="background-image:url('previews/gapree-1-home-full.png')"></div>
         </div>
-        <p class="lede">Une halte au vert, un week-end de patrimoine, ou — pourquoi pas — un changement de vie. Gâprée se découvre lentement, et c'est ce qui en fait le prix.</p>
-      </div>
-      <div class="grid grid-3">
-        <article class="card"><span class="card-meta">Nature</span><h3 class="card-title">Au cœur de Natura 2000</h3><p>La commune fait partie de la zone protégée de la Haute vallée de l'Orne : prairies humides, ruisseaux, bocage classé. À vingt minutes, la forêt domaniale d'Écouves et ses sentiers.</p></article>
-        <article class="card"><span class="card-meta">Patrimoine</span><h3 class="card-title">À neuf kilomètres d'un joyau gothique</h3><p>La cathédrale de Sées, pure architecture du XIIIᵉ siècle, est l'un des grands monuments du gothique normand. Le Haras du Pin — « Versailles du cheval » — est à vingt-cinq kilomètres.</p></article>
-        <article class="card"><span class="card-meta">Goûts</span><h3 class="card-title">Cidre, calva, pain au feu de bois</h3><p>Le terroir cidricole s'illustre ici depuis trois siècles. Vente directe à la ferme, dégustations à la propriété, marchés de producteurs dans toutes les communes voisines.</p></article>
-        <article class="card"><span class="card-meta">Proximité</span><h3 class="card-title">À 1 h 30 de Paris-Montparnasse</h3><p>TGV jusqu'au Mans (55 min), puis 35 minutes de route. Suffisamment proche pour un week-end. Suffisamment lointain pour ne plus entendre la ville.</p></article>
-        <article class="card"><span class="card-meta">Vie</span><h3 class="card-title">Une école, une bibliothèque, des associations</h3><p>Pétanque, comité des fêtes, ateliers intergénérationnels. Pour une commune de 145 habitants, la densité associative est l'une des plus fortes du canton.</p></article>
-        <article class="card"><span class="card-meta">Logement</span><h3 class="card-title">Le prix au m² le plus doux du Perche</h3><p>Maisons de bourg, longères à restaurer, terrains à bâtir. La mairie accompagne les projets d'installation — n'hésitez pas à pousser la porte.</p></article>
-      </div>
-    </div>
-  </section>
-
-  <section class="section" style="padding-top:0;">
-    <div class="container">
-      <div style="display:grid;grid-template-columns:1fr 1.4fr;gap:60px;align-items:end;margin-bottom:50px;">
-        <div>
-          <span class="eyebrow text-mousse">Savoir-faire</span>
-          <h2 class="section-title">Les mains qui <em>font</em> Gâprée</h2>
-        </div>
-        <p class="lede">Cidre brut, charpente à colombages, lin tissé sur métier, pain au feu de bois. Sur dix kilomètres carrés vit une poignée d'artisans qui ouvrent leur atelier et accueillent les visiteurs. Venez les rencontrer, on prend toujours le temps.</p>
-      </div>
-      <div class="grid grid-3" id="home-artisans"></div>
-      <div style="margin-top:40px;"><a class="btn btn-ghost" href="artisanat.html">Tous les artisans →</a></div>
-    </div>
-  </section>
-
-  <section class="section" style="background:var(--paper);border-top:1px solid var(--line);border-bottom:1px solid var(--line);">
-    <div class="container">
-      <div style="display:grid;grid-template-columns:1fr 1.4fr;gap:60px;align-items:end;margin-bottom:50px;">
-        <div>
-          <span class="eyebrow text-mousse">Actualités</span>
-          <h2 class="section-title">La vie <em>du village</em></h2>
-        </div>
-        <p class="lede">Conseil municipal, travaux, fêtes, vie associative. Les nouvelles d'un village qui ne dort pas — et qui n'a rien à cacher non plus.</p>
-      </div>
-      <div class="grid grid-3" id="home-news"></div>
-      <div style="margin-top:40px;"><a class="btn btn-ghost" href="actualites.html">Toutes les actualités →</a></div>
-    </div>
-  </section>
-
-  <section class="section">
-    <div class="container">
-      <div style="display:grid;grid-template-columns:1fr 1.4fr;gap:60px;align-items:start;">
-        <div>
-          <span class="eyebrow text-mousse">Le Gâpréen</span>
-          <h2 class="section-title">Un journal <em>à la demande</em></h2>
-          <p class="muted" style="margin-bottom:20px;">Choisissez une période — une semaine, un mois, une saison — et obtenez un bulletin communal rédigé pour vous, à partir de toutes les actualités consignées sur la commune.</p>
-          <a class="btn" href="journal.html">Composer un numéro →</a>
-        </div>
-        <div class="journal-output" style="padding:48px 50px;">
-          <div class="journal-masthead">
-            <div class="kicker">Bulletin communal · aperçu</div>
-            <h1>Le Gâpréen</h1>
-            <div class="dateline"><span>Édition mensuelle</span><span>·</span><span>Avril 2026</span></div>
+        <div class="body">
+          <span class="tag">Mockup 1 · Vitrine multi-pages éditoriale</span>
+          <h2>Le site complet,<br>déjà développé.</h2>
+          <p>Site multi-pages éditorial — accueil, histoire, artisans, actualités, journal communal IA, mairie. Identité Fraunces serif, palette lin/mousse/cidre. C'est la version la plus aboutie : navigation entre pages, vraie data, générateur de bulletin par Claude.</p>
+          <div class="palette">
+            <span class="swatch" style="background:#faf7f0"></span>
+            <span class="swatch" style="background:#efe5cf"></span>
+            <span class="swatch" style="background:#5a6e3e"></span>
+            <span class="swatch" style="background:#b08234"></span>
+            <span class="swatch" style="background:#1d1c19"></span>
           </div>
-          <div class="journal-content" style="column-count:1;">
-            <p>Avril a refleuri le verger des Quatre-Vents, où trente-six fruitiers ont pris racine sous les mains des écoliers et des anciens. La même semaine, la route du Bois-Hérode partait en chantier — huit cents mètres de chaussée à refaire avant l'été...</p>
+          <div class="meta">
+            <div class="item"><div class="lab">Typo</div><div class="val">Fraunces + Instrument</div></div>
+            <div class="item"><div class="lab">Pages</div><div class="val">6 pages reliées</div></div>
+            <div class="item"><div class="lab">Spécificité</div><div class="val">Journal IA inclus</div></div>
+            <div class="item"><div class="lab">État</div><div class="val">Développé</div></div>
+          </div>
+          <span class="open-link">Voir le site complet →</span>
+        </div>
+      </a>
+
+      <!-- ============ Card 2 — Carte postale ============ -->
+      <a class="card style-2" href="mockups/style-2-carte-postale/index.html">
+        <div class="preview">
+          <span class="num">2</span>
+          <svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice">
+            <rect width="400" height="300" fill="#ebd9b8"/>
+            <rect x="30" y="40" width="340" height="220" fill="#f3e7c9" stroke="#b89b6a" stroke-width="1"/>
+            <rect x="38" y="48" width="324" height="204" fill="none" stroke="#b89b6a" stroke-width="1" stroke-dasharray="3 3"/>
+            <rect x="38" y="48" width="324" height="100" fill="#e8c989"/>
+            <path d="M38 130 Q120 110 200 125 Q280 100 362 120 L362 148 L38 148 Z" fill="#5a6e3e" opacity=".7"/>
+            <g fill="#3a4a26">
+              <ellipse cx="100" cy="160" rx="14" ry="18"/>
+              <ellipse cx="160" cy="155" rx="16" ry="22"/>
+              <ellipse cx="250" cy="158" rx="14" ry="18"/>
+              <ellipse cx="310" cy="155" rx="16" ry="22"/>
+            </g>
+            <g fill="#3a2a1c">
+              <rect x="190" y="125" width="24" height="32"/>
+              <path d="M188 125 l14 -16 l14 16 z"/>
+              <rect x="198" y="100" width="8" height="25"/>
+              <path d="M198 100 l4 -6 l4 6 z"/>
+            </g>
+            <rect x="120" y="195" width="160" height="32" fill="#6b2a2a"/>
+            <text x="200" y="217" text-anchor="middle" font-family="Caveat" font-style="italic" font-size="18" fill="#f3e7c9">Bons baisers de Gâprée</text>
+            <rect x="320" y="55" width="34" height="40" fill="#f3e7c9" stroke="#a64f2f"/>
+            <text x="337" y="70" text-anchor="middle" font-family="Inter" font-size="7" font-weight="700" fill="#a64f2f">5c</text>
+            <circle cx="337" cy="80" r="6" fill="#5a6e3e" opacity=".6"/>
+          </svg>
+        </div>
+        <div class="body">
+          <span class="tag">Mockup 2 · Carte postale normande</span>
+          <h2>Chaleur, badges,<br>illustrations.</h2>
+          <p>Esprit Plus Beaux Villages de France, brochures Brittany Ferries, cartes postales vintage. Palette chaude, stamps, cocardes, illustration de paysage. Cible familiale, touristique, attachée au folklore.</p>
+          <div class="palette">
+            <span class="swatch" style="background:#ebd9b8"></span>
+            <span class="swatch" style="background:#c08a3e"></span>
+            <span class="swatch" style="background:#5a6e3e"></span>
+            <span class="swatch" style="background:#a64f2f"></span>
+            <span class="swatch" style="background:#6b2a2a"></span>
+          </div>
+          <div class="meta">
+            <div class="item"><div class="lab">Typo</div><div class="val">Playfair + Caveat</div></div>
+            <div class="item"><div class="lab">Ton</div><div class="val">Chaleureux</div></div>
+            <div class="item"><div class="lab">Référence</div><div class="val">PBVdF, brochure</div></div>
+            <div class="item"><div class="lab">Cible</div><div class="val">Familles</div></div>
+          </div>
+          <span class="open-link">Ouvrir le mockup →</span>
+        </div>
+      </a>
+
+      <!-- ============ Card 3 — Modern tourism ============ -->
+      <a class="card style-3" href="mockups/style-3-modern-tourism/index.html">
+        <div class="preview">
+          <span class="num">3</span>
+          <svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice">
+            <defs>
+              <linearGradient id="g3-bg" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#0c2e22"/>
+                <stop offset="100%" stop-color="#2a7458"/>
+              </linearGradient>
+            </defs>
+            <rect width="400" height="300" fill="url(#g3-bg)"/>
+            <path d="M0 200 Q100 180 200 195 Q300 175 400 190 L400 300 L0 300 Z" fill="#143f30"/>
+            <path d="M0 230 Q150 215 300 225 Q380 215 400 220 L400 300 L0 300 Z" fill="#0c2e22"/>
+            <rect x="30" y="40" width="100" height="18" rx="9" fill="rgba(255,255,255,.12)"/>
+            <circle cx="40" cy="49" r="3" fill="#f0a13a"/>
+            <text x="50" y="53" font-family="Inter" font-size="9" fill="#fff" font-weight="500">Fête 25 mai</text>
+            <text x="30" y="115" font-family="Manrope" font-size="44" font-weight="800" fill="#fff" letter-spacing="-1.5">Gâprée,</text>
+            <text x="30" y="155" font-family="Manrope" font-size="32" font-weight="800" fill="#f0a13a" letter-spacing="-1">grand format.</text>
+            <rect x="30" y="180" width="100" height="28" rx="14" fill="#f0a13a"/>
+            <text x="80" y="198" text-anchor="middle" font-family="Manrope" font-size="11" font-weight="700" fill="#0c2e22">Planifier ma visite</text>
+            <rect x="140" y="180" width="90" height="28" rx="14" fill="rgba(255,255,255,.12)" stroke="rgba(255,255,255,.3)"/>
+            <text x="185" y="198" text-anchor="middle" font-family="Manrope" font-size="10" font-weight="600" fill="#fff">Brochure PDF</text>
+          </svg>
+        </div>
+        <div class="body">
+          <span class="tag">Mockup 3 · Modern tourism board</span>
+          <h2>App-like, vert profond,<br>accent vibrant.</h2>
+          <p>Esprit France.fr, Visit Iceland, Atout France. Sans-serif moderne uniquement, blocs colorés alternés, CTAs visibles, gradients subtils. Pour un public urbain, télétravailleurs, presse contemporaine.</p>
+          <div class="palette">
+            <span class="swatch" style="background:#ffffff"></span>
+            <span class="swatch" style="background:#0c2e22"></span>
+            <span class="swatch" style="background:#2a7458"></span>
+            <span class="swatch" style="background:#f0a13a"></span>
+            <span class="swatch" style="background:#e4892a"></span>
+          </div>
+          <div class="meta">
+            <div class="item"><div class="lab">Typo</div><div class="val">Manrope + Inter</div></div>
+            <div class="item"><div class="lab">Ton</div><div class="val">Énergique</div></div>
+            <div class="item"><div class="lab">Référence</div><div class="val">France.fr</div></div>
+            <div class="item"><div class="lab">Cible</div><div class="val">Urbains</div></div>
+          </div>
+          <span class="open-link">Ouvrir le mockup →</span>
+        </div>
+      </a>
+
+      <!-- ============ Card 4 — Photo Editorial ============ -->
+      <a class="card style-4" href="mockups/style-4-photo-editorial/index.html">
+        <div class="preview">
+          <span class="num">4</span>
+          <span class="badge photo">★ Photo</span>
+          <div class="preview-photo dim" style="background-image:url('https://images.unsplash.com/photo-1773770164591-7c876cb18714?auto=format&fit=crop&w=900&q=80')"></div>
+          <div class="preview-overlay">
+            <div class="ovw"><em>Gâprée.</em></div>
           </div>
         </div>
-      </div>
-    </div>
-  </section>
-
-  <footer class="footer">
-    <div class="footer-inner">
-      <div>
-        <div class="brand">
-          <span class="crest">Commune de</span>
-          <span class="name">Gâprée</span>
+        <div class="body">
+          <span class="tag">Mockup 4 · Photo Editorial Boutique</span>
+          <h2>Cinéma calme,<br>noir profond, sable.</h2>
+          <p>Esprit Mr &amp; Mrs Smith, Cereal Magazine, Kinfolk. Photos full-bleed cinématographiques, beaucoup d'air, serif boutique élégante. Ambiance « vous y êtes presque, voyez plutôt ».</p>
+          <div class="palette">
+            <span class="swatch" style="background:#f3efe7"></span>
+            <span class="swatch" style="background:#ece5d8"></span>
+            <span class="swatch" style="background:#d8ccb6"></span>
+            <span class="swatch" style="background:#6b5c3a"></span>
+            <span class="swatch" style="background:#15140f"></span>
+          </div>
+          <div class="meta">
+            <div class="item"><div class="lab">Typo</div><div class="val">DM Serif + Cardo</div></div>
+            <div class="item"><div class="lab">Ton</div><div class="val">Calme, cinéma</div></div>
+            <div class="item"><div class="lab">Référence</div><div class="val">Cereal Mag.</div></div>
+            <div class="item"><div class="lab">Cible</div><div class="val">Voyageurs lents</div></div>
+          </div>
+          <span class="open-link">Ouvrir le mockup →</span>
         </div>
-        <p style="margin-top:14px;">Orne (61) — Normandie<br>Communauté de communes de la Vallée de la Haute Sarthe<br><a href="mailto:mairie.gapree@wanadoo.fr">mairie.gapree@wanadoo.fr</a></p>
-      </div>
-      <div>
-        <h4>Mairie</h4>
-        <ul>
-          <li>21 bis rue Saint-Sulpice, 61390 Gâprée</li>
-          <li>02 33 15 04 77</li>
-          <li>Mardi & vend. 9h–12h · Merc. 14h–17h</li>
-        </ul>
-      </div>
-      <div>
-        <h4>Découvrir</h4>
-        <ul>
-          <li><a href="histoire.html">Histoire</a></li>
-          <li><a href="artisanat.html">Artisans</a></li>
-          <li><a href="actualites.html">Actualités</a></li>
-        </ul>
-      </div>
-      <div>
-        <h4>Services</h4>
-        <ul>
-          <li><a href="journal.html">Journal communal</a></li>
-          <li>Annuaire des artisans</li>
-          <li>Bulletin municipal</li>
-        </ul>
-      </div>
-    </div>
-    <div class="legal">
-      <span>© 2026 Commune de Gâprée</span>
-      <span>Site illustratif — design preview</span>
-    </div>
-  </footer>
+      </a>
 
-  <script src="data/_bundle.js"></script>
-  <script src="assets/js/main.js"></script>
+      <!-- ============ Card 5 — Documentaire ============ -->
+      <a class="card style-5" href="mockups/style-5-documentaire/index.html">
+        <div class="preview">
+          <span class="num">5</span>
+          <span class="badge photo">★ Photo</span>
+          <div class="preview-photo dim" style="background-image:url('https://images.unsplash.com/photo-1766940973188-598a6bd59ad6?auto=format&fit=crop&w=900&q=80')"></div>
+          <div class="preview-overlay" style="align-items: flex-start; padding-top: 20px;">
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <span style="background:#c8331e; color:#f5f1e8; padding:4px 10px; font-family:'Inter',sans-serif; font-size:10px; font-weight:700; letter-spacing:.2em; text-transform:uppercase; align-self:flex-start;">Récit n° 02</span>
+              <span style="font-family:'Inter',sans-serif; color:#f5f1e8; font-size:11px; letter-spacing:.18em; text-transform:uppercase; opacity:.85;">La forge du Carrefour</span>
+            </div>
+          </div>
+        </div>
+        <div class="body">
+          <span class="tag">Mockup 5 · Documentaire / Reportage</span>
+          <h2>Carnet, accent rouge,<br>légendes condensées.</h2>
+          <p>Esprit Géo, Polka, Reporters, National Geographic. Mix N&amp;B et couleur, photos taggées (lieu, date, heure), récits numérotés. Sérieux, dense, « le village qu'on n'attendait pas ».</p>
+          <div class="palette">
+            <span class="swatch" style="background:#f5f1e8"></span>
+            <span class="swatch" style="background:#c2b393"></span>
+            <span class="swatch" style="background:#c8331e"></span>
+            <span class="swatch" style="background:#9c1f0e"></span>
+            <span class="swatch" style="background:#0e0d0b"></span>
+          </div>
+          <div class="meta">
+            <div class="item"><div class="lab">Typo</div><div class="val">Oswald + Source Serif</div></div>
+            <div class="item"><div class="lab">Ton</div><div class="val">Reportage</div></div>
+            <div class="item"><div class="lab">Référence</div><div class="val">Polka, Géo</div></div>
+            <div class="item"><div class="lab">Cible</div><div class="val">Lecteurs cultivés</div></div>
+          </div>
+          <span class="open-link">Ouvrir le mockup →</span>
+        </div>
+      </a>
+
+      <!-- ============ Card 6 — Magazine Expériences ============ -->
+      <a class="card style-6" href="mockups/style-6-magazine-experiences/index.html">
+        <div class="preview">
+          <span class="num">6</span>
+          <span class="badge photo">★ Photo</span>
+          <div class="preview-photo" style="background-image:url('https://images.unsplash.com/photo-1727120279660-5c28b8461609?auto=format&fit=crop&w=900&q=80')"></div>
+          <div class="preview-overlay" style="align-items: flex-start; padding: 18px;">
+            <div style="display:flex; flex-direction:column; gap:6px;">
+              <span style="background:#fff; color:#5b7349; padding:5px 11px; border-radius:999px; font-family:'Inter',sans-serif; font-size:10.5px; font-weight:700;">★ Coup de cœur Perche</span>
+              <span style="background:#f4cf6a; color:#1a2419; padding:5px 11px; border-radius:999px; font-family:'Inter',sans-serif; font-size:10.5px; font-weight:600;">12 expériences · saison printemps</span>
+            </div>
+          </div>
+          <div style="position:absolute; bottom:18px; left:18px; right:18px; background:#fff; padding:10px 14px; border-radius:14px; display:flex; align-items:center; gap:10px; z-index:1;">
+            <div style="font-family:'Inter',sans-serif; font-size:11.5px; font-weight:700; color:#1a2419; flex:1;">Fête du village · 25 mai</div>
+            <div style="background:#e8efde; color:#5b7349; width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700;">→</div>
+          </div>
+        </div>
+        <div class="body">
+          <span class="tag">Mockup 6 · Magazine Expériences</span>
+          <h2>Booking-like, sauge,<br>cards arrondies.</h2>
+          <p>Esprit AirBnB Experiences, Lonely Planet 2026, Visit Sweden. Grilles colorées, sections « À faire ce week-end », « Où dormir », « Où manger ». Friendly, dense en information, prêt à réserver.</p>
+          <div class="palette">
+            <span class="swatch" style="background:#fbfaf6"></span>
+            <span class="swatch" style="background:#e8efde"></span>
+            <span class="swatch" style="background:#8ba078"></span>
+            <span class="swatch" style="background:#f3c8b8"></span>
+            <span class="swatch" style="background:#f4cf6a"></span>
+          </div>
+          <div class="meta">
+            <div class="item"><div class="lab">Typo</div><div class="val">Plus Jakarta + DM Sans</div></div>
+            <div class="item"><div class="lab">Ton</div><div class="val">Friendly, marchand</div></div>
+            <div class="item"><div class="lab">Référence</div><div class="val">AirBnB, Booking</div></div>
+            <div class="item"><div class="lab">Cible</div><div class="val">Visiteurs week-end</div></div>
+          </div>
+          <span class="open-link">Ouvrir le mockup →</span>
+        </div>
+      </a>
+
+    </div>
+
+    <div class="note">
+      <div class="lab">Note pour la suite</div>
+      <strong>Le Mockup #1 est multi-pages, les Mockups #2 à #6 sont des explorations d'accueil.</strong> C'est la logique habituelle : on aligne d'abord sur une <strong>direction visuelle</strong> (typographie, palette, ton), puis on la décline sur toutes les pages. Faire 6 sites complets en parallèle revient à jeter 5/6 du travail dès qu'un cap est choisi. Compter 1 jour de déclinaison une fois l'accord posé sur l'un des cinq mockups d'accueil.
+    </div>
+
+    <div class="footer">
+      <span>6 directions visuelles · 5 mockups self-contained + 1 site multi-pages développé</span>
+      <span>Photographies — Unsplash · CC0 · <a href="assets/photos/CREDITS.md">crédits</a></span>
+    </div>
+  </div>
 </body>
 </html>

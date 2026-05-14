@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gâprée — Commune de l'Orne, Normandie</title>
+  <meta name="description" content="Site officiel de la commune de Gâprée (61390, Orne, Normandie). 144 habitants, savoir-faire artisanaux, actualités et histoire de la commune.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Instrument+Sans:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+  <header class="topbar">
+    <a href="index.html" class="brand">
+      <span class="crest">Commune de</span>
+      <span class="name">Gâprée</span>
+    </a>
+    <nav class="nav" id="nav">
+      <a href="index.html">Accueil</a>
+      <a href="histoire.html">Histoire</a>
+      <a href="artisanat.html">Artisanat</a>
+      <a href="actualites.html">Actualités</a>
+      <a href="mairie.html">La mairie</a>
+      <a href="journal.html">Le journal</a>
+    </nav>
+    <button class="nav-toggle" aria-label="Menu" onclick="document.getElementById('nav').classList.toggle('open')">☰</button>
+  </header>
+
+  <section class="hero">
+    <div class="hero-illu" aria-hidden="true">
+      <svg viewBox="0 0 600 600" preserveAspectRatio="xMaxYMid slice">
+        <g fill="none" stroke="#3d5544" stroke-width="1" opacity="0.55">
+          <path d="M0 420 Q100 380 200 405 T400 395 T600 410"/>
+          <path d="M0 460 Q150 430 300 450 T600 460"/>
+          <path d="M0 495 Q200 475 400 490 T600 500"/>
+        </g>
+        <g fill="#3d5544" opacity="0.35">
+          <circle cx="140" cy="395" r="14"/><path d="M140 395 v40" stroke="#3d5544" stroke-width="2"/>
+          <circle cx="230" cy="375" r="22"/><path d="M230 375 v55" stroke="#3d5544" stroke-width="2"/>
+          <circle cx="340" cy="385" r="16"/><path d="M340 385 v45" stroke="#3d5544" stroke-width="2"/>
+          <circle cx="460" cy="370" r="24"/><path d="M460 370 v60" stroke="#3d5544" stroke-width="2"/>
+          <circle cx="520" cy="395" r="14"/><path d="M520 395 v40" stroke="#3d5544" stroke-width="2"/>
+        </g>
+        <g fill="#8a3a2d" opacity="0.5">
+          <circle cx="225" cy="370" r="3"/><circle cx="240" cy="380" r="3"/><circle cx="455" cy="365" r="3"/><circle cx="470" cy="375" r="3"/>
+        </g>
+        <g fill="none" stroke="#2a3338" stroke-width="1.5" opacity="0.7">
+          <path d="M260 300 l25 -45 l25 45 z"/>
+          <path d="M270 300 v30 h30 v-30"/>
+          <path d="M283 255 v-15 l8 -4 v18"/>
+        </g>
+      </svg>
+    </div>
+    <div class="hero-inner">
+      <div>
+        <span class="eyebrow">Orne · Normandie · 61390</span>
+        <h1>G<em>â</em>prée</h1>
+        <p class="hero-tagline">Un village normand où l'on prend le temps. Cent quarante-cinq habitants, dix kilomètres carrés de bocage, des artisans qui transmettent leurs gestes et une cathédrale du XIIIᵉ siècle à neuf kilomètres.</p>
+        <div style="margin-top:32px;display:flex;gap:12px;flex-wrap:wrap;">
+          <a class="btn" href="#pourquoi">Pourquoi venir</a>
+          <a class="btn btn-ghost" href="artisanat.html">Rencontrer les artisans</a>
+        </div>
+      </div>
+      <dl class="hero-meta">
+        <div><dt>Département</dt><dd>Orne (61)</dd></div>
+        <div><dt>Canton</dt><dd>Courtomer</dd></div>
+        <div><dt>Maire</dt><dd>Mme Laëtitia Raimbourg</dd></div>
+        <div><dt>Surface</dt><dd>10,07 km²</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <section class="kpi-strip">
+    <div class="kpi-inner">
+      <div class="kpi"><div class="num">145</div><div class="lab">Habitants</div></div>
+      <div class="kpi"><div class="num">21</div><div class="lab">Entreprises locales</div></div>
+      <div class="kpi"><div class="num">11</div><div class="lab">Exploitations agricoles</div></div>
+      <div class="kpi"><div class="num serif italic" style="font-size:32px;line-height:1.6;">Natura 2000</div><div class="lab">Zone protégée</div></div>
+    </div>
+  </section>
+
+  <!-- Pourquoi Gâprée -->
+  <section class="section" id="pourquoi">
+    <div class="container">
+      <div style="display:grid;grid-template-columns:1fr 1.4fr;gap:60px;align-items:end;margin-bottom:50px;">
+        <div>
+          <span class="eyebrow text-mousse">Pourquoi venir</span>
+          <h2 class="section-title">Cinq raisons de <em>pousser la grille</em></h2>
+        </div>
+        <p class="lede">Une halte au vert, un week-end de patrimoine, ou — pourquoi pas — un changement de vie. Gâprée se découvre lentement, et c'est ce qui en fait le prix.</p>
+      </div>
+      <div class="grid grid-3">
+        <article class="card"><span class="card-meta">Nature</span><h3 class="card-title">Au cœur de Natura 2000</h3><p>La commune fait partie de la zone protégée de la Haute vallée de l'Orne : prairies humides, ruisseaux, bocage classé. À vingt minutes, la forêt domaniale d'Écouves et ses sentiers.</p></article>
+        <article class="card"><span class="card-meta">Patrimoine</span><h3 class="card-title">À neuf kilomètres d'un joyau gothique</h3><p>La cathédrale de Sées, pure architecture du XIIIᵉ siècle, est l'un des grands monuments du gothique normand. Le Haras du Pin — « Versailles du cheval » — est à vingt-cinq kilomètres.</p></article>
+        <article class="card"><span class="card-meta">Goûts</span><h3 class="card-title">Cidre, calva, pain au feu de bois</h3><p>Le terroir cidricole s'illustre ici depuis trois siècles. Vente directe à la ferme, dégustations à la propriété, marchés de producteurs dans toutes les communes voisines.</p></article>
+        <article class="card"><span class="card-meta">Proximité</span><h3 class="card-title">À 1 h 30 de Paris-Montparnasse</h3><p>TGV jusqu'au Mans (55 min), puis 35 minutes de route. Suffisamment proche pour un week-end. Suffisamment lointain pour ne plus entendre la ville.</p></article>
+        <article class="card"><span class="card-meta">Vie</span><h3 class="card-title">Une école, une bibliothèque, des associations</h3><p>Pétanque, comité des fêtes, ateliers intergénérationnels. Pour une commune de 145 habitants, la densité associative est l'une des plus fortes du canton.</p></article>
+        <article class="card"><span class="card-meta">Logement</span><h3 class="card-title">Le prix au m² le plus doux du Perche</h3><p>Maisons de bourg, longères à restaurer, terrains à bâtir. La mairie accompagne les projets d'installation — n'hésitez pas à pousser la porte.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:0;">
+    <div class="container">
+      <div style="display:grid;grid-template-columns:1fr 1.4fr;gap:60px;align-items:end;margin-bottom:50px;">
+        <div>
+          <span class="eyebrow text-mousse">Savoir-faire</span>
+          <h2 class="section-title">Les mains qui <em>font</em> Gâprée</h2>
+        </div>
+        <p class="lede">Cidre brut, charpente à colombages, lin tissé sur métier, pain au feu de bois. Sur dix kilomètres carrés vit une poignée d'artisans qui ouvrent leur atelier et accueillent les visiteurs. Venez les rencontrer, on prend toujours le temps.</p>
+      </div>
+      <div class="grid grid-3" id="home-artisans"></div>
+      <div style="margin-top:40px;"><a class="btn btn-ghost" href="artisanat.html">Tous les artisans →</a></div>
+    </div>
+  </section>
+
+  <section class="section" style="background:var(--paper);border-top:1px solid var(--line);border-bottom:1px solid var(--line);">
+    <div class="container">
+      <div style="display:grid;grid-template-columns:1fr 1.4fr;gap:60px;align-items:end;margin-bottom:50px;">
+        <div>
+          <span class="eyebrow text-mousse">Actualités</span>
+          <h2 class="section-title">La vie <em>du village</em></h2>
+        </div>
+        <p class="lede">Conseil municipal, travaux, fêtes, vie associative. Les nouvelles d'un village qui ne dort pas — et qui n'a rien à cacher non plus.</p>
+      </div>
+      <div class="grid grid-3" id="home-news"></div>
+      <div style="margin-top:40px;"><a class="btn btn-ghost" href="actualites.html">Toutes les actualités →</a></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div style="display:grid;grid-template-columns:1fr 1.4fr;gap:60px;align-items:start;">
+        <div>
+          <span class="eyebrow text-mousse">Le Gâpréen</span>
+          <h2 class="section-title">Un journal <em>à la demande</em></h2>
+          <p class="muted" style="margin-bottom:20px;">Choisissez une période — une semaine, un mois, une saison — et obtenez un bulletin communal rédigé pour vous, à partir de toutes les actualités consignées sur la commune.</p>
+          <a class="btn" href="journal.html">Composer un numéro →</a>
+        </div>
+        <div class="journal-output" style="padding:48px 50px;">
+          <div class="journal-masthead">
+            <div class="kicker">Bulletin communal · aperçu</div>
+            <h1>Le Gâpréen</h1>
+            <div class="dateline"><span>Édition mensuelle</span><span>·</span><span>Avril 2026</span></div>
+          </div>
+          <div class="journal-content" style="column-count:1;">
+            <p>Avril a refleuri le verger des Quatre-Vents, où trente-six fruitiers ont pris racine sous les mains des écoliers et des anciens. La même semaine, la route du Bois-Hérode partait en chantier — huit cents mètres de chaussée à refaire avant l'été...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <div>
+        <div class="brand">
+          <span class="crest">Commune de</span>
+          <span class="name">Gâprée</span>
+        </div>
+        <p style="margin-top:14px;">Orne (61) — Normandie<br>Communauté de communes de la Vallée de la Haute Sarthe<br><a href="mailto:mairie.gapree@wanadoo.fr">mairie.gapree@wanadoo.fr</a></p>
+      </div>
+      <div>
+        <h4>Mairie</h4>
+        <ul>
+          <li>21 bis rue Saint-Sulpice, 61390 Gâprée</li>
+          <li>02 33 15 04 77</li>
+          <li>Mardi & vend. 9h–12h · Merc. 14h–17h</li>
+        </ul>
+      </div>
+      <div>
+        <h4>Découvrir</h4>
+        <ul>
+          <li><a href="histoire.html">Histoire</a></li>
+          <li><a href="artisanat.html">Artisans</a></li>
+          <li><a href="actualites.html">Actualités</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Services</h4>
+        <ul>
+          <li><a href="journal.html">Journal communal</a></li>
+          <li>Annuaire des artisans</li>
+          <li>Bulletin municipal</li>
+        </ul>
+      </div>
+    </div>
+    <div class="legal">
+      <span>© 2026 Commune de Gâprée</span>
+      <span>Site illustratif — design preview</span>
+    </div>
+  </footer>
+
+  <script src="data/_bundle.js"></script>
+  <script src="assets/js/main.js"></script>
+</body>
+</html>

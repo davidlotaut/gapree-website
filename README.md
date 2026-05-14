@@ -2,22 +2,26 @@
 
 Site vitrine pour **Gâprée**, commune de l'Orne (Normandie, 145 habitants, 10,07 km², code postal 61390).
 
-🌐 **Démo en ligne** : https://davidlotaut.github.io/gapree-website/
-🎨 **Moodboard 6 directions** : https://davidlotaut.github.io/gapree-website/mockups/
+🌐 **Moodboard en ligne — 6 directions visuelles** : https://davidlotaut.github.io/gapree-website/
 
 ---
 
 ## Aperçu
 
-Le projet contient :
+Le projet présente **six directions visuelles** pour le site de la commune. Le moodboard à la racine en liste six cartes :
 
-- Le **site principal** multi-pages (accueil, histoire, artisanat, actualités, journal, mairie)
-- **6 mockups d'accueil** explorant 6 directions visuelles différentes — 3 originels (typo/illustration/couleur), 3 photographiques (boutique, documentaire, magazine d'expériences)
-- Un **générateur de journal communal** (backend Flask + API Claude) qui rédige un bulletin à partir des actualités filtrées par date — *fonctionnalité locale uniquement, voir ci-dessous*
+1. **Mockup #1 — Vitrine multi-pages éditoriale** (`/site/`) : site multi-pages déjà développé (accueil, histoire, artisanat, actualités, journal, mairie) avec générateur IA de bulletin communal. C'est la version la plus aboutie.
+2. **Mockup #2 — Carte postale normande** (`/mockups/style-2-carte-postale/`) : illustration, palette chaude, esprit Plus Beaux Villages.
+3. **Mockup #3 — Modern tourism board** (`/mockups/style-3-modern-tourism/`) : vert profond, Manrope, app-like, esprit France.fr.
+4. **Mockup #4 — Photo Editorial Boutique** (`/mockups/style-4-photo-editorial/`) : photographique cinématique, esprit Cereal Magazine / Mr & Mrs Smith.
+5. **Mockup #5 — Documentaire / Reportage** (`/mockups/style-5-documentaire/`) : photographique, mix N&B/couleur, accent rouge, esprit Géo / Polka.
+6. **Mockup #6 — Magazine Expériences** (`/mockups/style-6-magazine-experiences/`) : photographique, cards arrondies, esprit AirBnB Experiences / Lonely Planet.
+
+Le **générateur de journal IA** est intégré au Mockup #1 — il s'agit d'un backend Flask qui appelle l'API Claude pour rédiger le bulletin à partir des actualités filtrées par date (*fonctionnalité locale uniquement*, voir plus bas).
 
 ## Lancer en local
 
-Site statique seul (suffisant pour parcourir le site et les mockups) :
+Site statique seul (suffisant pour parcourir le moodboard, le site multi-pages, et les 5 mockups d'exploration) :
 
 ```bash
 cd gapree-website
@@ -25,20 +29,30 @@ python3 -m http.server 8765
 # puis ouvrir http://localhost:8765/
 ```
 
-## Mockups
+## Structure
 
-Six directions visuelles d'accueil sont explorées dans `mockups/`. Chacune est un fichier HTML autonome avec CSS embarqué, sans dépendance au CSS du site principal.
+```
+gapree-website/
+├── index.html                  # ← moodboard racine (6 cartes)
+├── site/                       # Mockup #1 — site multi-pages éditorial
+│   ├── index.html  histoire.html  artisanat.html  actualites.html
+│   ├── journal.html  mairie.html
+│   ├── assets/css/  assets/js/  data/
+│   ├── blueprint.py            # backend Flask du générateur IA (local)
+│   └── __init__.py
+├── mockups/
+│   ├── index.html              # redirection vers /
+│   ├── style-2-carte-postale/
+│   ├── style-3-modern-tourism/
+│   ├── style-4-photo-editorial/
+│   ├── style-5-documentaire/
+│   └── style-6-magazine-experiences/
+├── assets/photos/CREDITS.md    # crédits photos Unsplash (mockups 4/5/6)
+├── previews/                   # screenshots PNG des 6 directions
+└── ARCHITECTURE.md             # historique de décisions
+```
 
-| # | Direction | Référence |
-|---|---|---|
-| 1 | Éditorial Patrimoine | Le Monde Magazine |
-| 2 | Carte postale normande | Plus Beaux Villages de France |
-| 3 | Modern tourism board | France.fr, Visit Iceland |
-| 4 | Photo Editorial Boutique | Mr & Mrs Smith, Cereal Magazine |
-| 5 | Documentaire / Reportage | Géo, Polka, National Geographic |
-| 6 | Magazine Expériences | AirBnB Experiences, Lonely Planet |
-
-Le moodboard comparatif est à `mockups/index.html`.
+Chaque mockup est un fichier HTML autonome avec CSS embarqué — pas de dépendance au site principal.
 
 ## Générateur de journal
 
