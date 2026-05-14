@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>La mairie — Gâprée</title>
+  <meta name="description" content="Le conseil municipal de Gâprée, ses élus, les horaires d'ouverture de la mairie et toutes les informations administratives de la commune.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Instrument+Sans:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+  <header class="topbar">
+    <a href="index.html" class="brand">
+      <span class="crest">Commune de</span>
+      <span class="name">Gâprée</span>
+    </a>
+    <nav class="nav" id="nav">
+      <a href="index.html">Accueil</a>
+      <a href="histoire.html">Histoire</a>
+      <a href="artisanat.html">Artisanat</a>
+      <a href="actualites.html">Actualités</a>
+      <a href="mairie.html">La mairie</a>
+      <a href="journal.html">Le journal</a>
+    </nav>
+    <button class="nav-toggle" aria-label="Menu" onclick="document.getElementById('nav').classList.toggle('open')">☰</button>
+  </header>
+
+  <section class="section" style="padding-top:160px;" id="mairie-root">
+    <div class="container">
+      <span class="eyebrow">Vie démocratique</span>
+      <h1 class="section-title"><em>Onze</em> Gâpréens<br>élus pour vous</h1>
+      <p class="lede" style="margin-top:14px;">Conseil municipal élu au premier tour le 15 mars 2020. La commune de Gâprée — moins de cinq cents habitants — est administrée par onze élus, qui se réunissent en conseil municipal une fois par trimestre minimum, et autant que de besoin.</p>
+
+      <div class="disclaimer">
+        Les noms, fonctions et années de naissance des élus sont issus des données publiques (Pappers Politique). Les délégations thématiques et les emails individuels sont reconstitués à titre indicatif — la mairie reste le point de contact principal.
+      </div>
+
+      <div style="margin:50px 0;">
+        <span class="eyebrow">Coordonnées</span>
+        <h2 class="serif" style="font-size:36px;font-weight:400;margin:6px 0 24px;">Joindre la mairie</h2>
+        <div class="grid grid-3" id="mairie-pratique" style="grid-template-columns: 2fr 1fr;"></div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div style="margin:30px 0;">
+        <span class="eyebrow">Conseil municipal</span>
+        <h2 class="serif" style="font-size:36px;font-weight:400;margin:6px 0 8px;">La maire, son adjoint et les conseillers</h2>
+        <p class="muted" style="margin-bottom:30px;max-width:680px;">Mme Laëtitia Raimbourg, élue par le conseil municipal, est la maire de Gâprée depuis 2020. M. François Rattier est son premier adjoint. Neuf conseillers municipaux complètent l'équipe, représentant la diversité des âges et des métiers de la commune.</p>
+        <div id="mairie-elus"></div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div style="margin:30px 0 0;">
+        <span class="eyebrow">Identité administrative</span>
+        <h2 class="serif" style="font-size:36px;font-weight:400;margin:6px 0 24px;">La commune en chiffres</h2>
+        <div id="mairie-identite" style="background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);padding:36px;"></div>
+      </div>
+
+      <div style="margin-top:50px;background:var(--ardoise);color:var(--lin);padding:50px;border-radius:var(--radius);display:grid;grid-template-columns:1.4fr 1fr;gap:40px;align-items:center;">
+        <div>
+          <span class="eyebrow" style="color:var(--pomme-2);">Vous installer à Gâprée ?</span>
+          <h3 class="serif" style="font-size:32px;font-weight:400;margin:8px 0 14px;line-height:1.15;font-style:italic;color:var(--lin);">Venez en parler avec nous.</h3>
+          <p style="color:var(--lin);opacity:0.85;">Logements à louer, terrains à bâtir, écoles voisines, télétravail, cidre & calva — la mairie prend le temps de répondre. Permanence du maire le samedi matin sur rendez-vous.</p>
+        </div>
+        <div>
+          <a class="btn btn-ghost" style="color:var(--lin);border-color:var(--lin);background:transparent;" href="mailto:mairie.gapree@wanadoo.fr">mairie.gapree@wanadoo.fr →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <div>
+        <div class="brand"><span class="crest">Commune de</span><span class="name">Gâprée</span></div>
+        <p style="margin-top:14px;">Orne (61) — Normandie<br>Communauté de communes de la Vallée de la Haute Sarthe<br><a href="mailto:mairie.gapree@wanadoo.fr">mairie.gapree@wanadoo.fr</a></p>
+      </div>
+      <div><h4>Mairie</h4><ul><li>21 bis rue Saint-Sulpice, 61390 Gâprée</li><li>02 33 15 04 77</li><li>Mardi & vend. 9h–12h · Merc. 14h–17h</li></ul></div>
+      <div><h4>Découvrir</h4><ul><li><a href="histoire.html">Histoire</a></li><li><a href="artisanat.html">Artisans</a></li><li><a href="actualites.html">Actualités</a></li></ul></div>
+      <div><h4>Services</h4><ul><li><a href="journal.html">Journal communal</a></li><li><a href="mairie.html">Conseil municipal</a></li><li>Bulletin municipal</li></ul></div>
+    </div>
+    <div class="legal"><span>© 2026 Commune de Gâprée</span><span>Site illustratif — design preview</span></div>
+  </footer>
+
+  <script src="data/_bundle.js"></script>
+  <script src="assets/js/main.js"></script>
+</body>
+</html>

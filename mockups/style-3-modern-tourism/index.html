@@ -1,0 +1,1242 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gâprée — Visit Normandy / Plan your stay</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green-900: #0c2e22;
+    --green-800: #143f30;
+    --green-700: #1d5640;
+    --green-600: #2a7458;
+    --green-400: #4ea283;
+    --accent: #f0a13a;
+    --accent-warm: #e4892a;
+    --accent-soft: #fbe5b8;
+    --bg: #ffffff;
+    --bg-soft: #f7f6f1;
+    --bg-warm: #f5efde;
+    --ink: #0a0a0a;
+    --ink-soft: #4a4a4a;
+    --ink-mute: #767676;
+    --line: #e6e3d9;
+    --radius: 18px;
+    --radius-sm: 10px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { -webkit-font-smoothing: antialiased; }
+  body {
+    font-family: 'Manrope', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.6;
+    font-size: 16px;
+    font-feature-settings: "ss01", "cv11";
+  }
+
+  /* ============ NAV ============ */
+  .nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(255,255,255,.92);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--line);
+    padding: 16px 40px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 60px;
+  }
+  .nav .wordmark {
+    font-family: 'Manrope', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -.02em;
+    color: var(--green-800);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .nav .wordmark::before {
+    content: '';
+    width: 10px; height: 10px;
+    background: var(--accent);
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .nav .menu {
+    display: flex;
+    gap: 32px;
+    justify-self: center;
+  }
+  .nav .menu a {
+    color: var(--ink);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 15px;
+    padding: 8px 0;
+    position: relative;
+  }
+  .nav .menu a:hover { color: var(--green-700); }
+  .nav-cta {
+    display: flex;
+    gap: 12px;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    padding: 12px 22px;
+    border-radius: 999px;
+    text-decoration: none;
+    transition: all .2s;
+    border: 1.5px solid transparent;
+    white-space: nowrap;
+  }
+  .btn-primary {
+    background: var(--green-800);
+    color: white;
+  }
+  .btn-primary:hover { background: var(--green-700); }
+  .btn-accent {
+    background: var(--accent);
+    color: var(--green-900);
+  }
+  .btn-accent:hover { background: var(--accent-warm); }
+  .btn-outline {
+    background: transparent;
+    color: var(--ink);
+    border-color: var(--line);
+  }
+  .btn-outline:hover { border-color: var(--ink); }
+  .btn-ghost-light {
+    background: rgba(255,255,255,.12);
+    color: white;
+    border-color: rgba(255,255,255,.25);
+    backdrop-filter: blur(8px);
+  }
+  .btn-ghost-light:hover { background: rgba(255,255,255,.2); }
+  .btn.large { padding: 16px 30px; font-size: 15px; }
+  .btn .arrow {
+    width: 16px; height: 16px;
+    transition: transform .2s;
+  }
+  .btn:hover .arrow { transform: translateX(3px); }
+
+  /* ============ HERO ============ */
+  .hero {
+    position: relative;
+    min-height: 760px;
+    background: linear-gradient(180deg, #0c2e22 0%, #1d5640 60%, #2a7458 100%);
+    color: white;
+    overflow: hidden;
+    padding: 80px 40px 100px;
+  }
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  .hero-bg svg { position: absolute; bottom: 0; left: 0; width: 100%; height: 100%; }
+  .hero-inner {
+    position: relative;
+    z-index: 2;
+    max-width: 1400px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    gap: 80px;
+    align-items: center;
+    padding-top: 40px;
+  }
+  .hero .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255,255,255,.1);
+    border: 1px solid rgba(255,255,255,.18);
+    backdrop-filter: blur(10px);
+    padding: 8px 16px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(255,255,255,.9);
+    margin-bottom: 28px;
+  }
+  .hero .badge .dot {
+    width: 8px; height: 8px;
+    background: var(--accent);
+    border-radius: 50%;
+    box-shadow: 0 0 0 4px rgba(240,161,58,.25);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 4px rgba(240,161,58,.25); }
+    50% { box-shadow: 0 0 0 8px rgba(240,161,58,.1); }
+  }
+  .hero h1 {
+    font-family: 'Manrope', sans-serif;
+    font-size: clamp(54px, 7.5vw, 104px);
+    font-weight: 800;
+    line-height: .98;
+    letter-spacing: -.035em;
+    margin-bottom: 26px;
+  }
+  .hero h1 .accent { color: var(--accent); }
+  .hero p.subtitle {
+    font-size: 19px;
+    line-height: 1.55;
+    color: rgba(255,255,255,.82);
+    max-width: 580px;
+    margin-bottom: 40px;
+    font-weight: 400;
+  }
+  .hero .cta-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 60px;
+  }
+  .hero .quick-stats {
+    display: flex;
+    gap: 36px;
+    flex-wrap: wrap;
+    padding-top: 36px;
+    border-top: 1px solid rgba(255,255,255,.15);
+    margin-top: 20px;
+  }
+  .hero .quick-stats .stat {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .hero .quick-stats .num {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .hero .quick-stats .lab {
+    font-size: 13px;
+    color: rgba(255,255,255,.7);
+    font-weight: 400;
+  }
+
+  .hero-card-stack {
+    position: relative;
+    aspect-ratio: 4 / 5;
+    perspective: 1000px;
+  }
+  .hero-card {
+    position: absolute;
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 40px 80px rgba(0,0,0,.4);
+    background: white;
+  }
+  .hero-card.main {
+    inset: 0;
+    transform: rotate(2deg);
+    z-index: 3;
+  }
+  .hero-card.behind {
+    inset: 24px -28px 24px 28px;
+    transform: rotate(-4deg);
+    z-index: 1;
+    opacity: .85;
+  }
+  .hero-card svg { width: 100%; height: 100%; display: block; }
+  .hero-card .img-label {
+    position: absolute;
+    bottom: 16px; left: 16px;
+    background: rgba(0,0,0,.55);
+    backdrop-filter: blur(8px);
+    color: white;
+    padding: 10px 16px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .hero-card .img-label::before {
+    content: '';
+    width: 6px; height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+  }
+  .hero-card .pin {
+    position: absolute;
+    top: 18px; right: 18px;
+    background: white;
+    padding: 8px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--green-800);
+    display: flex; align-items: center; gap: 6px;
+    box-shadow: 0 6px 20px rgba(0,0,0,.15);
+  }
+  .hero-card .pin .star { color: var(--accent-warm); }
+
+  /* ============ TRUST BAR ============ */
+  .trust {
+    background: var(--bg);
+    padding: 36px 40px;
+    border-bottom: 1px solid var(--line);
+  }
+  .trust-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 30px;
+    flex-wrap: wrap;
+  }
+  .trust .label {
+    font-size: 13px;
+    color: var(--ink-mute);
+    font-weight: 500;
+    letter-spacing: .02em;
+  }
+  .trust .badges {
+    display: flex;
+    gap: 36px;
+    flex-wrap: wrap;
+  }
+  .trust .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    background: var(--bg-warm);
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--green-800);
+  }
+  .trust .pill svg { width: 16px; height: 16px; }
+
+  /* ============ POURQUOI VENIR ============ */
+  .why {
+    padding: 110px 40px;
+    background: var(--bg);
+  }
+  .section-header {
+    max-width: 1400px;
+    margin: 0 auto 60px;
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 60px;
+    align-items: end;
+  }
+  .section-header .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--green-700);
+    text-transform: uppercase;
+    letter-spacing: .12em;
+    margin-bottom: 18px;
+  }
+  .section-header .eyebrow::before {
+    content: '';
+    width: 24px;
+    height: 2px;
+    background: var(--green-700);
+    border-radius: 2px;
+  }
+  .section-header h2 {
+    font-size: clamp(38px, 5.5vw, 64px);
+    font-weight: 700;
+    line-height: 1.02;
+    letter-spacing: -.025em;
+    color: var(--ink);
+  }
+  .section-header h2 .accent { color: var(--green-700); }
+  .section-header p {
+    font-size: 17px;
+    line-height: 1.6;
+    color: var(--ink-soft);
+  }
+
+  .why-grid {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 16px;
+  }
+  .why-card {
+    position: relative;
+    padding: 32px;
+    border-radius: var(--radius);
+    background: var(--bg-soft);
+    border: 1px solid var(--line);
+    transition: transform .2s, box-shadow .2s;
+    overflow: hidden;
+    min-height: 280px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .why-card:hover { transform: translateY(-3px); box-shadow: 0 20px 40px rgba(0,0,0,.06); }
+  .why-card.span-2 { grid-column: span 2; }
+  .why-card.span-3 { grid-column: span 3; }
+  .why-card.span-4 { grid-column: span 4; min-height: 320px; }
+  .why-card.dark {
+    background: var(--green-800);
+    color: white;
+    border-color: var(--green-700);
+  }
+  .why-card.dark h3, .why-card.dark p { color: white; }
+  .why-card.dark .icon-circle { background: rgba(255,255,255,.12); }
+  .why-card.accent {
+    background: var(--accent-soft);
+    border-color: #f0d9a3;
+  }
+  .why-card.warm {
+    background: var(--bg-warm);
+    border-color: #e9dfc4;
+  }
+  .why-card .icon-circle {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 24px;
+    color: var(--green-700);
+  }
+  .why-card .icon-circle svg { width: 26px; height: 26px; }
+  .why-card.accent .icon-circle { background: var(--green-800); color: var(--accent); }
+  .why-card h3 {
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -.01em;
+    color: var(--ink);
+    margin-bottom: 12px;
+  }
+  .why-card.span-4 h3 { font-size: 32px; max-width: 70%; }
+  .why-card p {
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--ink-soft);
+  }
+  .why-card.span-4 p { font-size: 16px; max-width: 65%; }
+  .why-card .pill-mini {
+    position: absolute;
+    top: 22px; right: 22px;
+    padding: 6px 12px;
+    background: rgba(255,255,255,.7);
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--green-800);
+    letter-spacing: .04em;
+    text-transform: uppercase;
+  }
+  .why-card.dark .pill-mini { background: rgba(255,255,255,.15); color: var(--accent); }
+  .why-card.accent .pill-mini { background: var(--green-800); color: var(--accent); }
+
+  /* ============ ARTISANS ============ */
+  .artisans {
+    padding: 110px 40px;
+    background: var(--green-900);
+    color: white;
+    position: relative;
+    overflow: hidden;
+  }
+  .artisans::before {
+    content: '';
+    position: absolute;
+    top: -100px; right: -100px;
+    width: 500px; height: 500px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(240,161,58,.18) 0%, transparent 70%);
+  }
+  .artisans .section-header h2 { color: white; }
+  .artisans .section-header h2 .accent { color: var(--accent); }
+  .artisans .section-header p { color: rgba(255,255,255,.75); }
+  .artisans .section-header .eyebrow { color: var(--accent); }
+  .artisans .section-header .eyebrow::before { background: var(--accent); }
+
+  .artisans-grid {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr;
+    gap: 24px;
+    position: relative;
+    z-index: 2;
+  }
+  .artisan-card {
+    background: rgba(255,255,255,.05);
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: var(--radius);
+    overflow: hidden;
+    backdrop-filter: blur(8px);
+    transition: transform .2s, background .2s;
+  }
+  .artisan-card:hover { transform: translateY(-4px); background: rgba(255,255,255,.08); }
+  .artisan-card .img {
+    aspect-ratio: 4 / 3;
+    background: var(--green-700);
+    position: relative;
+    overflow: hidden;
+  }
+  .artisan-card.featured .img { aspect-ratio: 4 / 3.5; }
+  .artisan-card .img svg { width: 100%; height: 100%; display: block; }
+  .artisan-card .img .tag {
+    position: absolute;
+    top: 16px; left: 16px;
+    background: var(--accent);
+    color: var(--green-900);
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .artisan-card .body {
+    padding: 24px 24px 26px;
+  }
+  .artisan-card .cat {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: .12em;
+    margin-bottom: 10px;
+  }
+  .artisan-card h3 {
+    font-size: 24px;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 12px;
+    letter-spacing: -.01em;
+  }
+  .artisan-card.featured h3 { font-size: 28px; }
+  .artisan-card p {
+    color: rgba(255,255,255,.75);
+    font-size: 15px;
+    line-height: 1.55;
+    margin-bottom: 16px;
+  }
+  .artisan-card .meta {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255,255,255,.12);
+    font-size: 13px;
+    color: rgba(255,255,255,.7);
+    align-items: center;
+  }
+  .artisan-card .meta .open {
+    color: var(--accent);
+    font-weight: 600;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .artisan-card .meta .open::before {
+    content: '';
+    width: 8px; height: 8px;
+    background: #4ad582;
+    border-radius: 50%;
+    box-shadow: 0 0 0 3px rgba(74,213,130,.2);
+  }
+
+  /* ============ ACTUALITÉS ============ */
+  .news {
+    padding: 110px 40px;
+    background: var(--bg);
+  }
+  .news-grid {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+  .news-card {
+    background: var(--bg-soft);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: transform .2s, box-shadow .2s;
+  }
+  .news-card:hover { transform: translateY(-3px); box-shadow: 0 20px 40px rgba(0,0,0,.06); }
+  .news-card .visual {
+    aspect-ratio: 16 / 9;
+    position: relative;
+    overflow: hidden;
+  }
+  .news-card .visual svg { width: 100%; height: 100%; display: block; }
+  .news-card.green .visual { background: linear-gradient(135deg, var(--green-600) 0%, var(--green-800) 100%); }
+  .news-card.warm .visual { background: linear-gradient(135deg, #f4b860 0%, #c9774c 100%); }
+  .news-card.cool .visual { background: linear-gradient(135deg, #5e8aa8 0%, #2c4d65 100%); }
+  .news-card .body { padding: 26px 26px 28px; }
+  .news-card .meta-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 14px;
+    align-items: center;
+  }
+  .news-card .chip {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ink-soft);
+  }
+  .news-card .date {
+    font-size: 13px;
+    color: var(--ink-mute);
+  }
+  .news-card h3 {
+    font-size: 21px;
+    font-weight: 700;
+    line-height: 1.25;
+    margin-bottom: 12px;
+    letter-spacing: -.01em;
+  }
+  .news-card p {
+    font-size: 15px;
+    color: var(--ink-soft);
+    line-height: 1.55;
+    margin-bottom: 18px;
+  }
+  .news-card .read {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--green-700);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* ============ INSTALLATION CTA ============ */
+  .installation {
+    padding: 120px 40px;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-warm) 100%);
+    color: var(--green-900);
+    position: relative;
+    overflow: hidden;
+  }
+  .installation::before {
+    content: '';
+    position: absolute;
+    bottom: -200px; left: -100px;
+    width: 600px; height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,255,255,.15) 0%, transparent 70%);
+  }
+  .installation-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    gap: 80px;
+    align-items: center;
+    position: relative;
+    z-index: 2;
+  }
+  .installation .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(12,46,34,.12);
+    border: 1px solid rgba(12,46,34,.2);
+    padding: 8px 16px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 26px;
+  }
+  .installation h2 {
+    font-size: clamp(42px, 6vw, 76px);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -.035em;
+    margin-bottom: 24px;
+  }
+  .installation p {
+    font-size: 18px;
+    line-height: 1.55;
+    margin-bottom: 36px;
+    max-width: 560px;
+  }
+  .installation .cta-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .installation .info-card {
+    background: var(--green-900);
+    color: white;
+    padding: 36px;
+    border-radius: 22px;
+    box-shadow: 0 30px 60px rgba(12,46,34,.3);
+  }
+  .info-card h4 {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: .12em;
+    margin-bottom: 22px;
+  }
+  .info-card .row {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    padding: 16px 0;
+    border-bottom: 1px solid rgba(255,255,255,.12);
+    gap: 20px;
+  }
+  .info-card .row:last-child { border-bottom: none; }
+  .info-card .row .lab {
+    font-size: 14px;
+    color: rgba(255,255,255,.7);
+    font-weight: 500;
+  }
+  .info-card .row .val {
+    font-size: 15px;
+    font-weight: 600;
+    text-align: right;
+    line-height: 1.4;
+  }
+
+  /* ============ FOOTER ============ */
+  footer {
+    background: var(--green-900);
+    color: rgba(255,255,255,.85);
+    padding: 80px 40px 36px;
+  }
+  .footer-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1.6fr repeat(3, 1fr);
+    gap: 60px;
+  }
+  footer .wordmark {
+    font-size: 32px;
+    font-weight: 800;
+    color: white;
+    margin-bottom: 16px;
+    letter-spacing: -.02em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  footer .wordmark::before {
+    content: '';
+    width: 14px; height: 14px;
+    background: var(--accent);
+    border-radius: 50%;
+  }
+  footer p { font-size: 14px; line-height: 1.7; color: rgba(255,255,255,.7); }
+  footer h4 {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: .12em;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 18px;
+  }
+  footer ul { list-style: none; padding: 0; }
+  footer li { padding: 6px 0; font-size: 14px; }
+  footer a { color: rgba(255,255,255,.8); text-decoration: none; }
+  footer a:hover { color: var(--accent); }
+  footer .legal {
+    max-width: 1400px;
+    margin: 60px auto 0;
+    padding-top: 30px;
+    border-top: 1px solid rgba(255,255,255,.12);
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: rgba(255,255,255,.5);
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<header class="nav">
+  <a href="#" class="wordmark">Gâprée</a>
+  <nav class="menu">
+    <a href="#why">Pourquoi venir</a>
+    <a href="#artisans">Artisans</a>
+    <a href="#news">Actualités</a>
+    <a href="#install">S'installer</a>
+    <a href="#mairie">La mairie</a>
+  </nav>
+  <div class="nav-cta">
+    <a href="#install" class="btn btn-outline">Brochure PDF</a>
+    <a href="#install" class="btn btn-accent">Planifier ma visite <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg">
+    <svg viewBox="0 0 1600 800" preserveAspectRatio="xMidYMax slice">
+      <!-- Distant mountains/hills -->
+      <path d="M0 600 Q200 540 400 580 Q600 530 800 575 Q1000 525 1200 570 Q1400 530 1600 565 L1600 800 L0 800 Z" fill="#143f30" opacity=".7"/>
+      <path d="M0 640 Q300 600 600 625 Q900 590 1200 620 Q1400 600 1600 615 L1600 800 L0 800 Z" fill="#1d5640" opacity=".85"/>
+      <!-- Foreground trees -->
+      <g fill="#0c2e22" opacity=".9">
+        <ellipse cx="180" cy="690" rx="40" ry="55"/>
+        <ellipse cx="280" cy="680" rx="48" ry="68"/>
+        <ellipse cx="1400" cy="685" rx="44" ry="60"/>
+        <ellipse cx="1520" cy="690" rx="38" ry="52"/>
+      </g>
+      <!-- Hedgerow -->
+      <path d="M0 720 Q200 700 400 715 Q600 695 800 712 Q1000 695 1200 712 Q1400 698 1600 710 L1600 800 L0 800 Z" fill="#0c2e22"/>
+      <!-- Path of light -->
+      <path d="M700 800 Q740 720 780 660 Q800 620 820 600" stroke="rgba(240,161,58,.18)" stroke-width="60" fill="none" stroke-linecap="round"/>
+    </svg>
+  </div>
+  <div class="hero-inner">
+    <div>
+      <span class="badge"><span class="dot"></span>Fête des pommiers · 25 mai 2026</span>
+      <h1>Gâprée,<br>un Perche <span class="accent">grand format.</span></h1>
+      <p class="subtitle">145 habitants, 10 km² de bocage classé Natura 2000, des artisans à la porte ouverte, une cathédrale gothique à 9 km. À 1h30 de Paris — assez loin pour entendre les oiseaux.</p>
+      <div class="cta-row">
+        <a href="#install" class="btn btn-accent large">Planifier ma visite <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        <a href="#install" class="btn btn-ghost-light large">Demander une brochure</a>
+      </div>
+      <div class="quick-stats">
+        <div class="stat"><div class="num">145</div><div class="lab">Habitants</div></div>
+        <div class="stat"><div class="num">10,07</div><div class="lab">Km² de bocage</div></div>
+        <div class="stat"><div class="num">21</div><div class="lab">Entreprises</div></div>
+        <div class="stat"><div class="num">9 km</div><div class="lab">De Sées</div></div>
+        <div class="stat"><div class="num">1h30</div><div class="lab">De Paris</div></div>
+      </div>
+    </div>
+    <div class="hero-card-stack">
+      <div class="hero-card behind">
+        <svg viewBox="0 0 400 500" preserveAspectRatio="xMidYMid slice">
+          <defs>
+            <linearGradient id="hc2-sky" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#e9d4a4"/>
+              <stop offset="100%" stop-color="#c08a3e"/>
+            </linearGradient>
+          </defs>
+          <rect width="400" height="500" fill="url(#hc2-sky)"/>
+          <path d="M0 350 Q100 320 200 340 Q300 315 400 335 L400 500 L0 500 Z" fill="#5a6e3e"/>
+          <path d="M0 400 Q100 380 200 395 Q300 375 400 390 L400 500 L0 500 Z" fill="#3a4a26"/>
+        </svg>
+      </div>
+      <div class="hero-card main">
+        <span class="pin"><span class="star">★</span> Verger conservatoire</span>
+        <svg viewBox="0 0 400 500" preserveAspectRatio="xMidYMid slice">
+          <defs>
+            <linearGradient id="hc-sky" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#fbe5b8"/>
+              <stop offset="40%" stop-color="#f0a13a"/>
+              <stop offset="100%" stop-color="#c9774c"/>
+            </linearGradient>
+          </defs>
+          <rect width="400" height="500" fill="url(#hc-sky)"/>
+          <!-- Sun -->
+          <circle cx="290" cy="160" r="50" fill="#fff" opacity=".55"/>
+          <circle cx="290" cy="160" r="34" fill="#fff" opacity=".8"/>
+          <!-- Distant hills -->
+          <path d="M0 280 Q100 260 200 275 Q300 255 400 270 L400 500 L0 500 Z" fill="#2a7458" opacity=".8"/>
+          <path d="M0 320 Q150 300 300 315 Q380 305 400 310 L400 500 L0 500 Z" fill="#1d5640"/>
+          <!-- Trees -->
+          <g fill="#143f30">
+            <ellipse cx="60" cy="350" rx="32" ry="42"/>
+            <ellipse cx="130" cy="340" rx="38" ry="50"/>
+            <ellipse cx="200" cy="345" rx="34" ry="45"/>
+            <ellipse cx="280" cy="340" rx="40" ry="52"/>
+            <ellipse cx="345" cy="350" rx="32" ry="42"/>
+          </g>
+          <!-- Apples -->
+          <g fill="#e4892a">
+            <circle cx="55" cy="345" r="4"/><circle cx="68" cy="355" r="4"/>
+            <circle cx="125" cy="335" r="5"/><circle cx="140" cy="345" r="4"/>
+            <circle cx="195" cy="340" r="4"/><circle cx="210" cy="350" r="4"/>
+            <circle cx="280" cy="335" r="5"/><circle cx="295" cy="345" r="4"/>
+          </g>
+          <!-- Foreground -->
+          <path d="M0 420 Q100 405 200 415 Q300 400 400 410 L400 500 L0 500 Z" fill="#0c2e22"/>
+        </svg>
+        <span class="img-label">Le Perche · matin de mai</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TRUST -->
+<section class="trust">
+  <div class="trust-inner">
+    <div class="label">Reconnu par</div>
+    <div class="badges">
+      <div class="pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 L15 9 L22 10 L17 15 L18 22 L12 19 L6 22 L7 15 L2 10 L9 9 Z"/></svg> Natura 2000</div>
+      <div class="pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7 v5 l3 3"/></svg> Parc naturel régional</div>
+      <div class="pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 21V8 L12 3 L20 8 V21"/></svg> Commune nouvelle 1790</div>
+      <div class="pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12 L21 12 M12 3 L12 21"/></svg> Vallée Haute Sarthe</div>
+    </div>
+  </div>
+</section>
+
+<!-- POURQUOI VENIR -->
+<section class="why" id="why">
+  <div class="section-header">
+    <div>
+      <span class="eyebrow">Pourquoi venir</span>
+      <h2>Six bonnes raisons<br>de <span class="accent">faire le détour.</span></h2>
+    </div>
+    <p>Un week-end de patrimoine, une halte au vert, un nouveau projet de vie. Gâprée se découvre lentement — et c'est exactement le but.</p>
+  </div>
+
+  <div class="why-grid">
+    <article class="why-card span-4 accent">
+      <span class="pill-mini">★ Coup de cœur</span>
+      <div class="icon-circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21 V8 L12 3 L21 8 V21 M3 21 H21 M9 21 V12 H15 V21"/></svg></div>
+      <h3>À 9 km d'un joyau du gothique normand</h3>
+      <p>La cathédrale de Sées (XIIIᵉ s.) — l'un des grands monuments du gothique français — est à un quart d'heure. Le Haras du Pin, « Versailles du cheval », à 25 km.</p>
+    </article>
+
+    <article class="why-card span-2 dark">
+      <span class="pill-mini">Nature</span>
+      <div class="icon-circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 V22 M5 8 Q12 14 19 8 M5 14 Q12 20 19 14"/></svg></div>
+      <h3>Zone Natura 2000</h3>
+      <p>Bocage classé, prairies humides, forêt d'Écouves à 15 min.</p>
+    </article>
+
+    <article class="why-card span-2 warm">
+      <span class="pill-mini">Terroir</span>
+      <div class="icon-circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="14" r="7"/><path d="M12 7 V4 M10 4 L12 2 L14 4"/></svg></div>
+      <h3>Cidre, calva, pain au feu de bois</h3>
+      <p>Trois siècles de tradition cidricole, vente directe à la ferme.</p>
+    </article>
+
+    <article class="why-card span-2">
+      <span class="pill-mini">Accès</span>
+      <div class="icon-circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12 H22 M22 12 L18 8 M22 12 L18 16"/></svg></div>
+      <h3>1h30 de Paris-Montparnasse</h3>
+      <p>TGV jusqu'au Mans (55 min), puis 35 minutes de route. Idéal week-end.</p>
+    </article>
+
+    <article class="why-card span-2">
+      <span class="pill-mini">Vie</span>
+      <div class="icon-circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="8" r="3"/><path d="M3 20 V18 a4 4 0 0 1 4-4 h4 a4 4 0 0 1 4 4 V20 M14 14 h2 a4 4 0 0 1 4 4 V20"/></svg></div>
+      <h3>École, bibliothèque, asso</h3>
+      <p>Pétanque, comité des fêtes, intergénérationnel — la densité asso la plus forte du canton.</p>
+    </article>
+
+    <article class="why-card span-2">
+      <span class="pill-mini">Logement</span>
+      <div class="icon-circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21 V10 L12 3 L21 10 V21 H3 M9 21 V14 H15 V21"/></svg></div>
+      <h3>Le m² le plus doux du Perche</h3>
+      <p>Longères à restaurer, terrains à bâtir — la mairie accompagne les projets.</p>
+    </article>
+  </div>
+</section>
+
+<!-- ARTISANS -->
+<section class="artisans" id="artisans">
+  <div class="section-header">
+    <div>
+      <span class="eyebrow">Savoir-faire</span>
+      <h2>Les ateliers<br><span class="accent">à pousser la porte.</span></h2>
+    </div>
+    <p>Sur 10 km², une poignée d'artisans ouvrent leur atelier. Vente directe, démonstrations, stages. On prend toujours le temps — et on vous offrira sans doute à boire.</p>
+  </div>
+
+  <div class="artisans-grid">
+    <article class="artisan-card featured">
+      <div class="img">
+        <span class="tag">★ Vente directe</span>
+        <svg viewBox="0 0 500 380" preserveAspectRatio="xMidYMid slice">
+          <defs>
+            <linearGradient id="a1-sky" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#f0a13a"/>
+              <stop offset="100%" stop-color="#c9774c"/>
+            </linearGradient>
+          </defs>
+          <rect width="500" height="380" fill="url(#a1-sky)"/>
+          <circle cx="380" cy="100" r="40" fill="#fff" opacity=".7"/>
+          <g fill="#143f30">
+            <ellipse cx="100" cy="240" rx="44" ry="58"/>
+            <ellipse cx="200" cy="230" rx="52" ry="68"/>
+            <ellipse cx="305" cy="240" rx="48" ry="62"/>
+            <ellipse cx="410" cy="245" rx="40" ry="54"/>
+          </g>
+          <g fill="#f0a13a">
+            <circle cx="95" cy="230" r="5"/><circle cx="110" cy="245" r="5"/>
+            <circle cx="200" cy="220" r="6"/><circle cx="215" cy="235" r="5"/>
+            <circle cx="300" cy="235" r="5"/><circle cx="315" cy="245" r="5"/>
+          </g>
+          <path d="M0 320 Q100 305 200 315 Q300 300 400 313 Q450 305 500 312 L500 380 L0 380 Z" fill="#0c2e22"/>
+        </svg>
+      </div>
+      <div class="body">
+        <div class="cat">Cidre & Calvados · 7 ha verger</div>
+        <h3>Ferme du Haut-Bois</h3>
+        <p>Verger conservatoire, vingtaine de variétés de pommes anciennes. Pressage à l'ancienne en novembre, cidre brut tranquille, pommeau vieilli en fût de chêne.</p>
+        <div class="meta">
+          <span>Route de Trémont</span>
+          <span class="open">Ouvert sam. matin</span>
+        </div>
+      </div>
+    </article>
+
+    <article class="artisan-card">
+      <div class="img">
+        <span class="tag">Sur RDV</span>
+        <svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice">
+          <rect width="400" height="300" fill="#2a7458"/>
+          <g fill="#143f30" opacity=".9">
+            <path d="M80 240 v-110 l100 -70 l100 70 v110 z"/>
+            <path d="M80 240 h200"/>
+          </g>
+          <g fill="none" stroke="#f0a13a" stroke-width="3">
+            <path d="M125 240 v-60 h110 v60"/>
+            <path d="M158 180 v-35 h40 v35"/>
+            <path d="M80 130 l100 -70 l100 70"/>
+          </g>
+          <g fill="#f0a13a" opacity=".4">
+            <path d="M85 132 l95 -65 l95 65 z"/>
+          </g>
+        </svg>
+      </div>
+      <div class="body">
+        <div class="cat">Bois · Charpente</div>
+        <h3>Atelier Boulet</h3>
+        <p>Restauration de fûts en chêne du Perche. Charpente normande à colombages, sur commande.</p>
+        <div class="meta">
+          <span>Hameau de la Croix</span>
+          <span class="open">Atelier ouvert</span>
+        </div>
+      </div>
+    </article>
+
+    <article class="artisan-card">
+      <div class="img">
+        <span class="tag">Mer·Ven·Sam</span>
+        <svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice">
+          <rect width="400" height="300" fill="#c9774c"/>
+          <g fill="#f0a13a">
+            <ellipse cx="200" cy="180" rx="120" ry="55"/>
+            <ellipse cx="200" cy="160" rx="100" ry="40" fill="#fbe5b8"/>
+          </g>
+          <g fill="#143f30" opacity=".5">
+            <circle cx="170" cy="155" r="4"/><circle cx="190" cy="148" r="4"/>
+            <circle cx="210" cy="148" r="4"/><circle cx="230" cy="155" r="4"/>
+          </g>
+          <path d="M0 250 L400 250 L400 300 L0 300 Z" fill="#0c2e22"/>
+          <path d="M120 175 q40 -25 80 0" stroke="#c9774c" stroke-width="2" fill="none" opacity=".7"/>
+        </svg>
+      </div>
+      <div class="body">
+        <div class="cat">Bouche · Four à bois</div>
+        <h3>Le Fournil de Gâprée</h3>
+        <p>Pain de campagne, miches au levain naturel, fougasses aux pommes. Farine bio du moulin de Sées.</p>
+        <div class="meta">
+          <span>Place de l'Église</span>
+          <span class="open">7h — 13h</span>
+        </div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ACTUALITÉS -->
+<section class="news" id="news">
+  <div class="section-header">
+    <div>
+      <span class="eyebrow">Actualités</span>
+      <h2>La vie<br>du <span class="accent">village.</span></h2>
+    </div>
+    <p>Conseil municipal, travaux, fêtes, vie associative. Les nouvelles d'un village qui ne dort pas — et qui n'a rien à cacher non plus.</p>
+  </div>
+
+  <div class="news-grid">
+    <article class="news-card warm">
+      <div class="visual">
+        <svg viewBox="0 0 500 280" preserveAspectRatio="xMidYMid slice">
+          <rect width="500" height="280" fill="#f4b860"/>
+          <circle cx="400" cy="70" r="36" fill="#fff" opacity=".6"/>
+          <g fill="#0c2e22">
+            <ellipse cx="120" cy="190" rx="36" ry="48"/>
+            <ellipse cx="220" cy="180" rx="44" ry="56"/>
+            <ellipse cx="320" cy="190" rx="40" ry="52"/>
+          </g>
+          <g fill="#fff">
+            <circle cx="115" cy="180" r="5"/><circle cx="130" cy="195" r="5"/>
+            <circle cx="220" cy="170" r="5"/><circle cx="235" cy="185" r="5"/>
+            <circle cx="320" cy="180" r="5"/><circle cx="335" cy="195" r="5"/>
+          </g>
+        </svg>
+      </div>
+      <div class="body">
+        <div class="meta-row">
+          <span class="chip">Culture</span>
+          <span class="date">12 mai 2026</span>
+        </div>
+        <h3>Fête des pommiers en fleurs le 25 mai</h3>
+        <p>Marché de producteurs, démonstration de greffe, concert de cornemuse normande en fin d'après-midi.</p>
+        <a href="#" class="read">Lire la suite <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      </div>
+    </article>
+
+    <article class="news-card green">
+      <div class="visual">
+        <svg viewBox="0 0 500 280" preserveAspectRatio="xMidYMid slice">
+          <rect width="500" height="280" fill="#1d5640"/>
+          <g fill="#f0a13a" opacity=".15">
+            <rect x="100" y="80" width="300" height="160" rx="8"/>
+          </g>
+          <g fill="#fff" opacity=".9">
+            <rect x="140" y="120" width="220" height="6" rx="3"/>
+            <rect x="140" y="138" width="180" height="4" rx="2"/>
+            <rect x="140" y="152" width="200" height="4" rx="2"/>
+            <rect x="140" y="180" width="100" height="20" rx="4" fill="#f0a13a"/>
+          </g>
+        </svg>
+      </div>
+      <div class="body">
+        <div class="meta-row">
+          <span class="chip">Conseil municipal</span>
+          <span class="date">03 mai 2026</span>
+        </div>
+        <h3>Budget 2026 voté à l'unanimité</h3>
+        <p>Fonctionnement 187 000 €, investissement 94 000 € fléché sur la réfection du clocher et l'éclairage LED.</p>
+        <a href="#" class="read">Lire la suite <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      </div>
+    </article>
+
+    <article class="news-card cool">
+      <div class="visual">
+        <svg viewBox="0 0 500 280" preserveAspectRatio="xMidYMid slice">
+          <rect width="500" height="280" fill="#2c4d65"/>
+          <g fill="#f0a13a">
+            <circle cx="120" cy="180" r="6"/><circle cx="180" cy="170" r="6"/><circle cx="240" cy="180" r="6"/>
+            <circle cx="300" cy="170" r="6"/><circle cx="360" cy="180" r="6"/><circle cx="420" cy="170" r="6"/>
+          </g>
+          <g fill="#5e8aa8">
+            <ellipse cx="120" cy="220" rx="18" ry="40"/>
+            <ellipse cx="180" cy="220" rx="20" ry="44"/>
+            <ellipse cx="240" cy="220" rx="18" ry="40"/>
+            <ellipse cx="300" cy="220" rx="20" ry="44"/>
+            <ellipse cx="360" cy="220" rx="18" ry="40"/>
+            <ellipse cx="420" cy="220" rx="20" ry="44"/>
+          </g>
+        </svg>
+      </div>
+      <div class="body">
+        <div class="meta-row">
+          <span class="chip">Environnement</span>
+          <span class="date">22 avril 2026</span>
+        </div>
+        <h3>Le verger communal des Quatre-Vents</h3>
+        <p>36 fruitiers plantés par les enfants avec l'appui du Parc naturel régional. Libre accès dès fructification.</p>
+        <a href="#" class="read">Lire la suite <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- INSTALLATION -->
+<section class="installation" id="install">
+  <div class="installation-inner">
+    <div>
+      <span class="eyebrow">★ S'installer à Gâprée</span>
+      <h2>Et si vous<br>changiez de vue ?</h2>
+      <p>Une longère à restaurer, un terrain à bâtir, un télétravail à organiser, une école à choisir. La mairie reçoit, écoute, oriente, met en relation avec les notaires du canton.</p>
+      <div class="cta-row">
+        <a href="mailto:mairie.gapree@wanadoo.fr" class="btn btn-primary large">Écrire à la mairie <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        <a href="tel:0233150477" class="btn btn-outline large" style="border-color: var(--green-900); color: var(--green-900);">02 33 15 04 77</a>
+      </div>
+    </div>
+    <div class="info-card">
+      <h4>★ Mairie de Gâprée</h4>
+      <div class="row">
+        <span class="lab">Adresse</span>
+        <span class="val">21 bis rue<br>Saint-Sulpice<br>61390 Gâprée</span>
+      </div>
+      <div class="row">
+        <span class="lab">Maire</span>
+        <span class="val">Mme Laëtitia<br>Raimbourg</span>
+      </div>
+      <div class="row">
+        <span class="lab">Téléphone</span>
+        <span class="val">02 33 15 04 77</span>
+      </div>
+      <div class="row">
+        <span class="lab">Permanence</span>
+        <span class="val">Sam. 10h — 12h<br>sur rendez-vous</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div>
+      <div class="wordmark">Gâprée</div>
+      <p>Commune de l'Orne · Normandie · 61390<br>Communauté de communes de la Vallée de la Haute Sarthe<br>Canton de Courtomer · Diocèse de Sées</p>
+    </div>
+    <div>
+      <h4>Visiter</h4>
+      <ul>
+        <li><a href="#why">Pourquoi venir</a></li>
+        <li><a href="#artisans">Artisans</a></li>
+        <li><a href="#news">Actualités</a></li>
+        <li><a href="#install">Hébergement</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>S'installer</h4>
+      <ul>
+        <li><a href="#install">Pourquoi Gâprée</a></li>
+        <li><a href="#install">Logement</a></li>
+        <li><a href="#install">École & services</a></li>
+        <li><a href="#install">Aides à l'installation</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>La mairie</h4>
+      <ul>
+        <li>21 bis rue Saint-Sulpice</li>
+        <li>02 33 15 04 77</li>
+        <li><a href="mailto:mairie.gapree@wanadoo.fr">mairie.gapree@wanadoo.fr</a></li>
+        <li>Sam. 10h — 12h</li>
+      </ul>
+    </div>
+  </div>
+  <div class="legal">
+    <span>© 2026 Commune de Gâprée</span>
+    <span>Direction · Mairie de Gâprée</span>
+    <span>Modern tourism — preview</span>
+  </div>
+</footer>
+
+</body>
+</html>

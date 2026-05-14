@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Actualités — Gâprée</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Instrument+Sans:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+  <header class="topbar">
+    <a href="index.html" class="brand">
+      <span class="crest">Commune de</span>
+      <span class="name">Gâprée</span>
+    </a>
+    <nav class="nav" id="nav">
+      <a href="index.html">Accueil</a>
+      <a href="histoire.html">Histoire</a>
+      <a href="artisanat.html">Artisanat</a>
+      <a href="actualites.html">Actualités</a>
+      <a href="mairie.html">La mairie</a>
+      <a href="journal.html">Le journal</a>
+    </nav>
+    <button class="nav-toggle" aria-label="Menu" onclick="document.getElementById('nav').classList.toggle('open')">☰</button>
+  </header>
+
+  <section class="section" style="padding-top:160px;">
+    <div class="container">
+      <div style="display:grid;grid-template-columns:1fr auto;gap:40px;align-items:end;margin-bottom:30px;">
+        <div>
+          <span class="eyebrow">Vie communale</span>
+          <h1 class="section-title">Les <em>nouvelles</em><br>de Gâprée</h1>
+        </div>
+        <a class="btn btn-ghost" href="journal.html">Générer un résumé →</a>
+      </div>
+      <p class="lede" style="margin-bottom:36px;">Conseil municipal, travaux, fêtes, vie associative. Tout ce qui s'écrit dans la commune, classé par ordre antéchronologique.</p>
+
+      <div class="filterbar" id="news-filters"></div>
+      <div id="news-list"></div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <div>
+        <div class="brand"><span class="crest">Commune de</span><span class="name">Gâprée</span></div>
+        <p style="margin-top:14px;">Orne (61) — Normandie<br>Communauté de communes de la Vallée de la Haute Sarthe</p>
+      </div>
+      <div><h4>Mairie</h4><ul><li>21 bis rue Saint-Sulpice, 61390 Gâprée</li><li>02 33 15 04 77</li><li>Mardi & vend. 9h–12h · Merc. 14h–17h</li></ul></div>
+      <div><h4>Découvrir</h4><ul><li><a href="histoire.html">Histoire</a></li><li><a href="artisanat.html">Artisans</a></li><li><a href="actualites.html">Actualités</a></li></ul></div>
+      <div><h4>Services</h4><ul><li><a href="journal.html">Journal communal</a></li><li>Annuaire des artisans</li><li>Bulletin municipal</li></ul></div>
+    </div>
+    <div class="legal"><span>© 2026 Commune de Gâprée</span><span>Site illustratif — design preview</span></div>
+  </footer>
+
+  <script src="data/_bundle.js"></script>
+  <script src="assets/js/main.js"></script>
+</body>
+</html>

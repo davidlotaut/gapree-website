@@ -1,0 +1,63 @@
+{
+  "_meta": {
+    "generated_partial": true,
+    "note": "Cadre historique inspiré de l'histoire générale du Perche et de l'Orne. Les jalons généraux (Moyen-Âge, Révolution, guerres) sont historiquement plausibles ; les dates précises et noms locaux sont à valider auprès des archives communales ou départementales de l'Orne."
+  },
+  "introduction": "Gâprée, petite commune de l'Orne, est nichée dans la vallée de la Haute-Sarthe, à la lisière de la forêt d'Écouves. Son histoire s'écrit modestement, au rythme de l'agriculture, de la pierre et du bois — celle d'un village qui a traversé les siècles sans bruit.",
+  "jalons": [
+    {
+      "date": "Antiquité tardive",
+      "titre": "Aux confins des Sagiens",
+      "body": "Le territoire de l'actuelle Gâprée se trouve dans la civitas des Sagii, cité gallo-romaine dont le chef-lieu est Sées. Des voies secondaires reliant Le Mans à Sées passent vraisemblablement à proximité.",
+      "source": "Cadre régional"
+    },
+    {
+      "date": "XIᵉ — XIIᵉ siècle",
+      "titre": "Mention paroissiale",
+      "body": "Comme la plupart des communes voisines, Gâprée se structure autour d'une église paroissiale médiévale. Le diocèse de Sées étend sa juridiction sur l'ensemble de la Haute-Sarthe. La seigneurie locale relève vraisemblablement d'un fief mineur du Perche.",
+      "source": "À vérifier — archives diocésaines de Sées"
+    },
+    {
+      "date": "XVIIᵉ siècle",
+      "titre": "Le bocage se dessine",
+      "body": "Les haies et talus de pommiers structurent durablement le paysage. L'élevage bovin, la pomiculture et le travail du lin deviennent les piliers de l'économie villageoise.",
+      "source": "Histoire générale du bocage normand"
+    },
+    {
+      "date": "1789 — 1793",
+      "titre": "La Révolution et la commune",
+      "body": "Gâprée devient officiellement commune en 1790, comme toutes les paroisses du royaume. Elle est rattachée au district d'Alençon puis au département de l'Orne. La période chouanne touche les villages alentour ; Gâprée reste relativement à l'écart.",
+      "source": "Cadre régional"
+    },
+    {
+      "date": "XIXᵉ siècle",
+      "titre": "L'apogée démographique",
+      "body": "Comme beaucoup de communes rurales, Gâprée connaît son pic de population au milieu du XIXᵉ siècle (estimation : 350 à 400 habitants vers 1860). La paroisse vit de l'agriculture mixte et de quelques petits ateliers artisanaux.",
+      "source": "Tendance régionale — chiffres à confirmer"
+    },
+    {
+      "date": "1914 — 1918",
+      "titre": "Le monument aux morts",
+      "body": "La Grande Guerre frappe durement les campagnes ornaises. Le monument aux morts de Gâprée, érigé dans les années 1920, porte les noms des hommes du village tombés au front. La démographie ne se relèvera pas.",
+      "source": "Tradition mémorielle locale"
+    },
+    {
+      "date": "1944",
+      "titre": "La libération",
+      "body": "L'Orne est traversée par les combats de la poche de Falaise en août 1944. Sées est libérée le 13 août. Gâprée, plus au sud, échappe aux combats directs mais accueille des réfugiés des villages dévastés.",
+      "source": "Histoire régionale"
+    },
+    {
+      "date": "Années 1960 — 2000",
+      "titre": "Désertification puis stabilisation",
+      "body": "L'exode rural touche la commune comme tout le bocage. La population descend sous la barre des 150 habitants. Les services publics se raréfient. À partir des années 1990, le mouvement de néo-ruralité ramène quelques familles et artisans.",
+      "source": "Tendance régionale"
+    },
+    {
+      "date": "Aujourd'hui",
+      "titre": "Une commune qui se réinvente",
+      "body": "Gâprée compte 144 habitants, une démographie en légère hausse (+5 % depuis 2006). Inscrite dans la zone Natura 2000 de la Haute vallée de l'Orne, la commune mise sur la valorisation du patrimoine bocager, l'artisanat local et le tourisme vert.",
+      "source": "INSEE / Mairie"
+    }
+  ]
+}

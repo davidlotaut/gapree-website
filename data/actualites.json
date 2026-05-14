@@ -1,0 +1,89 @@
+{
+  "_meta": {
+    "generated": true,
+    "note": "Actualités illustratives pour démontrer le générateur de journal. Les dates et événements sont fictifs mais plausibles pour une commune de 144 habitants."
+  },
+  "categories": ["Conseil municipal", "Vie associative", "Travaux", "Culture", "Agriculture", "Environnement"],
+  "items": [
+    {
+      "id": "n-2026-05-12",
+      "date": "2026-05-12",
+      "titre": "La fête des pommiers en fleurs revient le 25 mai",
+      "categorie": "Culture",
+      "resume": "Le comité des fêtes organise sa traditionnelle fête des pommiers en fleurs autour du verger conservatoire. Marché de producteurs, démonstration de greffe, concert de cornemuse normande en fin d'après-midi.",
+      "auteur": "Comité des fêtes"
+    },
+    {
+      "id": "n-2026-05-03",
+      "date": "2026-05-03",
+      "titre": "Conseil municipal — budget 2026 voté à l'unanimité",
+      "categorie": "Conseil municipal",
+      "resume": "Budget de fonctionnement à 187 000 €, section investissement 94 000 € fléchée sur la réfection du clocher et l'éclairage public LED. Aucune hausse de la part communale des impôts locaux.",
+      "auteur": "Mairie"
+    },
+    {
+      "id": "n-2026-04-22",
+      "date": "2026-04-22",
+      "titre": "Inauguration du verger communal sur la parcelle des Quatre-Vents",
+      "categorie": "Environnement",
+      "resume": "Plantation de 36 fruitiers (pommiers, poiriers, pruniers d'Ente) par les enfants de l'école avec l'appui du Parc naturel régional. Le verger sera en libre accès dès la première fructification.",
+      "auteur": "Mairie"
+    },
+    {
+      "id": "n-2026-04-10",
+      "date": "2026-04-10",
+      "titre": "Travaux : la route du Bois-Hérode fermée jusqu'au 30 avril",
+      "categorie": "Travaux",
+      "resume": "Réfection complète de la chaussée sur 800 mètres. Déviation par le hameau de la Croix. Circulation rétablie progressivement, signalétique en place.",
+      "auteur": "Mairie"
+    },
+    {
+      "id": "n-2026-03-28",
+      "date": "2026-03-28",
+      "titre": "Le club de pétanque ouvre la saison",
+      "categorie": "Vie associative",
+      "resume": "Premier tournoi de la saison samedi 5 avril sur le terrain communal. Inscription à partir de 14h, doublettes libres. Buvette tenue par l'association.",
+      "auteur": "Club de pétanque"
+    },
+    {
+      "id": "n-2026-03-15",
+      "date": "2026-03-15",
+      "titre": "Recensement agricole : 11 exploitations recensées",
+      "categorie": "Agriculture",
+      "resume": "Le recensement 2026 confirme 11 exploitations sur la commune, dont 4 en bio. La surface agricole utile reste stable à 720 hectares. La filière cidricole progresse de deux nouvelles plantations.",
+      "auteur": "Chambre d'agriculture"
+    },
+    {
+      "id": "n-2026-02-26",
+      "date": "2026-02-26",
+      "titre": "Lecture publique : la bibliothèque s'agrandit",
+      "categorie": "Culture",
+      "resume": "Acquisition de 220 nouveaux ouvrages dans le cadre du partenariat avec la Médiathèque départementale. Permanence renforcée le mercredi après-midi.",
+      "auteur": "Bibliothèque"
+    },
+    {
+      "id": "n-2026-02-08",
+      "date": "2026-02-08",
+      "titre": "Tempête : aucun dégât majeur sur la commune",
+      "categorie": "Conseil municipal",
+      "resume": "Les rafales du week-end ont occasionné quelques chutes de branches sur la route de Saint-Léonard. Réseau électrique rétabli en 4 heures par Enedis. Aucun bâtiment touché.",
+      "auteur": "Mairie"
+    },
+    {
+      "id": "n-2026-01-20",
+      "date": "2026-01-20",
+      "titre": "Vœux du maire — priorité au lien intergénérationnel",
+      "categorie": "Conseil municipal",
+      "resume": "François Rattier a présenté ses vœux à la salle des fêtes devant une centaine d'habitants. Annonce d'un programme d'ateliers reliant l'école et les anciens autour des savoir-faire locaux.",
+      "auteur": "Mairie"
+    },
+    {
+      "id": "n-2026-01-05",
+      "date": "2026-01-05",
+      "titre": "Démarrage des travaux d'isolation de la mairie",
+      "categorie": "Travaux",
+      "resume": "Subvention DETR de 22 000 € obtenue pour l'isolation des combles et le remplacement des huisseries. Travaux jusqu'à fin février, accueil maintenu pendant la durée du chantier.",
+      "auteur": "Mairie"
+    }
+  ]
+}

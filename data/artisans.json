@@ -1,0 +1,89 @@
+{
+  "_meta": {
+    "generated": true,
+    "note": "Artisans illustratifs pour le design — à remplacer par les artisans réels de Gâprée et alentours."
+  },
+  "categories": [
+    "Cidre & Calvados",
+    "Bois",
+    "Bouche",
+    "Textile",
+    "Métal",
+    "Vannerie",
+    "Pierre"
+  ],
+  "artisans": [
+    {
+      "id": "ferme-haut-bois",
+      "nom": "Ferme du Haut-Bois",
+      "metier": "Cidre fermier & Pommeau",
+      "categorie": "Cidre & Calvados",
+      "description": "Verger conservatoire de 7 ha, vingtaine de variétés de pommes anciennes (Bisquet, Mettais, Argile rouge). Pressage à l'ancienne en novembre, cidre brut tranquille, pommeau vieilli en fût.",
+      "lieu": "Route de Trémont",
+      "ouverture": "Vente directe le samedi matin"
+    },
+    {
+      "id": "atelier-tonnelier",
+      "nom": "Atelier Boulet",
+      "metier": "Tonnelier-charpentier",
+      "categorie": "Bois",
+      "description": "Restauration de fûts en chêne du Perche pour les distilleries de calvados de l'Orne. Travail sur commande pour la charpente traditionnelle normande à colombages.",
+      "lieu": "Hameau de la Croix",
+      "ouverture": "Sur rendez-vous"
+    },
+    {
+      "id": "boulangerie-feu-bois",
+      "nom": "Le Fournil de Gâprée",
+      "metier": "Boulanger au feu de bois",
+      "categorie": "Bouche",
+      "description": "Pain de campagne, miches au levain naturel, fougasses aux pommes. Farine bio du moulin de Sées, cuisson au four à bois alimenté au pommier de récup.",
+      "lieu": "Place de l'Église",
+      "ouverture": "Mercredi, vendredi, samedi — 7h à 13h"
+    },
+    {
+      "id": "tisserande-perche",
+      "nom": "Marie Lecorre",
+      "metier": "Tisserande de lin",
+      "categorie": "Textile",
+      "description": "Lin cultivé en Pays d'Auge, tissage main sur métier traditionnel. Torchons, nappes, linge de maison. Démonstrations sur place pendant les Journées du Patrimoine.",
+      "lieu": "Le Bourg",
+      "ouverture": "Atelier ouvert jeudi & samedi"
+    },
+    {
+      "id": "marechal-ferrand",
+      "nom": "Forge Renault",
+      "metier": "Maréchal-ferrant & forgeron",
+      "categorie": "Métal",
+      "description": "Ferrage des chevaux des haras voisins, ferronnerie d'art (grilles, rampes, girouettes), travail à la commande pour la restauration de manoirs ornaisons.",
+      "lieu": "Rue des Forges",
+      "ouverture": "Du mardi au samedi"
+    },
+    {
+      "id": "rucher-pommiers",
+      "nom": "Rucher des Pommiers",
+      "metier": "Apiculteur",
+      "categorie": "Bouche",
+      "description": "Quarante ruches en lisière de la forêt d'Écouves. Miel toutes fleurs, miel de printemps (pommier, aubépine), hydromel. Initiation à l'apiculture sur réservation.",
+      "lieu": "La Pâture aux Abeilles",
+      "ouverture": "Vente à la ferme le dimanche"
+    },
+    {
+      "id": "vannerie-osier",
+      "nom": "Osiers de la Haute Sarthe",
+      "metier": "Vannier",
+      "categorie": "Vannerie",
+      "description": "Osier cultivé en bord de Sarthe, paniers, mannes, ruches en paille. Stages d'initiation de deux jours, hébergement chez l'habitant possible.",
+      "lieu": "Chemin de la Sarthe",
+      "ouverture": "Stages d'avril à octobre"
+    },
+    {
+      "id": "tailleur-pierre",
+      "nom": "Atelier Le Goff",
+      "metier": "Tailleur de pierre",
+      "categorie": "Pierre",
+      "description": "Pierre calcaire du bocage ornais. Restauration de croix de chemins, dallages, manteaux de cheminée, sculpture funéraire. Travaille sur les chantiers de la cathédrale de Sées.",
+      "lieu": "Zone artisanale, Courtomer",
+      "ouverture": "Sur rendez-vous"
+    }
+  ]
+}

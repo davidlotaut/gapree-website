@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Histoire — Gâprée</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Instrument+Sans:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+  <header class="topbar">
+    <a href="index.html" class="brand">
+      <span class="crest">Commune de</span>
+      <span class="name">Gâprée</span>
+    </a>
+    <nav class="nav" id="nav">
+      <a href="index.html">Accueil</a>
+      <a href="histoire.html">Histoire</a>
+      <a href="artisanat.html">Artisanat</a>
+      <a href="actualites.html">Actualités</a>
+      <a href="mairie.html">La mairie</a>
+      <a href="journal.html">Le journal</a>
+    </nav>
+    <button class="nav-toggle" aria-label="Menu" onclick="document.getElementById('nav').classList.toggle('open')">☰</button>
+  </header>
+
+  <section class="section" style="padding-top:160px;">
+    <div class="container">
+      <span class="eyebrow">Mémoire communale</span>
+      <h1 class="section-title">Mille ans <em>au creux</em><br>de la Haute Sarthe</h1>
+      <p class="lede" id="histoire-intro" style="margin-top:14px;"></p>
+
+      <div class="disclaimer">
+        Cette page restitue le cadre historique général de la commune et du Perche-Sud. Les jalons précis (dates, noms locaux) sont à valider auprès des archives départementales de l'Orne et de la mairie. Les contributions des habitants pour préciser et corriger cette histoire sont les bienvenues.
+      </div>
+
+      <div class="timeline" id="timeline"></div>
+
+      <div class="divider"></div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start;">
+        <div>
+          <span class="eyebrow">Patrimoine</span>
+          <h3 class="serif" style="font-size:28px;font-weight:400;margin:8px 0 16px;line-height:1.2;">À voir, à découvrir</h3>
+          <ul style="list-style:none;display:flex;flex-direction:column;gap:14px;">
+            <li><strong class="serif italic" style="font-size:18px;">L'église paroissiale</strong><br><span class="muted">Édifice rural typique du bocage, clocher restauré en 2024.</span></li>
+            <li><strong class="serif italic" style="font-size:18px;">Le monument aux morts</strong><br><span class="muted">Sur le parvis, listant les Gâpréens tombés en 14-18.</span></li>
+            <li><strong class="serif italic" style="font-size:18px;">Les croix de chemin</strong><br><span class="muted">Trois croix en calcaire jalonnent les sentiers anciens.</span></li>
+            <li><strong class="serif italic" style="font-size:18px;">Le verger conservatoire</strong><br><span class="muted">Parcelle des Quatre-Vents, plantée en 2026.</span></li>
+          </ul>
+        </div>
+        <div>
+          <span class="eyebrow">À proximité</span>
+          <h3 class="serif" style="font-size:28px;font-weight:400;margin:8px 0 16px;line-height:1.2;">Le Perche-Sud et ses joyaux</h3>
+          <ul style="list-style:none;display:flex;flex-direction:column;gap:14px;">
+            <li><strong class="serif italic" style="font-size:18px;">Cathédrale de Sées · 9 km</strong><br><span class="muted">Pur joyau du gothique normand, XIIIᵉ siècle.</span></li>
+            <li><strong class="serif italic" style="font-size:18px;">Haras national du Pin · 25 km</strong><br><span class="muted">Le « Versailles du cheval », créé sous Louis XIV.</span></li>
+            <li><strong class="serif italic" style="font-size:18px;">Forêt d'Écouves · 15 km</strong><br><span class="muted">Massif domanial, sentiers de randonnée, faune sauvage.</span></li>
+            <li><strong class="serif italic" style="font-size:18px;">Natura 2000 — Haute vallée de l'Orne · sur place</strong><br><span class="muted">Mosaïque de bocage, ruisseaux et tourbières.</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <div>
+        <div class="brand"><span class="crest">Commune de</span><span class="name">Gâprée</span></div>
+        <p style="margin-top:14px;">Orne (61) — Normandie<br>Communauté de communes de la Vallée de la Haute Sarthe</p>
+      </div>
+      <div><h4>Mairie</h4><ul><li>21 bis rue Saint-Sulpice, 61390 Gâprée</li><li>02 33 15 04 77</li><li>Mardi & vend. 9h–12h · Merc. 14h–17h</li></ul></div>
+      <div><h4>Découvrir</h4><ul><li><a href="histoire.html">Histoire</a></li><li><a href="artisanat.html">Artisans</a></li><li><a href="actualites.html">Actualités</a></li></ul></div>
+      <div><h4>Services</h4><ul><li><a href="journal.html">Journal communal</a></li><li>Annuaire des artisans</li><li>Bulletin municipal</li></ul></div>
+    </div>
+    <div class="legal"><span>© 2026 Commune de Gâprée</span><span>Site illustratif — design preview</span></div>
+  </footer>
+
+  <script src="data/_bundle.js"></script>
+  <script src="assets/js/main.js"></script>
+</body>
+</html>

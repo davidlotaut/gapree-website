@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gâprée — Une commune. Un silence. Un Perche.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Cardo:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #f3efe7;
+    --cream-deep: #ece5d8;
+    --sand: #d8ccb6;
+    --ink: #15140f;
+    --ink-soft: #3a3933;
+    --mute: #6e6a5e;
+    --line: rgba(21,20,15,.14);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; scroll-behavior: smooth; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    font-size: 16px;
+    line-height: 1.65;
+    font-weight: 300;
+  }
+  .serif { font-family: 'DM Serif Display', serif; font-weight: 400; }
+  .display { font-family: 'DM Serif Display', serif; font-weight: 400; letter-spacing: -.02em; }
+  em { font-style: italic; font-family: 'Cardo', serif; }
+
+  a { color: inherit; }
+
+  /* ============ NAV ============ */
+  .nav {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    z-index: 20;
+    padding: 36px 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: #fff;
+  }
+  .nav .wordmark {
+    font-family: 'DM Serif Display', serif;
+    font-size: 26px;
+    letter-spacing: .01em;
+    font-style: italic;
+  }
+  .nav ul {
+    list-style: none;
+    display: flex;
+    gap: 38px;
+    font-size: 11px;
+    letter-spacing: .26em;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+  .nav ul a { text-decoration: none; opacity: .9; transition: opacity .2s; }
+  .nav ul a:hover { opacity: 1; }
+  .nav .corner {
+    font-size: 11px;
+    letter-spacing: .26em;
+    text-transform: uppercase;
+    opacity: .85;
+  }
+
+  /* ============ HERO ============ */
+  .hero {
+    position: relative;
+    height: 100vh;
+    min-height: 720px;
+    width: 100%;
+    overflow: hidden;
+    color: #fff;
+    background-color: #1a1815;
+  }
+  .hero-img {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(180deg, rgba(0,0,0,.35) 0%, rgba(0,0,0,.10) 30%, rgba(0,0,0,.55) 100%),
+      url('https://images.unsplash.com/photo-1773770164591-7c876cb18714?auto=format&fit=crop&w=2600&q=80');
+    background-size: cover;
+    background-position: center 60%;
+  }
+  .hero-content {
+    position: absolute;
+    bottom: 12%;
+    left: 0; right: 0;
+    padding: 0 60px;
+  }
+  .hero .eyebrow {
+    font-size: 11px;
+    letter-spacing: .35em;
+    text-transform: uppercase;
+    opacity: .85;
+    margin-bottom: 26px;
+    font-weight: 500;
+  }
+  .hero h1 {
+    font-family: 'DM Serif Display', serif;
+    font-weight: 400;
+    font-size: clamp(54px, 7.5vw, 112px);
+    line-height: .98;
+    letter-spacing: -.02em;
+    max-width: 1100px;
+    margin-bottom: 38px;
+  }
+  .hero h1 em {
+    font-style: italic;
+    font-family: 'Cardo', serif;
+    font-weight: 400;
+    color: #f3efe7;
+    opacity: .92;
+  }
+  .hero .lede {
+    max-width: 540px;
+    font-size: 17px;
+    line-height: 1.6;
+    color: rgba(255,255,255,.86);
+    font-weight: 300;
+  }
+  .hero .scroll {
+    position: absolute;
+    bottom: 36px; right: 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    font-size: 10px;
+    letter-spacing: .35em;
+    text-transform: uppercase;
+    opacity: .7;
+  }
+  .hero .scroll .line { width: 1px; height: 56px; background: #fff; opacity: .5; }
+  .hero .corner-meta {
+    position: absolute;
+    top: 50%; right: 60px;
+    transform: translateY(-50%) rotate(90deg);
+    transform-origin: right center;
+    font-size: 10px;
+    letter-spacing: .4em;
+    text-transform: uppercase;
+    opacity: .65;
+  }
+
+  /* ============ INTRO ============ */
+  .intro {
+    padding: 160px 60px 140px;
+    max-width: 1180px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 80px;
+    align-items: start;
+  }
+  .intro .label {
+    font-size: 11px;
+    letter-spacing: .3em;
+    text-transform: uppercase;
+    color: var(--mute);
+    font-weight: 500;
+    position: sticky; top: 60px;
+  }
+  .intro h2 {
+    font-family: 'DM Serif Display', serif;
+    font-weight: 400;
+    font-size: 44px;
+    line-height: 1.15;
+    letter-spacing: -.018em;
+    margin-bottom: 36px;
+    color: var(--ink);
+  }
+  .intro h2 em { color: #6b5c3a; }
+  .intro p {
+    font-size: 18px;
+    line-height: 1.75;
+    color: var(--ink-soft);
+    margin-bottom: 22px;
+    font-weight: 300;
+    max-width: 620px;
+  }
+  .intro .signature {
+    margin-top: 30px;
+    font-family: 'Cardo', serif;
+    font-style: italic;
+    font-size: 18px;
+    color: var(--mute);
+  }
+
+  /* ============ SPLIT FEATURE ============ */
+  .split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    background: var(--cream-deep);
+  }
+  .split-img {
+    min-height: 700px;
+    background-size: cover;
+    background-position: center;
+  }
+  .split-text {
+    padding: 120px 80px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .split-text .num {
+    font-family: 'DM Serif Display', serif;
+    font-style: italic;
+    font-size: 22px;
+    color: #8a7849;
+    margin-bottom: 24px;
+  }
+  .split-text h3 {
+    font-family: 'DM Serif Display', serif;
+    font-weight: 400;
+    font-size: 48px;
+    line-height: 1.08;
+    letter-spacing: -.018em;
+    margin-bottom: 28px;
+  }
+  .split-text h3 em { font-family: 'Cardo', serif; color: #6b5c3a; }
+  .split-text p {
+    font-size: 17px;
+    line-height: 1.7;
+    color: var(--ink-soft);
+    max-width: 460px;
+    margin-bottom: 18px;
+    font-weight: 300;
+  }
+  .split-text .cta {
+    margin-top: 22px;
+    font-size: 11px;
+    letter-spacing: .26em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--ink);
+    border-bottom: 1px solid var(--ink);
+    padding-bottom: 4px;
+    align-self: flex-start;
+    font-weight: 500;
+  }
+
+  /* ============ TRIPTYCH (3 raisons) ============ */
+  .triptych {
+    padding: 160px 60px 140px;
+    max-width: 1500px;
+    margin: 0 auto;
+  }
+  .triptych .header {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 60px;
+    margin-bottom: 80px;
+  }
+  .triptych .header .label {
+    font-size: 11px;
+    letter-spacing: .3em;
+    text-transform: uppercase;
+    color: var(--mute);
+    font-weight: 500;
+  }
+  .triptych .header h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 56px;
+    font-weight: 400;
+    line-height: 1.05;
+    letter-spacing: -.02em;
+  }
+  .triptych .header h2 em { font-family: 'Cardo', serif; color: #6b5c3a; }
+  .triptych .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 40px;
+  }
+  .reason {
+    display: flex;
+    flex-direction: column;
+  }
+  .reason .img {
+    aspect-ratio: 4 / 5;
+    background-size: cover;
+    background-position: center;
+    margin-bottom: 28px;
+  }
+  .reason .roman {
+    font-family: 'DM Serif Display', serif;
+    font-style: italic;
+    font-size: 16px;
+    color: #8a7849;
+    margin-bottom: 12px;
+  }
+  .reason h4 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 26px;
+    font-weight: 400;
+    line-height: 1.2;
+    margin-bottom: 14px;
+    letter-spacing: -.01em;
+  }
+  .reason p {
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--ink-soft);
+    font-weight: 300;
+  }
+
+  /* ============ FULL-BLEED PHOTO ============ */
+  .fullbleed {
+    height: 90vh;
+    min-height: 620px;
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    position: relative;
+    color: #fff;
+  }
+  .fullbleed-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(0,0,0,.0) 0%, rgba(0,0,0,.55) 100%);
+    display: flex;
+    align-items: flex-end;
+    padding: 80px 60px;
+  }
+  .fullbleed-quote {
+    max-width: 760px;
+  }
+  .fullbleed-quote .src {
+    font-size: 11px;
+    letter-spacing: .3em;
+    text-transform: uppercase;
+    opacity: .85;
+    margin-bottom: 22px;
+  }
+  .fullbleed-quote blockquote {
+    font-family: 'DM Serif Display', serif;
+    font-weight: 400;
+    font-size: clamp(34px, 4.5vw, 60px);
+    line-height: 1.12;
+    letter-spacing: -.015em;
+  }
+  .fullbleed-quote blockquote em {
+    font-family: 'Cardo', serif;
+  }
+
+  /* ============ ARTISANS / OBJETS ============ */
+  .artisans {
+    padding: 160px 60px 120px;
+    max-width: 1500px;
+    margin: 0 auto;
+  }
+  .artisans .header {
+    margin-bottom: 80px;
+    max-width: 760px;
+  }
+  .artisans .label {
+    font-size: 11px;
+    letter-spacing: .3em;
+    text-transform: uppercase;
+    color: var(--mute);
+    margin-bottom: 18px;
+    font-weight: 500;
+  }
+  .artisans h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 52px;
+    font-weight: 400;
+    line-height: 1.1;
+    letter-spacing: -.02em;
+    margin-bottom: 22px;
+  }
+  .artisans h2 em { font-family: 'Cardo', serif; color: #6b5c3a; }
+  .artisans .lede {
+    font-size: 17px;
+    line-height: 1.7;
+    color: var(--ink-soft);
+    font-weight: 300;
+  }
+  .artisans-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 60px 80px;
+  }
+  .artisan {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 36px;
+    align-items: start;
+  }
+  .artisan .img {
+    aspect-ratio: 4 / 5;
+    background-size: cover;
+    background-position: center;
+  }
+  .artisan .text { padding-top: 12px; }
+  .artisan .cat {
+    font-size: 10px;
+    letter-spacing: .3em;
+    text-transform: uppercase;
+    color: #8a7849;
+    margin-bottom: 14px;
+    font-weight: 500;
+  }
+  .artisan h4 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 24px;
+    font-weight: 400;
+    line-height: 1.2;
+    margin-bottom: 12px;
+  }
+  .artisan h4 em { font-family: 'Cardo', serif; }
+  .artisan p {
+    font-size: 14.5px;
+    line-height: 1.65;
+    color: var(--ink-soft);
+    margin-bottom: 18px;
+    font-weight: 300;
+  }
+  .artisan .meta {
+    font-size: 11px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--mute);
+    border-top: 1px solid var(--line);
+    padding-top: 14px;
+  }
+
+  /* ============ ACTUALITES ============ */
+  .actu {
+    background: var(--cream-deep);
+    padding: 140px 60px;
+  }
+  .actu-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  .actu .header {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: end;
+    margin-bottom: 70px;
+  }
+  .actu .header .label {
+    font-size: 11px;
+    letter-spacing: .3em;
+    text-transform: uppercase;
+    color: var(--mute);
+    font-weight: 500;
+    margin-bottom: 14px;
+  }
+  .actu .header h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 52px;
+    font-weight: 400;
+    line-height: 1.05;
+    letter-spacing: -.02em;
+  }
+  .actu .header h2 em { font-family: 'Cardo', serif; color: #6b5c3a; }
+  .actu .header .more {
+    font-size: 11px;
+    letter-spacing: .26em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--ink);
+    border-bottom: 1px solid var(--ink);
+    padding-bottom: 4px;
+    justify-self: end;
+  }
+  .actu-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 40px;
+  }
+  .actu-card {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+  }
+  .actu-card .img {
+    aspect-ratio: 5 / 6;
+    background-size: cover;
+    background-position: center;
+    margin-bottom: 22px;
+    transition: transform .6s ease;
+  }
+  .actu-card:hover .img { transform: scale(1.02); }
+  .actu-card .date {
+    font-size: 11px;
+    letter-spacing: .25em;
+    text-transform: uppercase;
+    color: #8a7849;
+    margin-bottom: 10px;
+    font-weight: 500;
+  }
+  .actu-card h4 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    font-weight: 400;
+    line-height: 1.25;
+    letter-spacing: -.01em;
+    margin-bottom: 10px;
+  }
+  .actu-card p {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--ink-soft);
+    font-weight: 300;
+  }
+
+  /* ============ MAIRIE / CTA ============ */
+  .mairie {
+    padding: 160px 60px;
+    background: var(--ink);
+    color: var(--cream);
+  }
+  .mairie-inner {
+    max-width: 1180px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 100px;
+    align-items: center;
+  }
+  .mairie .label {
+    font-size: 11px;
+    letter-spacing: .3em;
+    text-transform: uppercase;
+    color: rgba(243,239,231,.6);
+    margin-bottom: 24px;
+    font-weight: 500;
+  }
+  .mairie h2 {
+    font-family: 'DM Serif Display', serif;
+    font-weight: 400;
+    font-size: 56px;
+    line-height: 1.05;
+    letter-spacing: -.02em;
+    margin-bottom: 32px;
+  }
+  .mairie h2 em { font-family: 'Cardo', serif; color: #d8b56e; }
+  .mairie p {
+    font-size: 17px;
+    line-height: 1.75;
+    color: rgba(243,239,231,.78);
+    margin-bottom: 22px;
+    max-width: 460px;
+    font-weight: 300;
+  }
+  .mairie .cta {
+    margin-top: 28px;
+    display: inline-block;
+    padding: 16px 36px;
+    background: var(--cream);
+    color: var(--ink);
+    text-decoration: none;
+    font-size: 11px;
+    letter-spacing: .3em;
+    text-transform: uppercase;
+    font-weight: 500;
+    transition: background .25s, color .25s;
+  }
+  .mairie .cta:hover { background: #d8b56e; color: var(--ink); }
+  .mairie-card {
+    border: 1px solid rgba(243,239,231,.18);
+    padding: 50px 44px;
+    background: rgba(255,255,255,.025);
+  }
+  .mairie-card .name {
+    font-family: 'DM Serif Display', serif;
+    font-style: italic;
+    font-size: 26px;
+    margin-bottom: 6px;
+    color: var(--cream);
+  }
+  .mairie-card .role {
+    font-size: 11px;
+    letter-spacing: .25em;
+    text-transform: uppercase;
+    color: rgba(243,239,231,.55);
+    margin-bottom: 32px;
+  }
+  .mairie-card dl {
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    row-gap: 14px;
+    column-gap: 24px;
+    font-size: 14px;
+  }
+  .mairie-card dt {
+    font-size: 10px;
+    letter-spacing: .25em;
+    text-transform: uppercase;
+    color: rgba(243,239,231,.55);
+    padding-top: 4px;
+  }
+  .mairie-card dd {
+    color: var(--cream);
+    font-weight: 300;
+    line-height: 1.55;
+  }
+
+  /* ============ FOOTER ============ */
+  footer {
+    padding: 70px 60px 50px;
+    background: var(--cream);
+    color: var(--ink-soft);
+    border-top: 1px solid var(--line);
+  }
+  footer .inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 1fr 1fr;
+    gap: 60px;
+    margin-bottom: 56px;
+  }
+  footer .word {
+    font-family: 'DM Serif Display', serif;
+    font-style: italic;
+    font-size: 28px;
+    color: var(--ink);
+    margin-bottom: 14px;
+  }
+  footer .tag {
+    font-size: 13px;
+    line-height: 1.65;
+    color: var(--mute);
+    max-width: 340px;
+    font-weight: 300;
+  }
+  footer .col h5 {
+    font-size: 11px;
+    letter-spacing: .3em;
+    text-transform: uppercase;
+    color: var(--ink);
+    margin-bottom: 18px;
+    font-weight: 500;
+  }
+  footer .col a {
+    display: block;
+    font-size: 14px;
+    color: var(--ink-soft);
+    text-decoration: none;
+    margin-bottom: 8px;
+    font-weight: 300;
+  }
+  footer .col a:hover { color: var(--ink); }
+  footer .legal {
+    border-top: 1px solid var(--line);
+    padding-top: 28px;
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-size: 12px;
+    color: var(--mute);
+  }
+  footer .legal em { font-family: 'Cardo', serif; }
+
+  @media (max-width: 1024px) {
+    .nav { padding: 24px 28px; }
+    .nav ul { display: none; }
+    .hero-content { padding: 0 28px; bottom: 8%; }
+    .hero .scroll, .hero .corner-meta { display: none; }
+    .intro, .triptych, .artisans { padding: 100px 28px; grid-template-columns: 1fr; gap: 40px; }
+    .intro { display: block; }
+    .split { grid-template-columns: 1fr; }
+    .split-img { min-height: 420px; }
+    .split-text { padding: 70px 28px; }
+    .triptych .grid, .actu-grid, .artisans-grid { grid-template-columns: 1fr; gap: 40px; }
+    .artisan { grid-template-columns: 1fr; }
+    .actu { padding: 80px 28px; }
+    .actu .header { grid-template-columns: 1fr; }
+    .mairie { padding: 90px 28px; }
+    .mairie-inner { grid-template-columns: 1fr; gap: 50px; }
+    footer { padding: 50px 28px; }
+    footer .inner { grid-template-columns: 1fr 1fr; gap: 30px; }
+    .fullbleed { background-attachment: scroll; }
+  }
+</style>
+</head>
+<body>
+
+<!-- =========== NAV =========== -->
+<nav class="nav">
+  <div class="wordmark">Gâprée</div>
+  <ul>
+    <li><a href="#histoire">Le village</a></li>
+    <li><a href="#artisans">Artisans</a></li>
+    <li><a href="#actu">Journal</a></li>
+    <li><a href="#mairie">Mairie</a></li>
+  </ul>
+  <div class="corner">61 · Orne · Perche</div>
+</nav>
+
+<!-- =========== HERO =========== -->
+<section class="hero">
+  <div class="hero-img"></div>
+  <div class="corner-meta">N 48° 38' · E 0° 19'</div>
+  <div class="hero-content">
+    <div class="eyebrow">Édition · printemps 2026</div>
+    <h1>Une commune.<br>Un silence.<br><em>Un Perche.</em></h1>
+    <p class="lede">Cent quarante-cinq habitants, un clocher, dix kilomètres carrés de bocage tenu à la main. Gâprée n'est pas un détour : c'est une halte qu'on s'autorise.</p>
+  </div>
+  <div class="scroll">
+    <span>Découvrir</span>
+    <span class="line"></span>
+  </div>
+</section>
+
+<!-- =========== INTRO =========== -->
+<section class="intro" id="histoire">
+  <div class="label">Préambule</div>
+  <div>
+    <h2>Au creux de l'Orne, là où le <em>bocage</em> ralentit le temps.</h2>
+    <p>Posée à neuf kilomètres de la cathédrale gothique de Sées, à vingt-cinq du Haras national du Pin, à quinze de la grande forêt d'Écouves, Gâprée cultive cette discrétion qui fait la noblesse des villages percherons. On y vient pour ce qui ne se voit pas tout de suite.</p>
+    <p>La commune occupe 10,07 km² classés Natura 2000 — une vallée de l'Orne dont les prairies humides ont gardé leur dessin médiéval. Onze fermes, une mairie, une église, et l'évidence du paysage.</p>
+    <div class="signature">— Mairie de Gâprée, mai 2026</div>
+  </div>
+</section>
+
+<!-- =========== SPLIT 1 — Longère =========== -->
+<section class="split">
+  <div class="split-img" style="background-image:url('https://images.unsplash.com/photo-1766675713705-c1843f20ce5d?auto=format&fit=crop&w=1800&q=80')"></div>
+  <div class="split-text">
+    <div class="num"><em>chapitre I</em></div>
+    <h3>Habiter <em>une longère</em>, vivre un paysage.</h3>
+    <p>Maisons basses de pierre claire, encadrement bois, jardin en arrière, prairie devant. L'architecture vernaculaire du Perche s'est ici maintenue presque intacte — non par décret, par habitude.</p>
+    <p>Trois biens à vendre, deux maisons d'hôtes, une demeure du XVIIᵉ qui cherche un occupant patient. La mairie tient la liste à jour.</p>
+    <a class="cta" href="#mairie">Demander la liste →</a>
+  </div>
+</section>
+
+<!-- =========== TRIPTYCH — 3 raisons =========== -->
+<section class="triptych">
+  <div class="header">
+    <div class="label">Trois <em>raisons</em></div>
+    <h2>Ce que <em>Gâprée</em> donne à qui prend le temps de s'arrêter.</h2>
+  </div>
+  <div class="grid">
+    <div class="reason">
+      <div class="img" style="background-image:url('https://images.unsplash.com/photo-1727120279660-5c28b8461609?auto=format&fit=crop&w=1200&q=80')"></div>
+      <div class="roman"><em>i.</em></div>
+      <h4>Le verger d'avril</h4>
+      <p>Quand les pommiers fleurissent — fin avril, début mai — les chemins de la vallée changent de couleur. Floraison tardive, lumière douce, arbres centenaires.</p>
+    </div>
+    <div class="reason">
+      <div class="img" style="background-image:url('https://images.unsplash.com/photo-1602764438391-dd919b5c6ed0?auto=format&fit=crop&w=1200&q=80')"></div>
+      <div class="roman"><em>ii.</em></div>
+      <h4>Le silence du bocage</h4>
+      <p>Onze fermes, deux cents bovins, vingt mille mètres linéaires de haies. Le bocage gâpréen est l'un des plus denses de la vallée — son paysage parle pour lui.</p>
+    </div>
+    <div class="reason">
+      <div class="img" style="background-image:url('https://images.unsplash.com/photo-1553984840-b8cbc34f5215?auto=format&fit=crop&w=1200&q=80')"></div>
+      <div class="roman"><em>iii.</em></div>
+      <h4>La forêt à quinze minutes</h4>
+      <p>La forêt domaniale d'Écouves — quinze mille hectares, hêtres et chênes, brumes au matin — est à un quart d'heure. Les sentiers GR la traversent.</p>
+    </div>
+  </div>
+</section>
+
+<!-- =========== FULL-BLEED QUOTE =========== -->
+<section class="fullbleed" style="background-image:url('https://images.unsplash.com/photo-1735415399860-9eca0385c900?auto=format&fit=crop&w=2400&q=80')">
+  <div class="fullbleed-overlay">
+    <div class="fullbleed-quote">
+      <div class="src">Témoignage · habitante depuis 2019</div>
+      <blockquote>« On ne vient pas <em>vivre</em> à Gâprée pour s'y cacher. On vient parce que le paysage <em>tient</em>, et qu'il nous tient avec lui. »</blockquote>
+    </div>
+  </div>
+</section>
+
+<!-- =========== ARTISANS =========== -->
+<section class="artisans" id="artisans">
+  <div class="header">
+    <div class="label">Atelier · ouvert</div>
+    <h2>Les <em>artisans</em> du village et des hameaux voisins.</h2>
+    <p class="lede">Trois adresses qu'on ne trouve pas par hasard. Elles travaillent avec leurs mains, à la commande ou par petites séries, et partagent leur établi à qui le demande.</p>
+  </div>
+  <div class="artisans-grid">
+    <div class="artisan">
+      <div class="img" style="background-image:url('https://images.unsplash.com/photo-1775403909605-ef9047813f9f?auto=format&fit=crop&w=1200&q=80')"></div>
+      <div class="text">
+        <div class="cat">Forge · ferronnerie</div>
+        <h4>Forge du Carrefour, <em>Théo Ricouard</em></h4>
+        <p>Ferronnier d'art installé à La Mesnière depuis 2018. Pièces uniques pour patrimoine — grilles, pentures, éléments de cheminée.</p>
+        <div class="meta">Sur rendez-vous · 06 ··</div>
+      </div>
+    </div>
+    <div class="artisan">
+      <div class="img" style="background-image:url('https://images.unsplash.com/photo-1488977678660-dca8681ca872?auto=format&fit=crop&w=1200&q=80')"></div>
+      <div class="text">
+        <div class="cat">Céramique · grès</div>
+        <h4>Atelier de la Verrière, <em>Camille Pottier</em></h4>
+        <p>Grès tourné, émaillé au feu de bois. Vaisselle utilitaire, pièces d'exposition. L'atelier ouvre ses portes deux week-ends par mois.</p>
+        <div class="meta">Ouvert sam.–dim. · printemps</div>
+      </div>
+    </div>
+    <div class="artisan">
+      <div class="img" style="background-image:url('https://images.unsplash.com/photo-1593375548392-d3f977b8a2f0?auto=format&fit=crop&w=1200&q=80')"></div>
+      <div class="text">
+        <div class="cat">Cidre · pommé</div>
+        <h4>Cidrerie du Bois Norgent, <em>famille Lefèvre</em></h4>
+        <p>Trois générations, douze variétés de pommes. Cidre brut fermier, poiré du Perche, calvados vieilli en fût. Vente directe à la ferme.</p>
+        <div class="meta">Visite + dégustation</div>
+      </div>
+    </div>
+    <div class="artisan">
+      <div class="img" style="background-image:url('https://images.unsplash.com/photo-1576179636333-f13b174b3c9a?auto=format&fit=crop&w=1200&q=80')"></div>
+      <div class="text">
+        <div class="cat">Maraîchage · marché</div>
+        <h4>La Petite Cour, <em>Amélie Brossard</em></h4>
+        <p>Maraîchage bio, semences paysannes. Marché le samedi à Sées, panier hebdo à Gâprée pour les habitants. Apprendre la culture sur deux saisons.</p>
+        <div class="meta">Stage · printemps 2026</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =========== ACTU =========== -->
+<section class="actu" id="actu">
+  <div class="actu-inner">
+    <div class="header">
+      <div>
+        <div class="label">Le journal · printemps</div>
+        <h2>Trois <em>rendez-vous</em> à venir.</h2>
+      </div>
+      <a class="more" href="#">Toutes les actualités →</a>
+    </div>
+    <div class="actu-grid">
+      <a class="actu-card" href="#">
+        <div class="img" style="background-image:url('https://images.unsplash.com/photo-1635473170208-d0334e64d77a?auto=format&fit=crop&w=1200&q=80')"></div>
+        <div class="date">25 mai 2026 · journée</div>
+        <h4>Fête du village — édition de printemps</h4>
+        <p>Marché des artisans, concert dans l'église, repas partagé sur la place. Ouvert à tous, gratuit, à partir de 10 h.</p>
+      </a>
+      <a class="actu-card" href="#">
+        <div class="img" style="background-image:url('https://images.unsplash.com/photo-1700656106838-5a7d917d2678?auto=format&fit=crop&w=1200&q=80')"></div>
+        <div class="date">8 juin 2026 · randonnée</div>
+        <h4>Marche commentée dans la vallée</h4>
+        <p>Six kilomètres avec un naturaliste pour comprendre le bocage Natura 2000. Départ 9 h, mairie. Inscription gratuite.</p>
+      </a>
+      <a class="actu-card" href="#">
+        <div class="img" style="background-image:url('https://images.unsplash.com/photo-1659787704391-d98510483feb?auto=format&fit=crop&w=1200&q=80')"></div>
+        <div class="date">automne 2026 · récolte</div>
+        <h4>Pressée participative au verger communal</h4>
+        <p>Les habitants pressent ensemble la récolte de pommes. Jus partagé, bonne humeur garantie. Date à venir, fin septembre.</p>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- =========== MAIRIE =========== -->
+<section class="mairie" id="mairie">
+  <div class="mairie-inner">
+    <div>
+      <div class="label">Mairie · administration</div>
+      <h2>S'installer, écrire,<br><em>passer</em> nous voir.</h2>
+      <p>Notre commune accueille familles, télétravailleurs, jeunes retraités. Le conseil municipal accompagne les démarches d'installation et tient la liste des biens disponibles.</p>
+      <p>La mairie est ouverte trois demi-journées par semaine, et toujours sur rendez-vous.</p>
+      <a class="cta" href="mailto:mairie.gapree@wanadoo.fr">Nous écrire</a>
+    </div>
+    <div class="mairie-card">
+      <div class="name">Mme Laëtitia Raimbourg</div>
+      <div class="role">Maire de Gâprée — élue 2020</div>
+      <dl>
+        <dt>Adresse</dt><dd>21 bis rue Saint-Sulpice<br>61390 Gâprée</dd>
+        <dt>Téléphone</dt><dd>02 33 15 04 77</dd>
+        <dt>Courriel</dt><dd>mairie.gapree@wanadoo.fr</dd>
+        <dt>Conseil</dt><dd>11 élus · CC Vallée de la Haute Sarthe</dd>
+      </dl>
+    </div>
+  </div>
+</section>
+
+<!-- =========== FOOTER =========== -->
+<footer>
+  <div class="inner">
+    <div>
+      <div class="word">Gâprée</div>
+      <p class="tag">Commune de l'Orne, vallée de la Haute Sarthe. Cent quarante-cinq habitants tenant le bocage, l'église, et le silence.</p>
+    </div>
+    <div class="col">
+      <h5>Découvrir</h5>
+      <a href="#">Histoire</a>
+      <a href="#">Artisans</a>
+      <a href="#">Sentiers</a>
+      <a href="#">Marchés</a>
+    </div>
+    <div class="col">
+      <h5>Mairie</h5>
+      <a href="#">Démarches</a>
+      <a href="#">Conseil municipal</a>
+      <a href="#">Compte-rendus</a>
+      <a href="#">Vie scolaire</a>
+    </div>
+    <div class="col">
+      <h5>Contact</h5>
+      <a href="tel:0233150477">02 33 15 04 77</a>
+      <a href="mailto:mairie.gapree@wanadoo.fr">Courriel</a>
+      <a href="#">Itinéraire</a>
+      <a href="#">Newsletter</a>
+    </div>
+  </div>
+  <div class="legal">
+    <span>© 2026 Commune de Gâprée — <em>Orne, Normandie</em></span>
+    <span>Photographies : Unsplash · CC0 · voir crédits</span>
+  </div>
+</footer>
+
+</body>
+</html>

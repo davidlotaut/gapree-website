@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Artisanat — Gâprée</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Instrument+Sans:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+  <header class="topbar">
+    <a href="index.html" class="brand">
+      <span class="crest">Commune de</span>
+      <span class="name">Gâprée</span>
+    </a>
+    <nav class="nav" id="nav">
+      <a href="index.html">Accueil</a>
+      <a href="histoire.html">Histoire</a>
+      <a href="artisanat.html">Artisanat</a>
+      <a href="actualites.html">Actualités</a>
+      <a href="mairie.html">La mairie</a>
+      <a href="journal.html">Le journal</a>
+    </nav>
+    <button class="nav-toggle" aria-label="Menu" onclick="document.getElementById('nav').classList.toggle('open')">☰</button>
+  </header>
+
+  <section class="section" style="padding-top:160px;">
+    <div class="container">
+      <span class="eyebrow">Savoir-faire</span>
+      <h1 class="section-title">Les mains qui <em>font</em><br>Gâprée</h1>
+      <p class="lede" style="margin-top:14px;">Sur dix kilomètres carrés de bocage normand, une poignée d'artisans perpétuent les gestes qui ont fait l'identité du Perche-Sud. Cidre, bois, lin, métal, pierre — chaque atelier raconte une histoire, et un savoir.</p>
+
+      <div class="disclaimer">
+        Les artisans présentés ci-dessous sont des exemples illustratifs construits à partir des filières historiques de la région. La page sera complétée par les artisans réellement installés à Gâprée et dans les communes voisines.
+      </div>
+
+      <div class="filterbar" id="artisans-filters"></div>
+      <div class="grid grid-3" id="artisans-grid"></div>
+
+      <div class="divider"></div>
+
+      <div style="background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);padding:40px;display:grid;grid-template-columns:1fr 1.5fr;gap:40px;align-items:center;">
+        <div>
+          <span class="eyebrow">Vous êtes artisan ?</span>
+          <h3 class="serif" style="font-size:30px;font-weight:400;margin-top:8px;line-height:1.15;">Faites-vous référencer sur l'annuaire communal</h3>
+        </div>
+        <div>
+          <p style="margin-bottom:20px;">La commune référence gratuitement tous les artisans installés à Gâprée ou dans un rayon de dix kilomètres. La fiche reprend votre activité, vos jours d'ouverture et un visuel. Aucune contrepartie demandée.</p>
+          <a class="btn" href="mailto:mairie.gapree@example.fr">Contacter la mairie →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <div>
+        <div class="brand"><span class="crest">Commune de</span><span class="name">Gâprée</span></div>
+        <p style="margin-top:14px;">Orne (61) — Normandie<br>Communauté de communes de la Vallée de la Haute Sarthe</p>
+      </div>
+      <div><h4>Mairie</h4><ul><li>21 bis rue Saint-Sulpice, 61390 Gâprée</li><li>02 33 15 04 77</li><li>Mardi & vend. 9h–12h · Merc. 14h–17h</li></ul></div>
+      <div><h4>Découvrir</h4><ul><li><a href="histoire.html">Histoire</a></li><li><a href="artisanat.html">Artisans</a></li><li><a href="actualites.html">Actualités</a></li></ul></div>
+      <div><h4>Services</h4><ul><li><a href="journal.html">Journal communal</a></li><li>Annuaire des artisans</li><li>Bulletin municipal</li></ul></div>
+    </div>
+    <div class="legal"><span>© 2026 Commune de Gâprée</span><span>Site illustratif — design preview</span></div>
+  </footer>
+
+  <script src="data/_bundle.js"></script>
+  <script src="assets/js/main.js"></script>
+</body>
+</html>

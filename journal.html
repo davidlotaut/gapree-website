@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Le Gâpréen — Journal communal à la demande</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Instrument+Sans:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+  <header class="topbar">
+    <a href="index.html" class="brand">
+      <span class="crest">Commune de</span>
+      <span class="name">Gâprée</span>
+    </a>
+    <nav class="nav" id="nav">
+      <a href="index.html">Accueil</a>
+      <a href="histoire.html">Histoire</a>
+      <a href="artisanat.html">Artisanat</a>
+      <a href="actualites.html">Actualités</a>
+      <a href="mairie.html">La mairie</a>
+      <a href="journal.html">Le journal</a>
+    </nav>
+    <button class="nav-toggle" aria-label="Menu" onclick="document.getElementById('nav').classList.toggle('open')">☰</button>
+  </header>
+
+  <section class="section" style="padding-top:160px;">
+    <div class="container">
+      <div style="background:#fff8e6;border:1px solid #e6d28a;border-left:4px solid #b08234;color:#5a4520;padding:14px 18px;border-radius:6px;font-size:14px;line-height:1.55;margin-bottom:30px;">
+        <strong style="color:#1d1c19;">⚠ Aperçu en ligne — fonctionnalité disponible en local uniquement.</strong><br>
+        Le générateur de journal communal s'appuie sur un backend Flask qui interroge l'API Claude. Il n'est donc pas opérationnel sur cette version statique (GitHub Pages). Pour l'utiliser, cloner le dépôt et lancer le serveur local — voir <a href="https://github.com/davidlotaut/gapree-website#g%C3%A9n%C3%A9rateur-de-journal" style="color:#8a5e1e;text-decoration:underline;">README</a>.
+      </div>
+      <span class="eyebrow">Bulletin communal à la demande</span>
+      <h1 class="section-title"><em>Le</em> Gâpréen</h1>
+      <p class="lede" style="margin-top:14px;">Choisissez une période, et la rédaction compose pour vous un numéro du bulletin communal à partir des actualités consignées sur la commune. Idéal pour récapituler une semaine de conseil, un trimestre de travaux, ou une saison de vie associative.</p>
+
+      <form class="journal-form" id="journal-form">
+        <div style="margin-bottom:6px;font-size:12px;letter-spacing:0.1em;text-transform:uppercase;color:var(--mousse);">Période rapide</div>
+        <div class="presets" id="journal-presets">
+          <button type="button" class="preset" data-days="7">Cette semaine</button>
+          <button type="button" class="preset is-active" data-days="30">Ce mois</button>
+          <button type="button" class="preset" data-days="90">Ce trimestre</button>
+          <button type="button" class="preset" data-days="180">Ce semestre</button>
+          <button type="button" class="preset" data-days="365">Cette année</button>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="journal-from">Du</label>
+            <input type="date" id="journal-from" required>
+          </div>
+          <div class="field">
+            <label for="journal-to">Au</label>
+            <input type="date" id="journal-to" required>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="journal-style">Ton de la rédaction</label>
+          <select id="journal-style">
+            <option value="court">Concis · l'essentiel en une colonne</option>
+            <option value="standard" selected>Standard · bulletin communal classique</option>
+            <option value="long">Détaillé · longue forme avec interludes</option>
+          </select>
+        </div>
+
+        <button type="submit" class="btn" style="margin-top:8px;">Composer mon numéro →</button>
+      </form>
+
+      <div id="journal-output" class="journal-output">
+        <div class="journal-empty">
+          <p>Sélectionnez une période ci-dessus, puis cliquez sur <strong>Composer mon numéro</strong>.<br>Votre bulletin apparaîtra ici, mis en page comme un vrai petit journal communal.</p>
+        </div>
+      </div>
+
+      <p class="muted" style="font-size:13px;margin-top:24px;text-align:center;">
+        Astuce — pour bénéficier d'une rédaction par IA (Claude), démarrez le hub Flask : <code>cd hub && python3 app.py</code>. À défaut, un aperçu local est affiché.
+      </p>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <div>
+        <div class="brand"><span class="crest">Commune de</span><span class="name">Gâprée</span></div>
+        <p style="margin-top:14px;">Orne (61) — Normandie<br>Communauté de communes de la Vallée de la Haute Sarthe</p>
+      </div>
+      <div><h4>Mairie</h4><ul><li>21 bis rue Saint-Sulpice, 61390 Gâprée</li><li>02 33 15 04 77</li><li>Mardi & vend. 9h–12h · Merc. 14h–17h</li></ul></div>
+      <div><h4>Découvrir</h4><ul><li><a href="histoire.html">Histoire</a></li><li><a href="artisanat.html">Artisans</a></li><li><a href="actualites.html">Actualités</a></li></ul></div>
+      <div><h4>Services</h4><ul><li><a href="journal.html">Journal communal</a></li><li>Annuaire des artisans</li><li>Bulletin municipal</li></ul></div>
+    </div>
+    <div class="legal"><span>© 2026 Commune de Gâprée</span><span>Site illustratif — design preview</span></div>
+  </footer>
+
+  <script src="data/_bundle.js"></script>
+  <script src="assets/js/main.js"></script>
+</body>
+</html>

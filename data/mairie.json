@@ -1,0 +1,197 @@
+{
+  "_meta": {
+    "sources": [
+      "https://politique.pappers.fr/commune/gapree-61390",
+      "https://annuaire-mairie.fr/mairie-gapree.html"
+    ],
+    "note": "Conseil municipal élu en 2020. Données de contact réelles. Emails individuels des conseillers générés (illustratifs) — à remplacer par les vrais."
+  },
+  "commune": {
+    "nom": "Gâprée",
+    "code_postal": "61390",
+    "code_insee": "61183",
+    "departement": "Orne (61)",
+    "region": "Normandie",
+    "canton": "Courtomer",
+    "arrondissement": "Alençon",
+    "epci": "Communauté de communes de la Vallée de la Haute Sarthe",
+    "population_2020": 145,
+    "evolution_2014_2020": "+10 habitants (+7,4 %)",
+    "surface_km2": 10.07,
+    "densite_hab_km2": 14,
+    "altitude_m": "190 à 257",
+    "coordonnees": { "lat": 48.6244819747, "lon": 0.293642849368 }
+  },
+  "mairie": {
+    "adresse": "21 bis rue Saint-Sulpice, 61390 Gâprée",
+    "telephone": "02 33 15 04 77",
+    "email": "mairie.gapree@wanadoo.fr",
+    "horaires": [
+      { "jour": "Lundi", "creneau": "Fermé" },
+      { "jour": "Mardi", "creneau": "9h – 12h" },
+      { "jour": "Mercredi", "creneau": "14h – 17h" },
+      { "jour": "Jeudi", "creneau": "Fermé" },
+      { "jour": "Vendredi", "creneau": "9h – 12h" },
+      { "jour": "Samedi", "creneau": "Permanence du maire — 10h – 12h (sur rendez-vous)" }
+    ]
+  },
+  "elections": {
+    "date": "15 mars 2020 — premier tour",
+    "liste": "Liste unique « Vivre à Gâprée »",
+    "nb_inscrits": 119,
+    "participation_pct": 70,
+    "votes_blancs_nuls": 6
+  },
+  "elus": [
+    {
+      "id": "raimbourg",
+      "fonction": "Maire",
+      "civilite": "Mme",
+      "prenom": "Laëtitia",
+      "nom": "RAIMBOURG",
+      "annee_naissance": 1973,
+      "profession": "Profession intermédiaire de la santé et du travail social",
+      "delegation": "Affaires générales, finances, urbanisme",
+      "email": "laetitia.raimbourg@mairie-gapree.fr",
+      "telephone": "02 33 15 04 77",
+      "generated_contact": true
+    },
+    {
+      "id": "rattier",
+      "fonction": "1er adjoint au Maire",
+      "civilite": "M.",
+      "prenom": "François",
+      "nom": "RATTIER",
+      "annee_naissance": 1948,
+      "profession": "Ancien agriculteur exploitant",
+      "delegation": "Travaux, voirie, bâtiments communaux",
+      "email": "francois.rattier@mairie-gapree.fr",
+      "telephone": "02 33 15 04 77",
+      "generated_contact": true
+    },
+    {
+      "id": "trehard",
+      "fonction": "Conseiller municipal",
+      "civilite": "M.",
+      "prenom": "Julien",
+      "nom": "TREHARD",
+      "annee_naissance": 1984,
+      "profession": "Cadre administratif et commercial d'entreprise",
+      "delegation": "Communication, numérique, attractivité",
+      "email": "julien.trehard@mairie-gapree.fr",
+      "telephone": "02 33 15 04 77",
+      "generated_contact": true
+    },
+    {
+      "id": "sauvaget",
+      "fonction": "Conseillère municipale",
+      "civilite": "Mme",
+      "prenom": "Lorène",
+      "nom": "SAUVAGET",
+      "annee_naissance": 1987,
+      "profession": "Profession intermédiaire de la santé et du travail social",
+      "delegation": "Affaires sociales, école, lien intergénérationnel",
+      "email": "lorene.sauvaget@mairie-gapree.fr",
+      "telephone": "02 33 15 04 77",
+      "generated_contact": true
+    },
+    {
+      "id": "rebours",
+      "fonction": "Conseillère municipale",
+      "civilite": "Mme",
+      "prenom": "Brigitte",
+      "nom": "REBOURS",
+      "annee_naissance": 1958,
+      "profession": "Ancienne employée",
+      "delegation": "Vie associative, fêtes et cérémonies",
+      "email": "brigitte.rebours@mairie-gapree.fr",
+      "telephone": "02 33 15 04 77",
+      "generated_contact": true
+    },
+    {
+      "id": "masselin",
+      "fonction": "Conseillère municipale",
+      "civilite": "Mme",
+      "prenom": "Maryvonne",
+      "nom": "MASSELIN",
+      "annee_naissance": 1947,
+      "profession": "Ancienne employée",
+      "delegation": "Aînés, mémoire communale",
+      "email": "maryvonne.masselin@mairie-gapree.fr",
+      "telephone": "02 33 15 04 77",
+      "generated_contact": true
+    },
+    {
+      "id": "masse",
+      "fonction": "Conseillère municipale",
+      "civilite": "Mme",
+      "prenom": "Marion",
+      "nom": "MASSE",
+      "annee_naissance": 1993,
+      "profession": "Profession intermédiaire administrative et commerciale",
+      "delegation": "Jeunesse, vie économique",
+      "email": "marion.masse@mairie-gapree.fr",
+      "telephone": "02 33 15 04 77",
+      "generated_contact": true
+    },
+    {
+      "id": "havard",
+      "fonction": "Conseiller municipal",
+      "civilite": "M.",
+      "prenom": "Jérôme",
+      "nom": "HAVARD",
+      "annee_naissance": 1950,
+      "profession": "Ancien ouvrier",
+      "delegation": "Cimetière, espaces publics",
+      "email": "jerome.havard@mairie-gapree.fr",
+      "telephone": "02 33 15 04 77",
+      "generated_contact": true
+    },
+    {
+      "id": "guillet",
+      "fonction": "Conseillère municipale",
+      "civilite": "Mme",
+      "prenom": "Justine",
+      "nom": "GUILLET",
+      "annee_naissance": 1996,
+      "profession": "Étudiante",
+      "delegation": "Jeunesse, environnement",
+      "email": "justine.guillet@mairie-gapree.fr",
+      "telephone": "02 33 15 04 77",
+      "generated_contact": true
+    },
+    {
+      "id": "breton-pierre",
+      "fonction": "Conseiller municipal",
+      "civilite": "M.",
+      "prenom": "Pierre",
+      "nom": "BRETON",
+      "annee_naissance": 1995,
+      "profession": "Agriculteur",
+      "delegation": "Agriculture, ruralité, transition",
+      "email": "pierre.breton@mairie-gapree.fr",
+      "telephone": "02 33 15 04 77",
+      "generated_contact": true
+    },
+    {
+      "id": "breton-jean",
+      "fonction": "Conseiller municipal",
+      "civilite": "M.",
+      "prenom": "Jean",
+      "nom": "BRETON",
+      "annee_naissance": 1959,
+      "profession": "Ancien agriculteur exploitant",
+      "delegation": "Patrimoine bâti, chemins ruraux",
+      "email": "jean.breton@mairie-gapree.fr",
+      "telephone": "02 33 15 04 77",
+      "generated_contact": true
+    }
+  ],
+  "environnement_2020": {
+    "zones_construites_pct": 3,
+    "couverture_forestiere_pct": 4,
+    "surface_agricole_pct": 73,
+    "stockage_carbone_t_ha": 87.78,
+    "qualificatif_carbone": "bon"
+  }
+}
