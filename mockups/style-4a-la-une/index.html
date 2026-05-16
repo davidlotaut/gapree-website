@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gâprée — La une · jeudi 14 mai 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Cardo:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #f3efe7;
+    --cream-deep: #ece5d8;
+    --sand: #d8ccb6;
+    --gold: #6b5c3a;
+    --gold-light: #8a7849;
+    --ink: #15140f;
+    --ink-soft: #3a3933;
+    --mute: #6e6a5e;
+    --line: rgba(21,20,15,.14);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; scroll-behavior: smooth; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    font-size: 16px;
+    line-height: 1.65;
+    font-weight: 300;
+  }
+  em { font-style: italic; font-family: 'Cardo', serif; }
+  a { color: inherit; }
+
+  /* ============ TOP RIBBON ============ */
+  .topbar {
+    position: absolute; top: 0; left: 0; right: 0; z-index: 20;
+    padding: 14px 60px;
+    display: flex; justify-content: space-between; align-items: center;
+    color: #fff;
+    border-bottom: 1px solid rgba(255,255,255,.12);
+    font-size: 10.5px;
+    letter-spacing: .26em;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+  .topbar .date em { font-family: 'Cardo', serif; font-style: italic; letter-spacing: 0; text-transform: none; font-size: 13px; padding-right: 4px; }
+  .topbar .meta { opacity: .8; }
+
+  /* ============ NAV ============ */
+  .nav {
+    position: absolute;
+    top: 44px; left: 0; right: 0;
+    z-index: 20;
+    padding: 22px 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: #fff;
+  }
+  .nav .wordmark {
+    font-family: 'DM Serif Display', serif;
+    font-size: 26px;
+    letter-spacing: .01em;
+    font-style: italic;
+  }
+  .nav ul {
+    list-style: none; display: flex; gap: 38px;
+    font-size: 11px; letter-spacing: .26em; text-transform: uppercase; font-weight: 500;
+  }
+  .nav ul a { text-decoration: none; opacity: .9; transition: opacity .2s; }
+  .nav ul a:hover, .nav ul a.active { opacity: 1; border-bottom: 1px solid rgba(255,255,255,.6); padding-bottom: 3px; }
+  .nav .corner { font-size: 11px; letter-spacing: .26em; text-transform: uppercase; opacity: .85; }
+
+  /* ============ HERO "LA UNE" ============ */
+  .hero {
+    position: relative;
+    height: 100vh;
+    min-height: 760px;
+    width: 100%;
+    overflow: hidden;
+    color: #fff;
+    background-color: #1a1815;
+  }
+  .hero-img {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(180deg, rgba(0,0,0,.55) 0%, rgba(0,0,0,.10) 28%, rgba(0,0,0,.75) 100%),
+      url('https://images.unsplash.com/photo-1727120279660-5c28b8461609?auto=format&fit=crop&w=2600&q=80');
+    background-size: cover;
+    background-position: center 55%;
+  }
+  .hero-tag {
+    position: absolute;
+    top: 138px; left: 60px;
+    z-index: 5;
+    display: inline-flex; align-items: center; gap: 14px;
+    padding: 8px 14px 8px 12px;
+    background: rgba(255,255,255,.10);
+    border: 1px solid rgba(255,255,255,.28);
+    backdrop-filter: blur(8px);
+    font-size: 10.5px;
+    letter-spacing: .3em;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+  .hero-tag .dot { width: 7px; height: 7px; border-radius: 50%; background: #d8b56e; }
+  .hero-tag em { font-family: 'Cardo', serif; font-style: italic; letter-spacing: 0; text-transform: none; font-size: 13px; opacity: .9; }
+
+  .hero-content {
+    position: absolute;
+    bottom: 90px;
+    left: 0; right: 0;
+    padding: 0 60px;
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 80px;
+    align-items: end;
+  }
+  .hero .cat {
+    display: inline-block;
+    font-size: 10.5px;
+    letter-spacing: .35em;
+    text-transform: uppercase;
+    color: #f3efe7;
+    background: var(--ink);
+    padding: 7px 14px;
+    margin-bottom: 28px;
+    font-weight: 500;
+  }
+  .hero h1 {
+    font-family: 'DM Serif Display', serif;
+    font-weight: 400;
+    font-size: clamp(48px, 6.8vw, 104px);
+    line-height: .98;
+    letter-spacing: -.022em;
+    max-width: 1180px;
+    margin-bottom: 28px;
+  }
+  .hero h1 em {
+    font-style: italic;
+    font-family: 'Cardo', serif;
+    font-weight: 400;
+    color: #f3efe7;
+    opacity: .92;
+  }
+  .hero .lede {
+    max-width: 620px;
+    font-size: 17.5px;
+    line-height: 1.6;
+    color: rgba(255,255,255,.86);
+    font-weight: 300;
+    margin-bottom: 32px;
+  }
+  .hero .byline {
+    display: flex; align-items: center; gap: 22px;
+    font-size: 11px; letter-spacing: .28em; text-transform: uppercase;
+    color: rgba(255,255,255,.7);
+    font-weight: 500;
+  }
+  .hero .byline .sep { width: 30px; height: 1px; background: rgba(255,255,255,.4); }
+  .hero .read-cta {
+    display: inline-flex; align-items: center; gap: 14px;
+    margin-top: 30px;
+    padding: 16px 30px;
+    background: var(--cream);
+    color: var(--ink);
+    text-decoration: none;
+    font-size: 11px;
+    letter-spacing: .3em;
+    text-transform: uppercase;
+    font-weight: 500;
+    align-self: flex-start;
+    transition: background .25s;
+  }
+  .hero .read-cta:hover { background: #d8b56e; }
+
+  .hero .side {
+    border-left: 1px solid rgba(255,255,255,.22);
+    padding-left: 32px;
+    padding-bottom: 4px;
+  }
+  .hero .side .lab {
+    font-size: 10px; letter-spacing: .35em; text-transform: uppercase;
+    opacity: .65; margin-bottom: 18px;
+  }
+  .hero .side ul { list-style: none; }
+  .hero .side li {
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255,255,255,.12);
+    display: grid;
+    grid-template-columns: 50px 1fr;
+    gap: 14px;
+    align-items: baseline;
+  }
+  .hero .side li:last-child { border-bottom: none; }
+  .hero .side .day {
+    font-family: 'DM Serif Display', serif;
+    font-size: 26px;
+    color: #d8b56e;
+    line-height: 1;
+  }
+  .hero .side .ttl {
+    font-size: 13px;
+    line-height: 1.4;
+    color: #fff;
+    font-weight: 400;
+  }
+  .hero .side .mn {
+    font-size: 9.5px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    opacity: .55;
+    display: block;
+    margin-top: 4px;
+  }
+
+  /* ============ RIBBON (suite la une) ============ */
+  .ribbon-wrap {
+    background: var(--cream);
+    padding: 56px 0 64px;
+    position: relative;
+  }
+  .ribbon-header {
+    max-width: 1500px;
+    margin: 0 auto 28px;
+    padding: 0 60px;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 24px;
+  }
+  .ribbon-header .lab {
+    font-size: 11px; letter-spacing: .3em; text-transform: uppercase;
+    color: var(--mute); font-weight: 500;
+  }
+  .ribbon-header h3 {
+    font-family: 'DM Serif Display', serif;
+    font-weight: 400;
+    font-size: 28px;
+    line-height: 1.1;
+    flex: 1;
+    padding-left: 30px;
+    letter-spacing: -.012em;
+  }
+  .ribbon-header h3 em { font-family: 'Cardo', serif; color: var(--gold); }
+  .ribbon-header .ctrl {
+    display: flex; gap: 8px;
+  }
+  .ribbon-header .ctrl span {
+    width: 36px; height: 36px;
+    border: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background .2s;
+  }
+  .ribbon-header .ctrl span:hover { background: var(--cream-deep); }
+
+  .ribbon {
+    display: flex;
+    gap: 24px;
+    padding: 0 60px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: thin;
+  }
+  .ribbon::-webkit-scrollbar { height: 6px; }
+  .ribbon::-webkit-scrollbar-thumb { background: var(--sand); border-radius: 3px; }
+  .ribbon-card {
+    flex: 0 0 320px;
+    scroll-snap-align: start;
+    text-decoration: none; color: inherit;
+    background: var(--cream);
+    transition: transform .3s;
+  }
+  .ribbon-card:hover { transform: translateY(-3px); }
+  .ribbon-card .img {
+    aspect-ratio: 4 / 3;
+    background-size: cover; background-position: center;
+    margin-bottom: 16px;
+  }
+  .ribbon-card .meta-line {
+    display: flex; gap: 12px;
+    font-size: 10px; letter-spacing: .26em; text-transform: uppercase;
+    font-weight: 500;
+    color: var(--gold-light);
+    margin-bottom: 10px;
+  }
+  .ribbon-card .meta-line .pipe { color: var(--line); }
+  .ribbon-card h4 {
+    font-family: 'DM Serif Display', serif;
+    font-weight: 400;
+    font-size: 20px;
+    line-height: 1.22;
+    letter-spacing: -.01em;
+    margin-bottom: 8px;
+  }
+  .ribbon-card h4 em { font-family: 'Cardo', serif; }
+  .ribbon-card p {
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: var(--ink-soft);
+    font-weight: 300;
+  }
+
+  /* ============ FULL FEED ============ */
+  .feed {
+    padding: 120px 60px;
+    max-width: 1500px;
+    margin: 0 auto;
+  }
+  .feed-header {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 80px;
+    margin-bottom: 70px;
+    align-items: end;
+  }
+  .feed-header .lab { font-size: 11px; letter-spacing: .3em; text-transform: uppercase; color: var(--mute); margin-bottom: 18px; font-weight: 500; }
+  .feed-header h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 52px;
+    font-weight: 400;
+    line-height: 1.05;
+    letter-spacing: -.02em;
+  }
+  .feed-header h2 em { font-family: 'Cardo', serif; color: var(--gold); }
+  .feed-header .filters {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    align-self: end;
+  }
+  .feed-header .filters span {
+    font-size: 10.5px; letter-spacing: .25em; text-transform: uppercase;
+    padding: 8px 14px;
+    border: 1px solid var(--line);
+    font-weight: 500;
+    cursor: pointer;
+    transition: background .2s, color .2s;
+  }
+  .feed-header .filters span.active { background: var(--ink); color: var(--cream); border-color: var(--ink); }
+  .feed-header .filters span:hover:not(.active) { background: var(--cream-deep); }
+
+  .month-band {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 60px;
+    padding: 60px 0;
+    border-top: 1px solid var(--line);
+  }
+  .month-band:first-of-type { border-top: none; padding-top: 0; }
+  .month-band .month {
+    font-family: 'DM Serif Display', serif;
+    font-style: italic;
+    font-size: 30px;
+    line-height: 1.1;
+    color: var(--gold);
+    position: sticky; top: 30px;
+    height: max-content;
+  }
+  .month-band .month .yr {
+    display: block;
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    letter-spacing: .3em;
+    text-transform: uppercase;
+    color: var(--mute);
+    font-style: normal;
+    margin-top: 6px;
+  }
+  .month-band .items {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 36px 50px;
+  }
+  .feed-item {
+    text-decoration: none; color: inherit;
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+  .feed-item .img {
+    aspect-ratio: 1 / 1;
+    background-size: cover; background-position: center;
+  }
+  .feed-item .cat {
+    font-size: 9.5px; letter-spacing: .28em; text-transform: uppercase;
+    color: var(--gold-light); font-weight: 500;
+    margin-bottom: 8px;
+  }
+  .feed-item h4 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 19px;
+    font-weight: 400;
+    line-height: 1.22;
+    letter-spacing: -.008em;
+    margin-bottom: 8px;
+  }
+  .feed-item h4 em { font-family: 'Cardo', serif; }
+  .feed-item p {
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--ink-soft);
+    margin-bottom: 8px;
+    font-weight: 300;
+  }
+  .feed-item .day {
+    font-size: 10.5px; letter-spacing: .25em; text-transform: uppercase;
+    color: var(--mute);
+    font-weight: 500;
+  }
+
+  /* ============ COMPACT BANDS ============ */
+  .compact {
+    background: var(--cream-deep);
+    padding: 100px 60px;
+  }
+  .compact-inner {
+    max-width: 1500px; margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 60px;
+  }
+  .compact-block { }
+  .compact-block .lab {
+    font-size: 11px; letter-spacing: .3em; text-transform: uppercase;
+    color: var(--mute); font-weight: 500;
+    margin-bottom: 18px;
+  }
+  .compact-block h3 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 32px;
+    font-weight: 400;
+    line-height: 1.12;
+    letter-spacing: -.015em;
+    margin-bottom: 18px;
+  }
+  .compact-block h3 em { font-family: 'Cardo', serif; color: var(--gold); }
+  .compact-block p {
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--ink-soft);
+    margin-bottom: 20px;
+    font-weight: 300;
+  }
+  .compact-block .link {
+    font-size: 11px; letter-spacing: .26em; text-transform: uppercase;
+    text-decoration: none;
+    color: var(--ink);
+    border-bottom: 1px solid var(--ink);
+    padding-bottom: 4px;
+    font-weight: 500;
+    display: inline-block;
+  }
+  .compact-block .img {
+    aspect-ratio: 16 / 9;
+    background-size: cover; background-position: center;
+    margin-bottom: 24px;
+  }
+
+  /* ============ MAIRIE STRIP ============ */
+  .mairie-strip {
+    background: var(--ink);
+    color: var(--cream);
+    padding: 80px 60px;
+  }
+  .mairie-strip-inner {
+    max-width: 1500px; margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1.6fr;
+    gap: 80px;
+    align-items: center;
+  }
+  .mairie-strip .lab {
+    font-size: 11px; letter-spacing: .3em; text-transform: uppercase;
+    color: rgba(243,239,231,.55); font-weight: 500; margin-bottom: 18px;
+  }
+  .mairie-strip h3 {
+    font-family: 'DM Serif Display', serif;
+    font-weight: 400;
+    font-size: 38px;
+    line-height: 1.1;
+    letter-spacing: -.015em;
+  }
+  .mairie-strip h3 em { font-family: 'Cardo', serif; color: #d8b56e; }
+  .mairie-strip .infos {
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 40px;
+  }
+  .mairie-strip .infos .it { }
+  .mairie-strip .infos .k {
+    font-size: 10px; letter-spacing: .28em; text-transform: uppercase;
+    color: rgba(243,239,231,.5); margin-bottom: 8px; font-weight: 500;
+  }
+  .mairie-strip .infos .v {
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--cream);
+    font-weight: 300;
+  }
+  .mairie-strip .infos .v em { font-family: 'Cardo', serif; }
+
+  /* ============ FOOTER ============ */
+  footer {
+    padding: 70px 60px 50px;
+    background: var(--cream);
+    color: var(--ink-soft);
+    border-top: 1px solid var(--line);
+  }
+  footer .inner {
+    max-width: 1500px; margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 1fr 1fr;
+    gap: 60px;
+    margin-bottom: 50px;
+  }
+  footer .word {
+    font-family: 'DM Serif Display', serif;
+    font-style: italic; font-size: 28px;
+    color: var(--ink); margin-bottom: 14px;
+  }
+  footer .tag {
+    font-size: 13px; line-height: 1.65; color: var(--mute);
+    max-width: 360px; font-weight: 300;
+  }
+  footer .col h5 {
+    font-size: 11px; letter-spacing: .3em; text-transform: uppercase;
+    color: var(--ink); margin-bottom: 18px; font-weight: 500;
+  }
+  footer .col a {
+    display: block; font-size: 14px;
+    color: var(--ink-soft); text-decoration: none;
+    margin-bottom: 8px; font-weight: 300;
+  }
+  footer .col a:hover { color: var(--ink); }
+  footer .legal {
+    border-top: 1px solid var(--line); padding-top: 28px;
+    max-width: 1500px; margin: 0 auto;
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+    font-size: 12px; color: var(--mute);
+  }
+  footer .legal em { font-family: 'Cardo', serif; }
+
+  @media (max-width: 1024px) {
+    .topbar, .nav { padding-left: 24px; padding-right: 24px; }
+    .nav ul, .hero .side, .hero-tag { display: none; }
+    .hero-content { padding: 0 24px; grid-template-columns: 1fr; }
+    .ribbon, .ribbon-header { padding-left: 24px; padding-right: 24px; }
+    .feed { padding: 80px 24px; }
+    .feed-header, .month-band { grid-template-columns: 1fr; gap: 24px; }
+    .month-band .items { grid-template-columns: 1fr; }
+    .compact, .mairie-strip, footer { padding-left: 24px; padding-right: 24px; }
+    .compact-inner, .mairie-strip-inner, footer .inner { grid-template-columns: 1fr; gap: 40px; }
+    .mairie-strip .infos { grid-template-columns: 1fr; gap: 24px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- =========== TOP RIBBON =========== -->
+<div class="topbar">
+  <div class="date"><em>Jeudi 14 mai 2026</em> — Gâprée · Orne · 145 hab.</div>
+  <div class="meta">Édition 137 · 14°C · nuages bas</div>
+</div>
+
+<!-- =========== NAV =========== -->
+<nav class="nav">
+  <div class="wordmark">Gâprée</div>
+  <ul>
+    <li><a href="#" class="active">La une</a></li>
+    <li><a href="#feed">Toutes les actus</a></li>
+    <li><a href="#compact">Le village</a></li>
+    <li><a href="#mairie">Mairie</a></li>
+  </ul>
+  <div class="corner">61 · Perche</div>
+</nav>
+
+<!-- =========== HERO LA UNE =========== -->
+<section class="hero">
+  <div class="hero-img"></div>
+  <div class="hero-tag"><span class="dot"></span> En une · <em>l'événement du printemps</em></div>
+
+  <div class="hero-content">
+    <div>
+      <span class="cat">Culture · Comité des fêtes</span>
+      <h1>La fête des <em>pommiers en fleurs</em><br>revient le 25 mai.</h1>
+      <p class="lede">Le comité des fêtes organise sa traditionnelle journée autour du verger conservatoire : marché de producteurs, démonstration de greffe, concert de cornemuse normande en fin d'après-midi. Rendez-vous au verger des Quatre-Vents, dès 10 h.</p>
+      <div class="byline">
+        <span>Publié le 12 mai</span>
+        <span class="sep"></span>
+        <span>Lecture · 3 min</span>
+      </div>
+      <a class="read-cta" href="#">Lire l'article →</a>
+    </div>
+    <aside class="side">
+      <div class="lab">À suivre cette semaine</div>
+      <ul>
+        <li>
+          <span class="day">28</span>
+          <span class="ttl">Prochain <em>conseil municipal</em> — budget travaux clocher.
+            <span class="mn">mai · 19 h · salle des fêtes</span>
+          </span>
+        </li>
+        <li>
+          <span class="day">25</span>
+          <span class="ttl">Fête des pommiers — <em>verger conservatoire</em>.
+            <span class="mn">mai · dès 10 h · entrée libre</span>
+          </span>
+        </li>
+        <li>
+          <span class="day">17</span>
+          <span class="ttl">Permanence du maire sur rendez-vous.
+            <span class="mn">mai · 9 h–12 h · mairie</span>
+          </span>
+        </li>
+      </ul>
+    </aside>
+  </div>
+</section>
+
+<!-- =========== RIBBON · suite la une =========== -->
+<section class="ribbon-wrap">
+  <div class="ribbon-header">
+    <div class="lab">Et puis</div>
+    <h3>Les <em>quatre</em> dépêches qui suivent la une.</h3>
+    <div class="ctrl"><span>←</span><span>→</span></div>
+  </div>
+  <div class="ribbon">
+
+    <a class="ribbon-card" href="#">
+      <div class="img" style="background-image:url('https://images.unsplash.com/photo-1635473170208-d0334e64d77a?auto=format&fit=crop&w=900&q=80')"></div>
+      <div class="meta-line"><span>03 mai</span><span class="pipe">·</span><span>Conseil municipal</span></div>
+      <h4>Budget 2026 voté à <em>l'unanimité</em></h4>
+      <p>187 000 € en fonctionnement, 94 000 € fléchés clocher et éclairage LED. Pas de hausse d'impôts.</p>
+    </a>
+
+    <a class="ribbon-card" href="#">
+      <div class="img" style="background-image:url('https://images.unsplash.com/photo-1659787704391-d98510483feb?auto=format&fit=crop&w=900&q=80')"></div>
+      <div class="meta-line"><span>22 avril</span><span class="pipe">·</span><span>Environnement</span></div>
+      <h4>36 fruitiers <em>plantés</em> aux Quatre-Vents</h4>
+      <p>Verger communal en libre accès dès la première fructification. Plantation par les enfants de l'école.</p>
+    </a>
+
+    <a class="ribbon-card" href="#">
+      <div class="img" style="background-image:url('https://images.unsplash.com/photo-1700656106838-5a7d917d2678?auto=format&fit=crop&w=900&q=80')"></div>
+      <div class="meta-line"><span>10 avril</span><span class="pipe">·</span><span>Travaux</span></div>
+      <h4>Bois-Hérode <em>fermé</em> jusqu'au 30 avril</h4>
+      <p>Réfection de 800 mètres de chaussée. Déviation par le hameau de la Croix. Circulation rétablie.</p>
+    </a>
+
+    <a class="ribbon-card" href="#">
+      <div class="img" style="background-image:url('https://images.unsplash.com/photo-1602764438391-dd919b5c6ed0?auto=format&fit=crop&w=900&q=80')"></div>
+      <div class="meta-line"><span>28 mars</span><span class="pipe">·</span><span>Vie associative</span></div>
+      <h4>Le <em>club de pétanque</em> ouvre la saison</h4>
+      <p>Premier tournoi samedi 5 avril sur le terrain communal. Doublettes libres, buvette tenue par l'asso.</p>
+    </a>
+
+    <a class="ribbon-card" href="#">
+      <div class="img" style="background-image:url('https://images.unsplash.com/photo-1715368062208-1568574dbb7a?auto=format&fit=crop&w=900&q=80')"></div>
+      <div class="meta-line"><span>15 mars</span><span class="pipe">·</span><span>Agriculture</span></div>
+      <h4>Recensement : <em>11 exploitations</em> sur la commune</h4>
+      <p>Dont 4 en bio. Surface agricole stable à 720 ha. Filière cidricole en progression.</p>
+    </a>
+
+  </div>
+</section>
+
+<!-- =========== FEED COMPLET =========== -->
+<section class="feed" id="feed">
+  <div class="feed-header">
+    <div>
+      <div class="lab">Le journal · archives</div>
+      <h2>Tout ce qui s'est <em>passé chez nous</em>.</h2>
+    </div>
+    <div class="filters">
+      <span class="active">Tout</span>
+      <span>Conseil municipal</span>
+      <span>Travaux</span>
+      <span>Vie associative</span>
+      <span>Culture</span>
+      <span>Agriculture</span>
+      <span>Environnement</span>
+    </div>
+  </div>
+
+  <!-- Mai 2026 -->
+  <div class="month-band">
+    <div class="month">Mai<br><span class="yr">2026</span></div>
+    <div class="items">
+      <a class="feed-item" href="#">
+        <div class="img" style="background-image:url('https://images.unsplash.com/photo-1727120279660-5c28b8461609?auto=format&fit=crop&w=400&q=80')"></div>
+        <div>
+          <div class="cat">Culture</div>
+          <h4>Fête des <em>pommiers en fleurs</em> — le 25 mai</h4>
+          <p>Marché de producteurs, démonstration de greffe, cornemuse normande en fin d'après-midi.</p>
+          <div class="day">12 mai · Comité des fêtes</div>
+        </div>
+      </a>
+      <a class="feed-item" href="#">
+        <div class="img" style="background-image:url('https://images.unsplash.com/photo-1635473170208-d0334e64d77a?auto=format&fit=crop&w=400&q=80')"></div>
+        <div>
+          <div class="cat">Conseil municipal</div>
+          <h4>Budget 2026 voté <em>à l'unanimité</em></h4>
+          <p>187 000 € fonctionnement, 94 000 € investissement (clocher + éclairage LED). Pas de hausse d'impôts.</p>
+          <div class="day">03 mai · Mairie</div>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <!-- Avril 2026 -->
+  <div class="month-band">
+    <div class="month">Avril<br><span class="yr">2026</span></div>
+    <div class="items">
+      <a class="feed-item" href="#">
+        <div class="img" style="background-image:url('https://images.unsplash.com/photo-1659787704391-d98510483feb?auto=format&fit=crop&w=400&q=80')"></div>
+        <div>
+          <div class="cat">Environnement</div>
+          <h4>Inauguration du <em>verger communal</em> aux Quatre-Vents</h4>
+          <p>36 fruitiers plantés par les enfants de l'école avec l'appui du Parc naturel régional.</p>
+          <div class="day">22 avril · Mairie</div>
+        </div>
+      </a>
+      <a class="feed-item" href="#">
+        <div class="img" style="background-image:url('https://images.unsplash.com/photo-1700656106838-5a7d917d2678?auto=format&fit=crop&w=400&q=80')"></div>
+        <div>
+          <div class="cat">Travaux</div>
+          <h4>Route du <em>Bois-Hérode</em> fermée jusqu'au 30 avril</h4>
+          <p>Réfection complète sur 800 mètres. Déviation par le hameau de la Croix. Signalétique en place.</p>
+          <div class="day">10 avril · Mairie</div>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <!-- Mars 2026 -->
+  <div class="month-band">
+    <div class="month">Mars<br><span class="yr">2026</span></div>
+    <div class="items">
+      <a class="feed-item" href="#">
+        <div class="img" style="background-image:url('https://images.unsplash.com/photo-1602764438391-dd919b5c6ed0?auto=format&fit=crop&w=400&q=80')"></div>
+        <div>
+          <div class="cat">Vie associative</div>
+          <h4>Le club de <em>pétanque</em> ouvre la saison</h4>
+          <p>Premier tournoi samedi 5 avril sur le terrain communal. Inscriptions 14 h, buvette tenue par l'asso.</p>
+          <div class="day">28 mars · Club de pétanque</div>
+        </div>
+      </a>
+      <a class="feed-item" href="#">
+        <div class="img" style="background-image:url('https://images.unsplash.com/photo-1715368062208-1568574dbb7a?auto=format&fit=crop&w=400&q=80')"></div>
+        <div>
+          <div class="cat">Agriculture</div>
+          <h4>Recensement : <em>11 exploitations</em>, dont 4 en bio</h4>
+          <p>720 ha de surface agricole. Filière cidricole en progression — deux nouvelles plantations cette année.</p>
+          <div class="day">15 mars · Chambre d'agriculture</div>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <!-- Février 2026 -->
+  <div class="month-band">
+    <div class="month">Février<br><span class="yr">2026</span></div>
+    <div class="items">
+      <a class="feed-item" href="#">
+        <div class="img" style="background-image:url('https://images.unsplash.com/photo-1488977678660-dca8681ca872?auto=format&fit=crop&w=400&q=80')"></div>
+        <div>
+          <div class="cat">Culture</div>
+          <h4>Lecture publique : la <em>bibliothèque</em> s'agrandit</h4>
+          <p>220 nouveaux ouvrages dans le cadre du partenariat avec la Médiathèque départementale. Permanence renforcée le mercredi.</p>
+          <div class="day">26 février · Bibliothèque</div>
+        </div>
+      </a>
+      <a class="feed-item" href="#">
+        <div class="img" style="background-image:url('https://images.unsplash.com/photo-1773770164591-7c876cb18714?auto=format&fit=crop&w=400&q=80')"></div>
+        <div>
+          <div class="cat">Conseil municipal</div>
+          <h4>Tempête : <em>aucun dégât</em> majeur sur la commune</h4>
+          <p>Chutes de branches sur la route de Saint-Léonard. Réseau électrique rétabli en quatre heures. Aucun bâtiment touché.</p>
+          <div class="day">08 février · Mairie</div>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <!-- Janvier 2026 -->
+  <div class="month-band">
+    <div class="month">Janvier<br><span class="yr">2026</span></div>
+    <div class="items">
+      <a class="feed-item" href="#">
+        <div class="img" style="background-image:url('https://images.unsplash.com/photo-1766675713705-c1843f20ce5d?auto=format&fit=crop&w=400&q=80')"></div>
+        <div>
+          <div class="cat">Conseil municipal</div>
+          <h4>Vœux du maire — <em>priorité</em> au lien intergénérationnel</h4>
+          <p>Une centaine d'habitants à la salle des fêtes. Annonce d'ateliers reliant l'école et les anciens autour des savoir-faire.</p>
+          <div class="day">20 janvier · Mairie</div>
+        </div>
+      </a>
+      <a class="feed-item" href="#">
+        <div class="img" style="background-image:url('https://images.unsplash.com/photo-1553984840-b8cbc34f5215?auto=format&fit=crop&w=400&q=80')"></div>
+        <div>
+          <div class="cat">Travaux</div>
+          <h4>Démarrage de l'isolation de la <em>mairie</em></h4>
+          <p>Subvention DETR de 22 000 € pour l'isolation des combles et le remplacement des huisseries. Accueil maintenu pendant les travaux.</p>
+          <div class="day">05 janvier · Mairie</div>
+        </div>
+      </a>
+    </div>
+  </div>
+
+</section>
+
+<!-- =========== BLOCS COMPACTS =========== -->
+<section class="compact" id="compact">
+  <div class="compact-inner">
+    <div class="compact-block">
+      <div class="img" style="background-image:url('https://images.unsplash.com/photo-1775403909605-ef9047813f9f?auto=format&fit=crop&w=900&q=80')"></div>
+      <div class="lab">Artisans · ouverts</div>
+      <h3>Les <em>ateliers</em> du village.</h3>
+      <p>Forge, céramique, cidre, maraîchage : quatre adresses qui partagent leur établi à qui le demande.</p>
+      <a class="link" href="#">Voir les artisans →</a>
+    </div>
+    <div class="compact-block">
+      <div class="img" style="background-image:url('https://images.unsplash.com/photo-1593375548392-d3f977b8a2f0?auto=format&fit=crop&w=900&q=80')"></div>
+      <div class="lab">Journal · numéro de mai</div>
+      <h3>Recevoir le <em>bulletin</em> mensuel.</h3>
+      <p>Un récap des conseils, fêtes, travaux et naissances, envoyé en début de mois — papier ou courriel.</p>
+      <a class="link" href="#">S'abonner gratuitement →</a>
+    </div>
+    <div class="compact-block">
+      <div class="img" style="background-image:url('https://images.unsplash.com/photo-1735415399860-9eca0385c900?auto=format&fit=crop&w=900&q=80')"></div>
+      <div class="lab">Pour mémoire</div>
+      <h3>Histoire et <em>patrimoine</em>.</h3>
+      <p>Cent quarante-cinq habitants, dix kilomètres carrés Natura 2000, neuf siècles d'archives paroissiales.</p>
+      <a class="link" href="#">Lire l'histoire de la commune →</a>
+    </div>
+  </div>
+</section>
+
+<!-- =========== MAIRIE STRIP =========== -->
+<section class="mairie-strip" id="mairie">
+  <div class="mairie-strip-inner">
+    <div>
+      <div class="lab">Mairie</div>
+      <h3>Ouvert mardi, mercredi,<br><em>vendredi</em>.</h3>
+    </div>
+    <div class="infos">
+      <div class="it">
+        <div class="k">Adresse</div>
+        <div class="v">21 bis rue Saint-Sulpice<br>61390 <em>Gâprée</em></div>
+      </div>
+      <div class="it">
+        <div class="k">Téléphone</div>
+        <div class="v">02 33 15 04 77<br><em>mairie.gapree@wanadoo.fr</em></div>
+      </div>
+      <div class="it">
+        <div class="k">Horaires</div>
+        <div class="v">Mardi · vendredi 9 h–12 h<br>Mercredi 14 h–17 h</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =========== FOOTER =========== -->
+<footer>
+  <div class="inner">
+    <div>
+      <div class="word">Gâprée</div>
+      <p class="tag">La commune, vallée de la Haute Sarthe. Cent quarante-cinq habitants tenant le bocage, l'église, le silence — et le journal de ce qui s'y passe, mois après mois.</p>
+    </div>
+    <div class="col">
+      <h5>La commune</h5>
+      <a href="#">Le journal</a>
+      <a href="#">Conseils municipaux</a>
+      <a href="#">Compte-rendus</a>
+      <a href="#">Vie scolaire</a>
+    </div>
+    <div class="col">
+      <h5>Pratique</h5>
+      <a href="#">Démarches en mairie</a>
+      <a href="#">Déchets · ramassage</a>
+      <a href="#">Bibliothèque</a>
+      <a href="#">Sentiers · randos</a>
+    </div>
+    <div class="col">
+      <h5>Contact</h5>
+      <a href="tel:0233150477">02 33 15 04 77</a>
+      <a href="mailto:mairie.gapree@wanadoo.fr">Courriel</a>
+      <a href="#">Itinéraire</a>
+      <a href="#">Newsletter</a>
+    </div>
+  </div>
+  <div class="legal">
+    <span>© 2026 Commune de Gâprée — <em>Orne, Normandie</em></span>
+    <span>Photographies : Unsplash · CC0 · voir crédits</span>
+  </div>
+</footer>
+
+</body>
+</html>

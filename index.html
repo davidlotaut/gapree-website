@@ -124,7 +124,7 @@
   }
   .card .preview .badge.photo { background: #2a7458; }
 
-  .card.style-multi .preview { background: #f7f1e3; }
+  .card.style-1 .preview { background: #f5f0e6; }
   .card.style-2 .preview { background: #ebd9b8; }
   .card.style-3 .preview { background: #0c2e22; }
   .card.style-4 .preview { background: #15140f; }
@@ -169,7 +169,7 @@
     color: #8a5e1e;
     margin-bottom: 10px;
   }
-  .card.style-multi .tag { color: #1d1c19; }
+  .card.style-1 .tag { color: #a47828; }
   .card h2 {
     font-family: 'Fraunces', serif;
     font-weight: 400;
@@ -223,7 +223,7 @@
     font-weight: 600;
     color: #8a5e1e;
   }
-  .card.style-multi .open-link { color: #1d1c19; }
+  .card.style-1 .open-link { color: #a47828; }
   .card:hover .open-link { color: #1d1c19; }
 
   .note {
@@ -262,10 +262,223 @@
   }
   .footer a { color: #8a5e1e; text-decoration: none; }
 
+  /* ============ THIRD SET — direction 4 poussée ============ */
+  .set-3 {
+    margin-top: 90px;
+    padding-top: 80px;
+    border-top: 1px solid #d4c8a8;
+  }
+  .set-3-header {
+    margin-bottom: 50px;
+    max-width: 1200px;
+  }
+  .set-3-header .eyebrow {
+    font-size: 12px;
+    letter-spacing: .25em;
+    text-transform: uppercase;
+    color: #8a5e1e;
+    margin-bottom: 16px;
+    font-weight: 600;
+  }
+  .set-3-header .eyebrow em { font-family: 'Fraunces', serif; font-style: italic; letter-spacing: 0; text-transform: none; font-size: 14px; padding: 0 4px; }
+  .set-3-header h2 {
+    font-family: 'Fraunces', serif;
+    font-weight: 300;
+    font-size: 50px;
+    line-height: 1.04;
+    letter-spacing: -.022em;
+    margin-bottom: 18px;
+  }
+  .set-3-header h2 em { font-style: italic; color: #b08234; }
+  .set-3-header p {
+    font-size: 15.5px;
+    line-height: 1.65;
+    color: #4a4640;
+    max-width: 920px;
+  }
+  .set-3-header p strong { color: #1d1c19; }
+
+  .set-3-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+
+  .card-3 {
+    background: #fff;
+    border: 1px solid #e5dcc4;
+    border-radius: 14px;
+    overflow: hidden;
+    text-decoration: none;
+    color: inherit;
+    display: flex; flex-direction: column;
+    transition: transform .25s, box-shadow .25s, border-color .25s;
+  }
+  .card-3:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 30px 50px rgba(75, 50, 20, .12);
+    border-color: #15140f;
+  }
+  .card-3 .preview {
+    aspect-ratio: 4 / 3;
+    background: #15140f;
+    border-bottom: 1px solid #e5dcc4;
+    position: relative;
+    overflow: hidden;
+  }
+  .card-3 .preview .num {
+    position: absolute;
+    top: 18px; left: 18px;
+    background: rgba(255,255,255,.92);
+    color: #15140f;
+    font-family: 'Fraunces', serif;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 8px 14px;
+    border-radius: 4px;
+    z-index: 3;
+    letter-spacing: .04em;
+  }
+  .card-3 .preview .num em { font-style: italic; }
+  .card-3 .preview .badge {
+    position: absolute;
+    top: 18px; right: 18px;
+    background: #15140f;
+    color: #f3efe7;
+    font-size: 9px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    font-weight: 600;
+    padding: 6px 11px;
+    border-radius: 999px;
+    z-index: 3;
+  }
+  .card-3 .preview .preview-photo {
+    position: absolute; inset: 0;
+    background-size: cover;
+    background-position: center;
+  }
+  .card-3 .preview .preview-photo.dim::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(0,0,0,.20) 0%, rgba(0,0,0,.70) 100%);
+  }
+  .card-3 .preview .preview-overlay {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    z-index: 2;
+    padding: 22px 22px;
+    color: #f3efe7;
+  }
+  .card-3 .preview .cat {
+    font-size: 10px;
+    letter-spacing: .3em;
+    text-transform: uppercase;
+    color: #d8b56e;
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+  .card-3 .preview .cat em { font-family: 'Cardo', 'Fraunces', serif; font-style: italic; letter-spacing: 0; text-transform: none; font-size: 13px; color: #f3efe7; }
+  .card-3 .preview .ovh {
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-size: 26px;
+    line-height: 1.05;
+    letter-spacing: -.015em;
+    color: #f3efe7;
+  }
+  .card-3 .preview .ovh em { font-style: italic; font-family: 'Cardo', 'Fraunces', serif; color: #f3efe7; }
+  .card-3 .preview .ovsub {
+    font-size: 11px;
+    color: rgba(243,239,231,.78);
+    margin-top: 8px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+  .card-3 .body { padding: 24px 24px 26px; flex: 1; display: flex; flex-direction: column; }
+  .card-3 .tag {
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    color: #8a5e1e;
+    margin-bottom: 12px;
+  }
+  .card-3 h3 {
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-size: 24px;
+    line-height: 1.18;
+    letter-spacing: -.012em;
+    margin-bottom: 12px;
+  }
+  .card-3 h3 em { font-style: italic; color: #b08234; }
+  .card-3 .concept {
+    font-size: 13.5px;
+    color: #4a4640;
+    line-height: 1.6;
+    margin-bottom: 18px;
+    flex: 1;
+  }
+  .card-3 .concept strong { color: #1d1c19; }
+  .card-3 .m3-meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    border-top: 1px solid #e5dcc4;
+    padding-top: 14px;
+    font-size: 12px;
+  }
+  .card-3 .m3-meta .i .k {
+    color: #767676;
+    font-size: 9.5px;
+    text-transform: uppercase;
+    letter-spacing: .12em;
+    margin-bottom: 2px;
+  }
+  .card-3 .m3-meta .i .v {
+    color: #1d1c19;
+    font-weight: 500;
+  }
+  .card-3 .open-link {
+    margin-top: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1d1c19;
+  }
+  .card-3:hover .open-link { color: #b08234; }
+
+  .set-3-note {
+    margin-top: 36px;
+    padding: 22px 26px;
+    background: #15140f;
+    color: #f3efe7;
+    border-radius: 8px;
+    font-size: 14px;
+    line-height: 1.65;
+  }
+  .set-3-note .lab {
+    display: inline-block;
+    font-size: 10.5px;
+    letter-spacing: .25em;
+    text-transform: uppercase;
+    color: #d8b56e;
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+  .set-3-note strong { color: #d8b56e; font-weight: 500; }
+  .set-3-note em { font-family: 'Cardo', 'Fraunces', serif; font-style: italic; padding: 0 2px; }
+
   @media (max-width: 1024px) {
     body { padding: 40px 22px 60px; }
     .header h1 { font-size: 42px; }
     .grid { grid-template-columns: 1fr; }
+    .set-3-header h2 { font-size: 36px; }
+    .set-3-grid { grid-template-columns: 1fr; }
   }
 </style>
 </head>
@@ -276,38 +489,78 @@
       <h1>Six caps possibles pour <em>Gâprée</em>.</h1>
       <p>Six directions visuelles distinctes pour le site de la commune. La première propose un site multi-pages déjà développé (avec accueil, histoire, artisans, actualités, journal et mairie). Les cinq suivantes sont des explorations stylistiques au format mockup d'accueil — typographie, illustration, photographie. Le but est de choisir un cap, pas de cocher six cases.</p>
       <div class="legend">
-        <span class="pill dev">★ Mockup #1 · multi-pages développé</span>
-        <span class="pill">Mockups #2 à #6 · explorations d'accueil</span>
+        <span class="pill dev">★ 6 mockups d'accueil · 3 variations sur le 4</span>
+        <span class="pill">Tous self-contained · ouverture directe</span>
       </div>
     </header>
 
     <div class="grid">
 
-      <!-- ============ Card 1 — Site multi-pages ============ -->
-      <a class="card style-multi" href="site/index.html">
+      <!-- ============ Card 1 — Éditorial patrimoine ============ -->
+      <a class="card style-1" href="mockups/style-1-editorial-patrimoine/index.html">
         <div class="preview">
           <span class="num">1</span>
-          <span class="badge">★ Multi-pages</span>
-          <div class="preview-photo" style="background-image:url('previews/gapree-1-home-full.png')"></div>
+          <svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice">
+            <rect width="400" height="300" fill="#f5f0e6"/>
+            <!-- top rule -->
+            <line x1="30" y1="40" x2="370" y2="40" stroke="#2a3338" stroke-width="0.6" opacity=".5"/>
+            <text x="30" y="32" font-family="Inter" font-size="7" font-weight="600" letter-spacing="2" fill="#6e6a5e">N° I · PRINTEMPS 2026</text>
+            <text x="370" y="32" text-anchor="end" font-family="Fraunces" font-style="italic" font-size="10" fill="#2a3338">Gâprée</text>
+            <!-- meta bar -->
+            <text x="30" y="56" font-family="Inter" font-size="5.5" letter-spacing="1.5" fill="#6e6a5e">PERCHE</text>
+            <text x="115" y="56" font-family="Inter" font-size="5.5" letter-spacing="1.5" fill="#6e6a5e">145 HAB.</text>
+            <text x="195" y="56" font-family="Inter" font-size="5.5" letter-spacing="1.5" fill="#6e6a5e">10,07 KM²</text>
+            <text x="285" y="56" font-family="Inter" font-size="5.5" letter-spacing="1.5" fill="#6e6a5e">1 H 30 · PARIS</text>
+            <line x1="30" y1="63" x2="370" y2="63" stroke="#2a3338" stroke-width="0.4" opacity=".35"/>
+            <!-- hero wordmark -->
+            <text x="30" y="165" font-family="Fraunces" font-style="italic" font-size="108" font-weight="300" letter-spacing="-4" fill="#2a3338">G<tspan fill="#c89a3f">â</tspan>prée<tspan fill="#c89a3f">.</tspan></text>
+            <!-- deck -->
+            <line x1="30" y1="185" x2="260" y2="185" stroke="#2a3338" stroke-width="0.5" opacity=".4"/>
+            <text x="30" y="201" font-family="Fraunces" font-style="italic" font-size="9" fill="#a47828">I.</text>
+            <text x="42" y="201" font-family="Fraunces" font-style="italic" font-size="9" fill="#2a3338">Un village normand qui prend le</text>
+            <text x="42" y="212" font-family="Fraunces" font-style="italic" font-size="9" fill="#2a3338">temps. Dix kilomètres carrés de bocage,</text>
+            <text x="42" y="223" font-family="Fraunces" font-style="italic" font-size="9" fill="#2a3338">une poignée d'artisans...</text>
+            <!-- marginalia right column -->
+            <line x1="278" y1="80" x2="278" y2="240" stroke="#2a3338" stroke-width="0.4" opacity=".3"/>
+            <text x="288" y="90" font-family="Inter" font-size="5" letter-spacing="1.4" fill="#6e6a5e">LE VILLAGE</text>
+            <text x="288" y="98" font-family="Inter" font-size="5" letter-spacing="1.4" fill="#6e6a5e">EN CHIFFRES</text>
+            <text x="288" y="115" font-family="Fraunces" font-style="italic" font-size="7" fill="#2a3338">21 entreprises, dont</text>
+            <text x="288" y="124" font-family="Fraunces" font-style="italic" font-size="7" fill="#2a3338">11 exploitations</text>
+            <text x="288" y="133" font-family="Fraunces" font-style="italic" font-size="7" fill="#2a3338">agricoles.</text>
+            <text x="288" y="150" font-family="Fraunces" font-style="italic" font-size="7" fill="#2a3338">9 km de la cathédrale</text>
+            <text x="288" y="159" font-family="Fraunces" font-style="italic" font-size="7" fill="#2a3338">de Sées. 25 km du</text>
+            <text x="288" y="168" font-family="Fraunces" font-style="italic" font-size="7" fill="#2a3338">Haras du Pin.</text>
+            <text x="288" y="185" font-family="Fraunces" font-style="italic" font-size="7" fill="#2a3338">Classé Natura 2000.</text>
+            <!-- roman section preview below -->
+            <line x1="30" y1="252" x2="370" y2="252" stroke="#2a3338" stroke-width="0.4" opacity=".3"/>
+            <text x="30" y="270" font-family="Fraunces" font-style="italic" font-size="20" font-weight="300" fill="#c89a3f">II.</text>
+            <text x="60" y="270" font-family="Fraunces" font-style="italic" font-size="14" font-weight="300" fill="#2a3338">Six raisons de venir nous voir.</text>
+            <text x="30" y="285" font-family="Inter" font-size="5" letter-spacing="1.4" fill="#a47828">I.</text>
+            <text x="38" y="285" font-family="Fraunces" font-size="6.5" fill="#2a3338">Le silence — un vrai.</text>
+            <text x="140" y="285" font-family="Inter" font-size="5" letter-spacing="1.4" fill="#a47828">II.</text>
+            <text x="152" y="285" font-family="Fraunces" font-size="6.5" fill="#2a3338">La cathédrale de Sées.</text>
+            <text x="280" y="285" font-family="Inter" font-size="5" letter-spacing="1.4" fill="#a47828">III.</text>
+            <text x="296" y="285" font-family="Fraunces" font-size="6.5" fill="#2a3338">Le Haras du Pin.</text>
+          </svg>
         </div>
         <div class="body">
-          <span class="tag">Mockup 1 · Vitrine multi-pages éditoriale</span>
-          <h2>Le site complet,<br>déjà développé.</h2>
-          <p>Site multi-pages éditorial — accueil, histoire, artisans, actualités, journal communal IA, mairie. Identité Fraunces serif, palette lin/mousse/cidre. C'est la version la plus aboutie : navigation entre pages, vraie data, générateur de bulletin par Claude.</p>
+          <span class="tag">Mockup 1 · Éditorial patrimoine</span>
+          <h2>Magazine premium,<br>chiffres romains, <em>italique</em>.</h2>
+          <p>Esprit Le Monde Magazine, Côté Maison, Maison &amp; Travaux. Fraunces serif variable, italique partout, sections en chiffres romains, palette lin/ardoise/ocre. Lecture lente, hiérarchie typo forte. Pour celles et ceux qui aiment <em>la longue durée</em>.</p>
           <div class="palette">
-            <span class="swatch" style="background:#faf7f0"></span>
-            <span class="swatch" style="background:#efe5cf"></span>
-            <span class="swatch" style="background:#5a6e3e"></span>
-            <span class="swatch" style="background:#b08234"></span>
-            <span class="swatch" style="background:#1d1c19"></span>
+            <span class="swatch" style="background:#f5f0e6"></span>
+            <span class="swatch" style="background:#ede4d2"></span>
+            <span class="swatch" style="background:#c89a3f"></span>
+            <span class="swatch" style="background:#a47828"></span>
+            <span class="swatch" style="background:#2a3338"></span>
           </div>
           <div class="meta">
-            <div class="item"><div class="lab">Typo</div><div class="val">Fraunces + Instrument</div></div>
-            <div class="item"><div class="lab">Pages</div><div class="val">6 pages reliées</div></div>
-            <div class="item"><div class="lab">Spécificité</div><div class="val">Journal IA inclus</div></div>
-            <div class="item"><div class="lab">État</div><div class="val">Développé</div></div>
+            <div class="item"><div class="lab">Typo</div><div class="val">Fraunces + Inter</div></div>
+            <div class="item"><div class="lab">Ton</div><div class="val">Éditorial, lent</div></div>
+            <div class="item"><div class="lab">Référence</div><div class="val">Le Monde Mag.</div></div>
+            <div class="item"><div class="lab">Cible</div><div class="val">CSP+, futurs résidents</div></div>
           </div>
-          <span class="open-link">Voir le site complet →</span>
+          <span class="open-link">Ouvrir le mockup →</span>
         </div>
       </a>
 
@@ -514,11 +767,106 @@
 
     <div class="note">
       <div class="lab">Note pour la suite</div>
-      <strong>Le Mockup #1 est multi-pages, les Mockups #2 à #6 sont des explorations d'accueil.</strong> C'est la logique habituelle : on aligne d'abord sur une <strong>direction visuelle</strong> (typographie, palette, ton), puis on la décline sur toutes les pages. Faire 6 sites complets en parallèle revient à jeter 5/6 du travail dès qu'un cap est choisi. Compter 1 jour de déclinaison une fois l'accord posé sur l'un des cinq mockups d'accueil.
+      <strong>Les six Mockups sont six explorations d'accueil self-contained.</strong> C'est la logique habituelle : on aligne d'abord sur une <strong>direction visuelle</strong> (typographie, palette, ton), puis on la décline sur toutes les pages. Faire six sites complets en parallèle revient à jeter 5/6 du travail dès qu'un cap est choisi. Compter 1 jour de déclinaison une fois l'accord posé sur l'un des mockups.
     </div>
 
+    <!-- ============ TROISIÈME SET — direction 4 poussée, cible habitants ============ -->
+    <section class="set-3">
+      <header class="set-3-header">
+        <div class="eyebrow">Troisième set · direction 4 poussée · cible <em>habitants</em></div>
+        <h2>Trois UX pour la même <em>question</em> : où sont les actus ?</h2>
+        <p>Le client a tranché : on part sur la direction du Mockup 4 (Photo Editorial Boutique). Pivot majeur sur la cible — le site n'est plus pour les visiteurs, il est <strong>prioritairement pour les habitants</strong>. Quand un Gâpréen ouvre la page, ce qu'il cherche en premier, ce sont les actualités du moment. Trois variations explorent trois manières radicalement différentes de servir l'habitant en priorité, avec strictement le même ADN visuel.</p>
+      </header>
+
+      <div class="set-3-grid">
+
+        <!-- ============ 4A — La Une ============ -->
+        <a class="card-3 v4a" href="mockups/style-4a-la-une/index.html">
+          <div class="preview">
+            <span class="num"><em>4A</em></span>
+            <span class="badge">★ La Une</span>
+            <div class="preview-photo dim" style="background-image:url('https://images.unsplash.com/photo-1727120279660-5c28b8461609?auto=format&fit=crop&w=900&q=80')"></div>
+            <div class="preview-overlay">
+              <div class="cat">Culture · 12 mai</div>
+              <div class="ovh">La fête des <em>pommiers</em></div>
+            </div>
+          </div>
+          <div class="body">
+            <div class="tag">Variation 4A · La une magazine</div>
+            <h3>Le hero <em>EST</em> la grosse actu du moment.</h3>
+            <p class="concept"><strong>Concept UX :</strong> ouverture comme une une de magazine. La dernière actu majeure occupe tout l'écran en arrivée. Sous le hero, un ruban scrollable des 4 dépêches suivantes. Plus bas, le flux complet par mois.</p>
+            <div class="m3-meta">
+              <div class="i"><div class="k">Force</div><div class="v">Émotion · impact</div></div>
+              <div class="i"><div class="k">Lecture</div><div class="v">Une actu à la fois</div></div>
+              <div class="i"><div class="k">Densité info</div><div class="v">Moyenne</div></div>
+              <div class="i"><div class="k">Référence</div><div class="v">NYT, Le Monde · une</div></div>
+            </div>
+            <span class="open-link">Ouvrir la variation →</span>
+          </div>
+        </a>
+
+        <!-- ============ 4B — Tableau de bord ============ -->
+        <a class="card-3 v4b" href="mockups/style-4b-tableau-bord/index.html">
+          <div class="preview">
+            <span class="num"><em>4B</em></span>
+            <span class="badge">★ Pratique</span>
+            <div class="preview-photo dim" style="background-image:url('https://images.unsplash.com/photo-1735415399860-9eca0385c900?auto=format&fit=crop&w=900&q=80')"></div>
+            <div class="preview-overlay">
+              <div class="cat">Aujourd'hui · 14 mai</div>
+              <div class="ovh">14 °C · <em>nuages</em></div>
+              <div class="ovsub">Conseil · 28 mai · ramassage lundi</div>
+            </div>
+          </div>
+          <div class="body">
+            <div class="tag">Variation 4B · Tableau de bord habitant</div>
+            <h3>Utility-first. Tout ce qu'il faut savoir, <em>tout de suite</em>.</h3>
+            <p class="concept"><strong>Concept UX :</strong> bandeau « aujourd'hui à Gâprée » avec date + météo + prochain conseil + prochaine info pratique. Hero plus court avec alertes en surimpression. Grid 2 colonnes : flux d'actus + sidebar pratique sticky (horaires, urgences, événements).</p>
+            <div class="m3-meta">
+              <div class="i"><div class="k">Force</div><div class="v">Utilité immédiate</div></div>
+              <div class="i"><div class="k">Lecture</div><div class="v">Scan rapide</div></div>
+              <div class="i"><div class="k">Densité info</div><div class="v">Haute</div></div>
+              <div class="i"><div class="k">Référence</div><div class="v">Mairie.fr, FT.com</div></div>
+            </div>
+            <span class="open-link">Ouvrir la variation →</span>
+          </div>
+        </a>
+
+        <!-- ============ 4C — Numéro mensuel ============ -->
+        <a class="card-3 v4c" href="mockups/style-4c-numero-mensuel/index.html">
+          <div class="preview">
+            <span class="num"><em>4C</em></span>
+            <span class="badge">★ Magazine</span>
+            <div class="preview-photo dim" style="background-image:url('https://images.unsplash.com/photo-1727120279660-5c28b8461609?auto=format&fit=crop&w=900&q=80')"></div>
+            <div class="preview-overlay">
+              <div class="cat">Mai · <em>N° 5</em> · 2026</div>
+              <div class="ovh">Le printemps,<br>en <em>cinq</em> articles.</div>
+            </div>
+          </div>
+          <div class="body">
+            <div class="tag">Variation 4C · Numéro mensuel</div>
+            <h3>Chaque mois, un <em>numéro</em> du journal communal.</h3>
+            <p class="concept"><strong>Concept UX :</strong> couverture de magazine en hero avec sommaire chiffré 01–05. Sommaire latéral sticky. Articles enchaînés en colonnes éditoriales avec dropcap, photos pleine largeur, légendes. Bas de page : couvertures miniatures des numéros précédents.</p>
+            <div class="m3-meta">
+              <div class="i"><div class="k">Force</div><div class="v">Lecture posée</div></div>
+              <div class="i"><div class="k">Lecture</div><div class="v">Longue, immersive</div></div>
+              <div class="i"><div class="k">Densité info</div><div class="v">Articles longs</div></div>
+              <div class="i"><div class="k">Référence</div><div class="v">Cereal, Kinfolk</div></div>
+            </div>
+            <span class="open-link">Ouvrir la variation →</span>
+          </div>
+        </a>
+
+      </div>
+
+      <div class="set-3-note">
+        <div class="lab">Pivot · cible</div>
+        Les trois variations partagent rigoureusement l'<strong>ADN visuel du Mockup 4</strong> — DM Serif Display + Cardo, palette crème/sable/noir, photos full-bleed cinématographiques. Ce qui change radicalement, c'est <strong>la place donnée aux actualités</strong> et <strong>l'ordre des sections</strong>. À choisir selon ce qu'on veut que l'habitant ressente en arrivant : <em>« il se passe quelque chose »</em> (4A), <em>« je sais à quoi m'attendre cette semaine »</em> (4B), ou <em>« je vais m'asseoir et lire mon journal »</em> (4C).
+      </div>
+    </section>
+    <!-- ============ /TROISIÈME SET ============ -->
+
     <div class="footer">
-      <span>6 directions visuelles · 5 mockups self-contained + 1 site multi-pages développé</span>
+      <span>6 directions visuelles · 9 mockups self-contained (6 + 3 variations sur le 4)</span>
       <span>Photographies — Unsplash · CC0 · <a href="assets/photos/CREDITS.md">crédits</a></span>
     </div>
   </div>

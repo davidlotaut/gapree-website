@@ -81,6 +81,28 @@ Les photographies sont **hotlinkées** depuis le CDN Unsplash (`images.unsplash.
 
 ---
 
+## Variations 4A / 4B / 4C — direction 4 poussée, cible habitants
+
+Les trois variations (`mockups/style-4a-la-une/`, `style-4b-tableau-bord/`, `style-4c-numero-mensuel/`) **réutilisent strictement le pool photo du Mockup 4** — aucune nouvelle photo Unsplash n'a été ajoutée. La sélection privilégie :
+
+- `photo-1727120279660-5c28b8461609` (verger pommiers) — hero 4A & 4C, événement « fête des pommiers »
+- `photo-1635473170208-d0334e64d77a` (cathédrale Sées) — actu « budget voté » / référence patrimoine
+- `photo-1659787704391-d98510483feb` (pommier fruité) — actu « verger des Quatre-Vents »
+- `photo-1700656106838-5a7d917d2678` (chemin forêt) — actu « route Bois-Hérode » / numéro d'avril
+- `photo-1602764438391-dd919b5c6ed0` (vache bocage) — actu « club de pétanque » / vie associative
+- `photo-1715368062208-1568574dbb7a` (troupeau) — actu « recensement agricole »
+- `photo-1488977678660-dca8681ca872` (mains/poterie) — actu « bibliothèque »
+- `photo-1773770164591-7c876cb18714` (arbres brumeux) — actu « tempête » / numéro de février
+- `photo-1766675713705-c1843f20ce5d` (cottage pierre) — actu « vœux du maire » / numéro de janvier
+- `photo-1553984840-b8cbc34f5215` (forêt heure dorée) — actu « isolation mairie »
+- `photo-1775403909605-ef9047813f9f` (forge flammes) — bloc compact artisans (4A)
+- `photo-1593375548392-d3f977b8a2f0` (bouteille cidre) — bloc compact journal (4A)
+- `photo-1735415399860-9eca0385c900` (champ brumeux) — hero bandeau 4B / bloc histoire (4A)
+
+Toutes les URLs sont déjà documentées dans la section Mockup 4 plus haut. Aucun ajout requis.
+
+---
+
 ## Moodboard `mockups/index.html`
 
 Trois miniatures réutilisent les héros des mockups 4, 5, 6 (`photo-1773770164591-7c876cb18714`, `photo-1766940973188-598a6bd59ad6`, `photo-1727120279660-5c28b8461609`).

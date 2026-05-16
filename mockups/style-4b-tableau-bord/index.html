@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gâprée — Aujourd'hui · jeudi 14 mai 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Cardo:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #f3efe7;
+    --cream-deep: #ece5d8;
+    --sand: #d8ccb6;
+    --gold: #6b5c3a;
+    --gold-light: #8a7849;
+    --ink: #15140f;
+    --ink-soft: #3a3933;
+    --mute: #6e6a5e;
+    --line: rgba(21,20,15,.14);
+    --line-strong: rgba(21,20,15,.24);
+    --alert: #b54a1e;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; scroll-behavior: smooth; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    font-size: 16px;
+    line-height: 1.65;
+    font-weight: 300;
+  }
+  em { font-style: italic; font-family: 'Cardo', serif; }
+  a { color: inherit; }
+
+  /* ============ NAV TOP ============ */
+  .nav {
+    background: var(--ink);
+    color: var(--cream);
+    padding: 18px 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+  }
+  .nav .wordmark {
+    font-family: 'DM Serif Display', serif;
+    font-size: 24px;
+    letter-spacing: .01em;
+    font-style: italic;
+  }
+  .nav ul { list-style: none; display: flex; gap: 36px; font-size: 11px; letter-spacing: .26em; text-transform: uppercase; font-weight: 500; }
+  .nav ul a { text-decoration: none; opacity: .85; transition: opacity .2s; }
+  .nav ul a:hover, .nav ul a.active { opacity: 1; }
+  .nav ul a.active { border-bottom: 1px solid #d8b56e; padding-bottom: 3px; color: #d8b56e; }
+  .nav .corner { font-size: 11px; letter-spacing: .26em; text-transform: uppercase; opacity: .65; }
+
+  /* ============ BANDEAU AUJOURD'HUI ============ */
+  .today {
+    background: var(--cream-deep);
+    padding: 28px 56px;
+    border-bottom: 1px solid var(--line);
+  }
+  .today-inner {
+    max-width: 1500px; margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr 1fr;
+    gap: 50px;
+    align-items: center;
+  }
+  .today .date-block { }
+  .today .date-block .lab {
+    font-size: 10.5px; letter-spacing: .3em; text-transform: uppercase;
+    color: var(--mute); margin-bottom: 6px; font-weight: 500;
+  }
+  .today .date-block .big {
+    font-family: 'DM Serif Display', serif;
+    font-size: 38px;
+    line-height: 1;
+    letter-spacing: -.018em;
+  }
+  .today .date-block .big em { font-family: 'Cardo', serif; color: var(--gold); }
+
+  .today .cell { border-left: 1px solid var(--line); padding-left: 26px; }
+  .today .cell .k {
+    font-size: 10px; letter-spacing: .3em; text-transform: uppercase;
+    color: var(--mute); margin-bottom: 8px; font-weight: 500;
+  }
+  .today .cell .v {
+    font-family: 'DM Serif Display', serif;
+    font-size: 19px;
+    line-height: 1.2;
+    letter-spacing: -.008em;
+  }
+  .today .cell .v em { font-family: 'Cardo', serif; color: var(--gold); }
+  .today .cell .sub {
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    margin-top: 6px;
+    font-weight: 300;
+    line-height: 1.45;
+  }
+  .today .cell.meteo .icon {
+    display: inline-block;
+    margin-right: 8px;
+    width: 22px; height: 22px;
+    vertical-align: -5px;
+  }
+
+  /* ============ HERO BANDEAU + ALERTES ============ */
+  .hero-band {
+    position: relative;
+    height: 380px;
+    overflow: hidden;
+    background-color: #1a1815;
+    color: #fff;
+  }
+  .hero-band .img {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(180deg, rgba(0,0,0,.25) 0%, rgba(0,0,0,.10) 30%, rgba(0,0,0,.78) 100%),
+      url('https://images.unsplash.com/photo-1735415399860-9eca0385c900?auto=format&fit=crop&w=2400&q=80');
+    background-size: cover;
+    background-position: center 58%;
+  }
+  .hero-band .content {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    padding: 0 56px 36px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 60px;
+    align-items: end;
+  }
+  .hero-band h1 {
+    font-family: 'DM Serif Display', serif;
+    font-weight: 400;
+    font-size: clamp(38px, 4.4vw, 64px);
+    line-height: 1.02;
+    letter-spacing: -.02em;
+    margin-bottom: 14px;
+    max-width: 900px;
+  }
+  .hero-band h1 em { font-family: 'Cardo', serif; color: #f3efe7; opacity: .92; }
+  .hero-band .sub {
+    font-size: 14px;
+    color: rgba(255,255,255,.78);
+    letter-spacing: .02em;
+    max-width: 720px;
+    font-weight: 300;
+  }
+  .hero-band .alerts {
+    display: flex;
+    gap: 12px;
+  }
+  .alert-chip {
+    background: rgba(255,255,255,.10);
+    border: 1px solid rgba(255,255,255,.28);
+    backdrop-filter: blur(8px);
+    padding: 14px 18px;
+    min-width: 240px;
+    text-decoration: none;
+    color: #fff;
+    display: block;
+    transition: background .2s;
+  }
+  .alert-chip:hover { background: rgba(255,255,255,.16); }
+  .alert-chip .pill {
+    display: inline-block;
+    background: var(--alert); color: #fff;
+    font-size: 9px;
+    letter-spacing: .28em;
+    text-transform: uppercase;
+    font-weight: 500;
+    padding: 4px 8px;
+    margin-bottom: 10px;
+  }
+  .alert-chip .pill.event { background: #d8b56e; color: var(--ink); }
+  .alert-chip .pill.info { background: rgba(255,255,255,.18); color: #fff; }
+  .alert-chip .ttl {
+    font-family: 'DM Serif Display', serif;
+    font-size: 17px;
+    line-height: 1.22;
+    letter-spacing: -.008em;
+    margin-bottom: 6px;
+  }
+  .alert-chip .ttl em { font-family: 'Cardo', serif; }
+  .alert-chip .mn {
+    font-size: 11px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    opacity: .8;
+  }
+
+  /* ============ DASHBOARD GRID ============ */
+  .dash {
+    padding: 60px 56px 80px;
+    max-width: 1500px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 60px;
+  }
+
+  /* feed col */
+  .feed-col h2 {
+    font-family: 'DM Serif Display', serif;
+    font-weight: 400;
+    font-size: 36px;
+    line-height: 1.08;
+    letter-spacing: -.018em;
+    margin-bottom: 6px;
+  }
+  .feed-col h2 em { font-family: 'Cardo', serif; color: var(--gold); }
+  .feed-col .feed-lab {
+    font-size: 10.5px; letter-spacing: .3em; text-transform: uppercase;
+    color: var(--mute); margin-bottom: 30px; font-weight: 500;
+  }
+
+  .feed-stack { display: flex; flex-direction: column; }
+  .feed-row {
+    display: grid;
+    grid-template-columns: 180px 1fr auto;
+    gap: 32px;
+    padding: 26px 0;
+    border-top: 1px solid var(--line);
+    text-decoration: none;
+    color: inherit;
+    align-items: start;
+    transition: background .2s;
+  }
+  .feed-row:first-child { border-top: 1px solid var(--line-strong); }
+  .feed-row:hover { background: rgba(216,204,182,.20); margin: 0 -16px; padding: 26px 16px; }
+  .feed-row .img {
+    aspect-ratio: 4 / 3;
+    background-size: cover; background-position: center;
+  }
+  .feed-row .cat {
+    font-size: 9.5px; letter-spacing: .28em; text-transform: uppercase;
+    color: var(--gold-light); font-weight: 500;
+    margin-bottom: 8px;
+  }
+  .feed-row h4 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    font-weight: 400;
+    line-height: 1.18;
+    letter-spacing: -.01em;
+    margin-bottom: 8px;
+  }
+  .feed-row h4 em { font-family: 'Cardo', serif; }
+  .feed-row p {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--ink-soft);
+    font-weight: 300;
+  }
+  .feed-row .date {
+    text-align: right;
+    font-family: 'DM Serif Display', serif;
+    font-style: italic;
+    font-size: 17px;
+    color: var(--mute);
+    white-space: nowrap;
+    padding-top: 24px;
+  }
+  .feed-row .date .d { color: var(--ink); font-style: normal; font-family: 'DM Serif Display', serif; font-size: 32px; line-height: 1; display: block; margin-bottom: 2px; }
+
+  .feed-col .more {
+    margin-top: 36px;
+    display: inline-flex; align-items: center; gap: 10px;
+    font-size: 11px; letter-spacing: .26em; text-transform: uppercase;
+    text-decoration: none; color: var(--ink);
+    border-bottom: 1px solid var(--ink); padding-bottom: 4px;
+    font-weight: 500;
+  }
+
+  /* ============ SIDEBAR PRATIQUE ============ */
+  .sidebar {
+    display: flex; flex-direction: column; gap: 28px;
+    position: sticky; top: 24px;
+    height: max-content;
+  }
+  .side-card {
+    background: var(--cream);
+    border: 1px solid var(--line);
+    padding: 24px 24px 22px;
+  }
+  .side-card.dark {
+    background: var(--ink);
+    color: var(--cream);
+    border-color: var(--ink);
+  }
+  .side-card .lab {
+    font-size: 10px; letter-spacing: .3em; text-transform: uppercase;
+    color: var(--gold-light); font-weight: 500;
+    margin-bottom: 14px;
+  }
+  .side-card.dark .lab { color: #d8b56e; }
+  .side-card h3 {
+    font-family: 'DM Serif Display', serif;
+    font-weight: 400;
+    font-size: 22px;
+    line-height: 1.18;
+    letter-spacing: -.012em;
+    margin-bottom: 16px;
+  }
+  .side-card h3 em { font-family: 'Cardo', serif; color: var(--gold); }
+  .side-card.dark h3 em { color: #d8b56e; }
+  .side-card dl {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    row-gap: 10px;
+    column-gap: 14px;
+    font-size: 13px;
+  }
+  .side-card dt {
+    font-size: 10px; letter-spacing: .25em; text-transform: uppercase;
+    color: var(--mute);
+    padding-top: 3px;
+    font-weight: 500;
+  }
+  .side-card.dark dt { color: rgba(243,239,231,.5); }
+  .side-card dd {
+    text-align: right;
+    color: var(--ink);
+    font-weight: 400;
+    line-height: 1.45;
+  }
+  .side-card.dark dd { color: var(--cream); }
+  .side-card dd em { font-family: 'Cardo', serif; color: var(--gold); }
+  .side-card.dark dd em { color: #d8b56e; }
+
+  .next-events { }
+  .next-events li {
+    list-style: none;
+    display: grid;
+    grid-template-columns: 56px 1fr;
+    gap: 14px;
+    padding: 14px 0;
+    border-top: 1px solid var(--line);
+    align-items: start;
+  }
+  .next-events li:first-child { border-top: none; padding-top: 0; }
+  .next-events .day-box {
+    border: 1px solid var(--line);
+    padding: 6px 0;
+    text-align: center;
+  }
+  .next-events .day-box .n {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    line-height: 1;
+    color: var(--ink);
+  }
+  .next-events .day-box .m {
+    font-size: 9px; letter-spacing: .25em; text-transform: uppercase;
+    color: var(--mute);
+    font-weight: 500;
+    margin-top: 2px;
+  }
+  .next-events .e-ttl {
+    font-family: 'DM Serif Display', serif;
+    font-size: 14.5px;
+    line-height: 1.25;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+  .next-events .e-ttl em { font-family: 'Cardo', serif; }
+  .next-events .e-mn {
+    font-size: 10px; letter-spacing: .22em; text-transform: uppercase;
+    color: var(--mute);
+    font-weight: 500;
+  }
+
+  .urgence-block { background: var(--ink); }
+  .urgence-block .row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 14px;
+    padding: 10px 0;
+    border-top: 1px solid rgba(243,239,231,.15);
+    align-items: center;
+    font-size: 13px;
+  }
+  .urgence-block .row:first-of-type { border-top: 1px solid rgba(243,239,231,.25); }
+  .urgence-block .row .k { font-size: 11px; letter-spacing: .15em; text-transform: uppercase; color: rgba(243,239,231,.65); font-weight: 500; }
+  .urgence-block .row .v { color: var(--cream); font-family: 'DM Serif Display', serif; font-size: 16px; }
+
+  /* ============ FAST LINKS ============ */
+  .fastlinks {
+    background: var(--cream-deep);
+    padding: 60px 56px;
+  }
+  .fastlinks-inner {
+    max-width: 1500px; margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+  }
+  .fastlink {
+    background: var(--cream);
+    text-decoration: none; color: inherit;
+    padding: 28px 26px;
+    border: 1px solid var(--line);
+    display: flex; flex-direction: column; gap: 12px;
+    transition: transform .25s, border-color .25s;
+  }
+  .fastlink:hover { transform: translateY(-3px); border-color: var(--gold-light); }
+  .fastlink .num {
+    font-family: 'DM Serif Display', serif;
+    font-style: italic;
+    font-size: 18px;
+    color: var(--gold-light);
+  }
+  .fastlink h4 {
+    font-family: 'DM Serif Display', serif;
+    font-weight: 400;
+    font-size: 22px;
+    line-height: 1.2;
+    letter-spacing: -.012em;
+  }
+  .fastlink h4 em { font-family: 'Cardo', serif; color: var(--gold); }
+  .fastlink p {
+    font-size: 13px;
+    color: var(--ink-soft);
+    line-height: 1.55;
+    font-weight: 300;
+  }
+  .fastlink .arrow {
+    margin-top: auto;
+    font-size: 11px; letter-spacing: .26em; text-transform: uppercase;
+    color: var(--ink); font-weight: 500;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+  }
+
+  /* ============ FOOTER COMPACT ============ */
+  footer {
+    background: var(--ink);
+    color: rgba(243,239,231,.7);
+    padding: 50px 56px 36px;
+  }
+  footer .inner {
+    max-width: 1500px; margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr 1fr;
+    gap: 50px;
+    margin-bottom: 36px;
+  }
+  footer .word {
+    font-family: 'DM Serif Display', serif;
+    font-style: italic;
+    font-size: 26px;
+    color: var(--cream); margin-bottom: 10px;
+  }
+  footer .tag {
+    font-size: 13px; line-height: 1.55;
+    color: rgba(243,239,231,.65);
+    max-width: 320px; font-weight: 300;
+  }
+  footer .col h5 {
+    font-size: 11px; letter-spacing: .3em; text-transform: uppercase;
+    color: #d8b56e; margin-bottom: 14px; font-weight: 500;
+  }
+  footer .col a {
+    display: block; font-size: 13.5px;
+    color: rgba(243,239,231,.75); text-decoration: none;
+    margin-bottom: 7px; font-weight: 300;
+  }
+  footer .col a:hover { color: var(--cream); }
+  footer .legal {
+    border-top: 1px solid rgba(243,239,231,.12); padding-top: 22px;
+    max-width: 1500px; margin: 0 auto;
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+    font-size: 11.5px; color: rgba(243,239,231,.5);
+  }
+  footer .legal em { font-family: 'Cardo', serif; }
+
+  @media (max-width: 1024px) {
+    .nav, .today, .hero-band .content, .dash, .fastlinks, footer { padding-left: 24px; padding-right: 24px; }
+    .nav ul { display: none; }
+    .today-inner { grid-template-columns: 1fr 1fr; gap: 24px; }
+    .today .cell { border-left: none; padding-left: 0; padding-top: 12px; border-top: 1px solid var(--line); }
+    .hero-band { height: 420px; }
+    .hero-band .content { grid-template-columns: 1fr; gap: 20px; }
+    .hero-band .alerts { flex-direction: column; }
+    .alert-chip { min-width: 0; }
+    .dash { grid-template-columns: 1fr; }
+    .sidebar { position: static; }
+    .feed-row { grid-template-columns: 1fr; gap: 14px; }
+    .feed-row .date { text-align: left; padding-top: 0; }
+    .fastlinks-inner { grid-template-columns: 1fr 1fr; }
+    footer .inner { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- =========== NAV =========== -->
+<nav class="nav">
+  <div class="wordmark">Gâprée</div>
+  <ul>
+    <li><a href="#" class="active">Aujourd'hui</a></li>
+    <li><a href="#feed-col">Actualités</a></li>
+    <li><a href="#fastlinks">Pratique</a></li>
+    <li><a href="#mairie">Mairie</a></li>
+  </ul>
+  <div class="corner">61 · Perche</div>
+</nav>
+
+<!-- =========== BANDEAU AUJOURD'HUI =========== -->
+<section class="today">
+  <div class="today-inner">
+    <div class="date-block">
+      <div class="lab">Aujourd'hui à Gâprée</div>
+      <div class="big"><em>Jeudi</em> 14 mai 2026</div>
+    </div>
+    <div class="cell meteo">
+      <div class="k">Météo · matin</div>
+      <div class="v">14 °C · <em>nuages bas</em></div>
+      <div class="sub">Pluie 60 % à partir de 15 h · vent SO 18 km/h</div>
+    </div>
+    <div class="cell">
+      <div class="k">Prochain conseil municipal</div>
+      <div class="v"><em>Jeudi 28 mai</em> · 19 h</div>
+      <div class="sub">Ordre du jour : marché travaux clocher, subvention DETR.</div>
+    </div>
+    <div class="cell">
+      <div class="k">Mairie ouverte</div>
+      <div class="v">Vendredi · <em>9 h–12 h</em></div>
+      <div class="sub">Permanence du maire sur rendez-vous mardi matin.</div>
+    </div>
+  </div>
+</section>
+
+<!-- =========== HERO BANDEAU + ALERTES =========== -->
+<section class="hero-band">
+  <div class="img"></div>
+  <div class="content">
+    <div>
+      <h1>Cinq <em>infos pratiques</em> à connaître cette semaine.</h1>
+      <p class="sub">Travaux, ramassage des encombrants, fête de printemps, fermeture exceptionnelle de la bibliothèque — l'essentiel pour s'organiser dans les sept jours.</p>
+    </div>
+    <div class="alerts">
+      <a class="alert-chip" href="#">
+        <span class="pill">Travaux en cours</span>
+        <div class="ttl">Bois-Hérode · circulation <em>rétablie</em></div>
+        <div class="mn">depuis le 30 avril</div>
+      </a>
+      <a class="alert-chip" href="#">
+        <span class="pill event">Événement</span>
+        <div class="ttl">Fête des pommiers <em>en fleurs</em></div>
+        <div class="mn">dim. 25 mai · dès 10 h</div>
+      </a>
+      <a class="alert-chip" href="#">
+        <span class="pill info">À noter</span>
+        <div class="ttl">Encombrants <em>lundi 19</em></div>
+        <div class="mn">sortie à partir de 6 h</div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- =========== DASHBOARD =========== -->
+<section class="dash">
+
+  <!-- =========== COL GAUCHE — FLUX ACTUS =========== -->
+  <div class="feed-col" id="feed-col">
+    <h2>Ce qui se <em>passe chez nous</em>.</h2>
+    <div class="feed-lab">Dix dernières actualités · ordre chronologique</div>
+
+    <div class="feed-stack">
+
+      <a class="feed-row" href="#">
+        <div class="img" style="background-image:url('https://images.unsplash.com/photo-1727120279660-5c28b8461609?auto=format&fit=crop&w=600&q=80')"></div>
+        <div>
+          <div class="cat">Culture · Comité des fêtes</div>
+          <h4>La fête des <em>pommiers en fleurs</em> revient le 25 mai</h4>
+          <p>Marché de producteurs, démonstration de greffe au verger des Quatre-Vents, concert de cornemuse normande en fin d'après-midi. Entrée libre.</p>
+        </div>
+        <div class="date"><span class="d">12</span>mai</div>
+      </a>
+
+      <a class="feed-row" href="#">
+        <div class="img" style="background-image:url('https://images.unsplash.com/photo-1635473170208-d0334e64d77a?auto=format&fit=crop&w=600&q=80')"></div>
+        <div>
+          <div class="cat">Conseil municipal</div>
+          <h4>Budget 2026 voté à <em>l'unanimité</em></h4>
+          <p>187 000 € en fonctionnement, 94 000 € en investissement fléchés sur le clocher et l'éclairage public LED. Aucune hausse de la part communale.</p>
+        </div>
+        <div class="date"><span class="d">03</span>mai</div>
+      </a>
+
+      <a class="feed-row" href="#">
+        <div class="img" style="background-image:url('https://images.unsplash.com/photo-1659787704391-d98510483feb?auto=format&fit=crop&w=600&q=80')"></div>
+        <div>
+          <div class="cat">Environnement</div>
+          <h4>Inauguration du <em>verger communal</em> des Quatre-Vents</h4>
+          <p>36 fruitiers plantés par les enfants de l'école avec l'appui du Parc naturel régional. Le verger sera en libre accès dès la première fructification.</p>
+        </div>
+        <div class="date"><span class="d">22</span>avr.</div>
+      </a>
+
+      <a class="feed-row" href="#">
+        <div class="img" style="background-image:url('https://images.unsplash.com/photo-1700656106838-5a7d917d2678?auto=format&fit=crop&w=600&q=80')"></div>
+        <div>
+          <div class="cat">Travaux</div>
+          <h4>Route du Bois-Hérode <em>rouverte</em> après réfection</h4>
+          <p>Chaussée refaite sur 800 mètres. La déviation par le hameau de la Croix est levée. Signalétique en place le long de la portion neuve.</p>
+        </div>
+        <div class="date"><span class="d">10</span>avr.</div>
+      </a>
+
+      <a class="feed-row" href="#">
+        <div class="img" style="background-image:url('https://images.unsplash.com/photo-1602764438391-dd919b5c6ed0?auto=format&fit=crop&w=600&q=80')"></div>
+        <div>
+          <div class="cat">Vie associative</div>
+          <h4>Le club de <em>pétanque</em> ouvre la saison</h4>
+          <p>Premier tournoi de la saison samedi 5 avril sur le terrain communal. Inscriptions à partir de 14 h, doublettes libres, buvette tenue par l'association.</p>
+        </div>
+        <div class="date"><span class="d">28</span>mars</div>
+      </a>
+
+      <a class="feed-row" href="#">
+        <div class="img" style="background-image:url('https://images.unsplash.com/photo-1715368062208-1568574dbb7a?auto=format&fit=crop&w=600&q=80')"></div>
+        <div>
+          <div class="cat">Agriculture</div>
+          <h4>Recensement : <em>11 exploitations</em> sur la commune</h4>
+          <p>Dont 4 en bio. La surface agricole utile reste stable à 720 hectares. La filière cidricole progresse de deux nouvelles plantations cette année.</p>
+        </div>
+        <div class="date"><span class="d">15</span>mars</div>
+      </a>
+
+      <a class="feed-row" href="#">
+        <div class="img" style="background-image:url('https://images.unsplash.com/photo-1488977678660-dca8681ca872?auto=format&fit=crop&w=600&q=80')"></div>
+        <div>
+          <div class="cat">Culture · Bibliothèque</div>
+          <h4>La <em>bibliothèque</em> s'agrandit — 220 nouveaux ouvrages</h4>
+          <p>Acquisition dans le cadre du partenariat avec la Médiathèque départementale. Permanence renforcée le mercredi après-midi.</p>
+        </div>
+        <div class="date"><span class="d">26</span>fév.</div>
+      </a>
+
+      <a class="feed-row" href="#">
+        <div class="img" style="background-image:url('https://images.unsplash.com/photo-1773770164591-7c876cb18714?auto=format&fit=crop&w=600&q=80')"></div>
+        <div>
+          <div class="cat">Sécurité</div>
+          <h4>Tempête : <em>aucun dégât</em> majeur sur la commune</h4>
+          <p>Chutes de branches sur la route de Saint-Léonard. Réseau électrique rétabli en quatre heures par Enedis. Aucun bâtiment touché.</p>
+        </div>
+        <div class="date"><span class="d">08</span>fév.</div>
+      </a>
+
+    </div>
+
+    <a class="more" href="#">Voir toutes les actualités →</a>
+  </div>
+
+  <!-- =========== SIDEBAR PRATIQUE =========== -->
+  <aside class="sidebar">
+
+    <div class="side-card">
+      <div class="lab">Mairie</div>
+      <h3>Horaires d'<em>ouverture</em></h3>
+      <dl>
+        <dt>Mardi</dt><dd>9 h <em>—</em> 12 h</dd>
+        <dt>Mercredi</dt><dd>14 h <em>—</em> 17 h</dd>
+        <dt>Vendredi</dt><dd>9 h <em>—</em> 12 h</dd>
+        <dt>Téléphone</dt><dd>02 33 15 04 77</dd>
+        <dt>Maire</dt><dd>L. <em>Raimbourg</em></dd>
+      </dl>
+    </div>
+
+    <div class="side-card">
+      <div class="lab">Prochains événements</div>
+      <h3>Sept jours à <em>venir</em></h3>
+      <ul class="next-events">
+        <li>
+          <div class="day-box"><div class="n">17</div><div class="m">mai</div></div>
+          <div>
+            <div class="e-ttl">Permanence du <em>maire</em></div>
+            <div class="e-mn">sur rdv · 9 h–12 h</div>
+          </div>
+        </li>
+        <li>
+          <div class="day-box"><div class="n">19</div><div class="m">mai</div></div>
+          <div>
+            <div class="e-ttl">Ramassage <em>encombrants</em></div>
+            <div class="e-mn">sortie 6 h · inscription mairie</div>
+          </div>
+        </li>
+        <li>
+          <div class="day-box"><div class="n">25</div><div class="m">mai</div></div>
+          <div>
+            <div class="e-ttl">Fête des <em>pommiers</em></div>
+            <div class="e-mn">verger · dès 10 h</div>
+          </div>
+        </li>
+        <li>
+          <div class="day-box"><div class="n">28</div><div class="m">mai</div></div>
+          <div>
+            <div class="e-ttl">Conseil <em>municipal</em></div>
+            <div class="e-mn">salle des fêtes · 19 h</div>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <div class="side-card dark urgence-block">
+      <div class="lab">Pratique · urgences</div>
+      <h3>Bons <em>réflexes</em></h3>
+      <div class="row"><span class="k">Pompiers</span><span class="v">18</span></div>
+      <div class="row"><span class="k">SAMU</span><span class="v">15</span></div>
+      <div class="row"><span class="k">Gendarmerie · Mortrée</span><span class="v">17</span></div>
+      <div class="row"><span class="k">Enedis · dépannage</span><span class="v">09 72 67 50 61</span></div>
+      <div class="row"><span class="k">Médecin · Sées</span><span class="v">02 33 27 80 16</span></div>
+    </div>
+
+    <div class="side-card">
+      <div class="lab">Déchets</div>
+      <h3>Ramassage <em>hebdo</em></h3>
+      <dl>
+        <dt>Ordures ménagères</dt><dd>jeudi · <em>matin</em></dd>
+        <dt>Tri sélectif</dt><dd>mardi · sem. paire</dd>
+        <dt>Verre · Point</dt><dd>place de l'église</dd>
+        <dt>Encombrants</dt><dd>3ᵉ <em>lundi</em> du mois</dd>
+      </dl>
+    </div>
+
+  </aside>
+
+</section>
+
+<!-- =========== FAST LINKS — ALLER PLUS LOIN =========== -->
+<section class="fastlinks" id="fastlinks">
+  <div class="fastlinks-inner">
+
+    <a class="fastlink" href="#">
+      <div class="num"><em>i.</em></div>
+      <h4>Le <em>bulletin</em> de mai</h4>
+      <p>Le récap mensuel de la commune en quatre pages, à recevoir par courriel ou à venir chercher en mairie.</p>
+      <div class="arrow">S'abonner →</div>
+    </a>
+
+    <a class="fastlink" href="#" id="mairie">
+      <div class="num"><em>ii.</em></div>
+      <h4>Démarches <em>en ligne</em></h4>
+      <p>État-civil, urbanisme, recensement, déclaration de chien dangereux — les formulaires utiles, à imprimer ou à envoyer.</p>
+      <div class="arrow">Voir les démarches →</div>
+    </a>
+
+    <a class="fastlink" href="#">
+      <div class="num"><em>iii.</em></div>
+      <h4>Le <em>conseil</em> municipal</h4>
+      <p>Onze élus, un budget de 187 000 €, des compte-rendus mis en ligne dans les huit jours. Le détail du fonctionnement.</p>
+      <div class="arrow">Lire les compte-rendus →</div>
+    </a>
+
+    <a class="fastlink" href="#">
+      <div class="num"><em>iv.</em></div>
+      <h4>Le <em>village</em>, ses chemins</h4>
+      <p>Histoire, sentiers Natura 2000, ateliers d'artisans, marchés de Sées et de Mortrée — pour ceux qui s'installent ou qui visitent.</p>
+      <div class="arrow">Découvrir Gâprée →</div>
+    </a>
+
+  </div>
+</section>
+
+<!-- =========== FOOTER COMPACT =========== -->
+<footer>
+  <div class="inner">
+    <div>
+      <div class="word">Gâprée</div>
+      <p class="tag">Le tableau de bord de la commune — l'info qu'il faut, quand il faut, pour celles et ceux qui vivent ici.</p>
+    </div>
+    <div class="col">
+      <h5>Mairie</h5>
+      <a href="tel:0233150477">02 33 15 04 77</a>
+      <a href="mailto:mairie.gapree@wanadoo.fr">mairie.gapree@wanadoo.fr</a>
+      <a href="#">21 bis rue Saint-Sulpice</a>
+      <a href="#">Horaires & permanence</a>
+    </div>
+    <div class="col">
+      <h5>Pratique</h5>
+      <a href="#">Démarches</a>
+      <a href="#">Déchets</a>
+      <a href="#">Vie scolaire</a>
+      <a href="#">Urgences</a>
+    </div>
+    <div class="col">
+      <h5>Vie locale</h5>
+      <a href="#">Actualités</a>
+      <a href="#">Conseil municipal</a>
+      <a href="#">Bibliothèque</a>
+      <a href="#">Associations</a>
+    </div>
+  </div>
+  <div class="legal">
+    <span>© 2026 Commune de Gâprée — <em>Orne, Normandie</em> · 145 habitants</span>
+    <span>Photographies : Unsplash · CC0</span>
+  </div>
+</footer>
+
+</body>
+</html>
