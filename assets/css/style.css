@@ -282,8 +282,12 @@ button:focus-visible {
 }
 .card:focus-within .card-title a { outline: none; }
 
-/* Sans photo, la carte devient un « avis » officiel, souligné de vert */
-.card--avis { border-top: 4px solid var(--prairie); }
+/* Sans photo, la carte devient un « avis » officiel, souligné de vert.
+   align-self: start évite qu'elle s'étire à la hauteur des cartes à photo. */
+.card--avis {
+  border-top: 4px solid var(--prairie);
+  align-self: start;
+}
 
 .card-img img {
   display: block;

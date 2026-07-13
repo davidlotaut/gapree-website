@@ -124,7 +124,6 @@ collections:
           - label: Photo d'accueil
             name: photo
             widget: image
-            allow_multiple: false
             hint: La grande photo en haut de la page d'accueil.
           - label: Description de la photo
             name: alt_photo
