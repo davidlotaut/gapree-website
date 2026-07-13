@@ -1,0 +1,20 @@
+---
+layout: default
+---
+{% capture retour_url %}/{{ page.section }}/{% endcapture %}
+<article class="article">
+  <p class="crumb"><a href="{{ retour_url | relative_url }}">&larr; {% if page.section == "actualites" %}Toutes les actualités{% else %}Tous les talents{% endif %}</a></p>
+  <h1 class="article-titre">{{ page.title }}</h1>
+  {% if page.section == "actualites" %}
+  <p class="article-meta">Publié le {% include date_fr.html date=page.date %}</p>
+  {% elsif page.sous_titre %}
+  <p class="article-meta">{{ page.sous_titre }}</p>
+  {% endif %}
+  {% if page.image %}
+  <figure class="article-figure"><img src="{{ page.image | relative_url }}" alt=""></figure>
+  {% endif %}
+  {% if page.video %}{% include youtube.html url=page.video %}{% endif %}
+  <div class="prose">
+{{ content }}
+  </div>
+</article>

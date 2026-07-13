@@ -1,0 +1,16 @@
+{%- assign u = include.url | strip -%}
+{%- assign id = "" -%}
+{%- if u contains "youtube.com/watch" -%}
+  {%- assign id = u | split: "v=" | last | split: "&" | first -%}
+{%- elsif u contains "youtu.be/" -%}
+  {%- assign id = u | split: "youtu.be/" | last | split: "?" | first -%}
+{%- elsif u contains "youtube.com/shorts/" -%}
+  {%- assign id = u | split: "shorts/" | last | split: "?" | first -%}
+{%- elsif u contains "youtube.com/embed/" -%}
+  {%- assign id = u | split: "embed/" | last | split: "?" | first -%}
+{%- endif -%}
+{%- if id != "" %}
+<div class="video"><iframe src="https://www.youtube-nocookie.com/embed/{{ id }}" title="Vidéo" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
+{% elsif u != "" %}
+<p><a href="{{ u }}" rel="noopener">Voir la vidéo</a></p>
+{% endif -%}

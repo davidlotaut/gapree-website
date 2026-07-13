@@ -1,0 +1,29 @@
+<footer class="site-footer">
+  <div class="footer-grid">
+    <div>
+      <p class="footer-title">Mairie de Gâprée</p>
+      <p>{{ site.data.mairie.adresse | newline_to_br }}</p>
+      <p>
+        <a href="tel:{{ site.data.mairie.telephone | remove: ' ' | remove: '.' | replace_first: '0', '+33' }}">{{ site.data.mairie.telephone }}</a><br>
+        <a href="mailto:{{ site.data.mairie.email }}">{{ site.data.mairie.email }}</a>
+      </p>
+    </div>
+    <div>
+      <p class="footer-title">Le site</p>
+      <p>
+        <a href="{{ '/actualites/' | relative_url }}">Actualités</a><br>
+        <a href="{{ '/talents/' | relative_url }}">Nos talents</a><br>
+        <a href="{{ '/contact/' | relative_url }}">Nous contacter</a>
+      </p>
+    </div>
+    <div>
+      <p class="footer-title">Pratique</p>
+      <p>
+        {% for h in site.data.mairie.horaires %}Mairie ouverte le {{ h.jours | downcase }}, {{ h.heures }}<br>{% endfor %}
+        <a href="{{ '/mentions-legales/' | relative_url }}">Mentions légales</a><br>
+        <a href="{{ '/admin/' | relative_url }}">Administration du site</a>
+      </p>
+    </div>
+  </div>
+  <p class="footer-base">Site officiel de la commune de Gâprée (Orne)</p>
+</footer>

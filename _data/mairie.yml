@@ -1,0 +1,11 @@
+adresse: |-
+  Mairie de Gâprée
+  21 bis rue Saint-Sulpice
+  61390 Gâprée
+telephone: 02 33 15 04 77
+email: mairie.gapree@wanadoo.fr
+horaires:
+  - jours: Jeudi
+    heures: 9h30 à 12h30
+note_horaires: ""
+carte: "https://www.openstreetmap.org/?mlat=48.62448&mlon=0.29364#map=15/48.62448/0.29364"

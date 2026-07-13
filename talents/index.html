@@ -1,0 +1,21 @@
+---
+layout: default
+title: Nos talents
+section: talents
+permalink: /talents/
+description: "Les talents de Gâprée (Orne) : artisans, producteurs, associations et passions des habitants de la commune."
+---
+<div class="page">
+  <header class="page-head">
+    <h1>Nos talents</h1>
+    <p class="chapo">Artisans, producteurs, associations, passions : les habitants qui font vivre Gâprée.</p>
+  </header>
+  {% assign portraits = site.talents | sort: "date" | reverse %}
+  {% if portraits.size > 0 %}
+  <div class="grid">
+    {% for item in portraits %}{% include card.html item=item type="talent" %}{% endfor %}
+  </div>
+  {% else %}
+  <p class="empty">Aucun portrait pour le moment. Vous avez un savoir-faire ou une passion à partager ? Faites-vous connaître auprès de la mairie.</p>
+  {% endif %}
+</div>

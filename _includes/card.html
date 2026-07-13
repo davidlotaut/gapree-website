@@ -1,0 +1,38 @@
+{%- assign item = include.item -%}
+<article class="card{% unless item.image %} card--avis{% endunless %}">
+  {%- if item.image %}
+  <div class="card-img"><img src="{{ item.image | relative_url }}" alt="" loading="lazy"></div>
+  {% endif -%}
+  <div class="card-body">
+    {%- if include.type == "actualite" -%}
+    {%- assign m = item.date | date: "%-m" -%}
+    {%- case m -%}
+      {%- when "1" -%}{%- assign mabr = "janv." -%}
+      {%- when "2" -%}{%- assign mabr = "févr." -%}
+      {%- when "3" -%}{%- assign mabr = "mars" -%}
+      {%- when "4" -%}{%- assign mabr = "avril" -%}
+      {%- when "5" -%}{%- assign mabr = "mai" -%}
+      {%- when "6" -%}{%- assign mabr = "juin" -%}
+      {%- when "7" -%}{%- assign mabr = "juil." -%}
+      {%- when "8" -%}{%- assign mabr = "août" -%}
+      {%- when "9" -%}{%- assign mabr = "sept." -%}
+      {%- when "10" -%}{%- assign mabr = "oct." -%}
+      {%- when "11" -%}{%- assign mabr = "nov." -%}
+      {%- when "12" -%}{%- assign mabr = "déc." -%}
+    {%- endcase %}
+    <p class="card-date">
+      <span class="visually-hidden">Publié le {% include date_fr.html date=item.date %}. </span>
+      <span aria-hidden="true" class="card-date-jour">{{ item.date | date: "%-d" }}</span>
+      <span aria-hidden="true" class="card-date-mois">{{ mabr }}</span>
+    </p>
+    {% endif -%}
+    <div class="card-text">
+      <h3 class="card-title"><a href="{{ item.url | relative_url }}">{{ item.title }}</a></h3>
+      {%- if include.type != "actualite" and item.sous_titre %}
+      <p class="card-meta">{{ item.sous_titre }}</p>
+      {% endif -%}
+      <p class="card-excerpt">{{ item.content | strip_html | normalize_whitespace | truncate: 140 }}</p>
+      <span class="card-more" aria-hidden="true">Lire la suite</span>
+    </div>
+  </div>
+</article>

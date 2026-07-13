@@ -1,0 +1,18 @@
+{%- assign d = include.date | date: "%-d" -%}
+{%- assign m = include.date | date: "%-m" -%}
+{%- assign y = include.date | date: "%Y" -%}
+{%- case m -%}
+  {%- when "1" -%}{%- assign mois = "janvier" -%}
+  {%- when "2" -%}{%- assign mois = "février" -%}
+  {%- when "3" -%}{%- assign mois = "mars" -%}
+  {%- when "4" -%}{%- assign mois = "avril" -%}
+  {%- when "5" -%}{%- assign mois = "mai" -%}
+  {%- when "6" -%}{%- assign mois = "juin" -%}
+  {%- when "7" -%}{%- assign mois = "juillet" -%}
+  {%- when "8" -%}{%- assign mois = "août" -%}
+  {%- when "9" -%}{%- assign mois = "septembre" -%}
+  {%- when "10" -%}{%- assign mois = "octobre" -%}
+  {%- when "11" -%}{%- assign mois = "novembre" -%}
+  {%- when "12" -%}{%- assign mois = "décembre" -%}
+{%- endcase -%}
+{%- if d == "1" -%}1er{%- else -%}{{ d }}{%- endif %} {{ mois }} {{ y }}

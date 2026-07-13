@@ -1,0 +1,172 @@
+backend:
+  name: github
+  repo: davidlotaut/gapree-website
+  branch: main
+
+media_folder: images/uploads
+public_folder: /images/uploads
+
+site_url: https://davidlotaut.github.io/gapree-website
+display_url: https://davidlotaut.github.io/gapree-website
+
+slug:
+  encoding: ascii
+  clean_accents: true
+
+collections:
+  - name: actualites
+    label: Actualités
+    label_singular: Actualité
+    folder: _actualites
+    create: true
+    delete: true
+    slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    summary: "{{title}}"
+    sortable_fields: [date, title]
+    fields:
+      - label: Titre
+        name: title
+        widget: string
+      - label: Date
+        name: date
+        widget: datetime
+        format: YYYY-MM-DD
+        date_format: DD/MM/YYYY
+        time_format: false
+      - label: Photo
+        name: image
+        widget: image
+        required: false
+        hint: Photo principale de l'article (JPG ou PNG).
+      - label: Vidéo YouTube
+        name: video
+        widget: string
+        required: false
+        hint: "Facultatif. Collez le lien d'une vidéo YouTube, par exemple : https://www.youtube.com/watch?v=XXXXXXX"
+      - label: Texte de l'article
+        name: body
+        widget: markdown
+
+  - name: talents
+    label: Nos talents
+    label_singular: Portrait
+    folder: _talents
+    create: true
+    delete: true
+    slug: "{{slug}}"
+    summary: "{{title}}"
+    sortable_fields: [date, title]
+    fields:
+      - label: Nom ou titre du portrait
+        name: title
+        widget: string
+      - label: Sous-titre
+        name: sous_titre
+        widget: string
+        required: false
+        hint: "Le métier ou l'activité. Exemple : Apicultrice au bourg"
+      - label: Date
+        name: date
+        widget: datetime
+        format: YYYY-MM-DD
+        date_format: DD/MM/YYYY
+        time_format: false
+        hint: Sert à classer les portraits, du plus récent au plus ancien.
+      - label: Photo
+        name: image
+        widget: image
+        required: false
+      - label: Vidéo YouTube
+        name: video
+        widget: string
+        required: false
+        hint: "Facultatif. Collez le lien d'une vidéo YouTube."
+      - label: Texte du portrait
+        name: body
+        widget: markdown
+
+  - name: elus
+    label: Équipe municipale
+    label_singular: Membre
+    folder: _elus
+    create: true
+    delete: true
+    slug: "{{slug}}"
+    summary: "{{title}} · {{fonction}}"
+    sortable_fields: [ordre, title]
+    fields:
+      - label: Prénom et nom
+        name: title
+        widget: string
+      - label: Fonction
+        name: fonction
+        widget: string
+        hint: "Exemple : Maire, 1er adjoint au Maire, Conseillère municipale"
+      - label: Photo
+        name: photo
+        widget: image
+        required: false
+        hint: Portrait. Sans photo, les initiales s'affichent à la place.
+      - label: Ordre d'affichage
+        name: ordre
+        widget: number
+        value_type: int
+        default: 10
+        hint: 1 pour le maire, 2 pour le premier adjoint, et ainsi de suite.
+
+  - name: reglages
+    label: Réglages du site
+    files:
+      - name: accueil
+        label: Page d'accueil
+        file: _data/accueil.yml
+        fields:
+          - label: Photo d'accueil
+            name: photo
+            widget: image
+            allow_multiple: false
+            hint: La grande photo en haut de la page d'accueil.
+          - label: Description de la photo
+            name: alt_photo
+            widget: string
+            required: false
+            hint: Décrit la photo pour les personnes malvoyantes.
+          - label: Sous-titre
+            name: sous_titre
+            widget: string
+          - label: Texte de bienvenue
+            name: texte
+            widget: text
+            required: false
+      - name: mairie
+        label: Coordonnées de la mairie
+        file: _data/mairie.yml
+        fields:
+          - label: Adresse
+            name: adresse
+            widget: text
+          - label: Téléphone
+            name: telephone
+            widget: string
+          - label: Adresse électronique
+            name: email
+            widget: string
+          - label: Horaires d'ouverture
+            name: horaires
+            widget: list
+            fields:
+              - label: Jours
+                name: jours
+                widget: string
+              - label: Heures
+                name: heures
+                widget: string
+          - label: Précision sur les horaires
+            name: note_horaires
+            widget: string
+            required: false
+          - label: Lien vers la carte
+            name: carte
+            widget: string
+            required: false
+            hint: Adresse web d'une carte en ligne (OpenStreetMap, Google Maps).

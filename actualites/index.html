@@ -1,0 +1,21 @@
+---
+layout: default
+title: Actualités
+section: actualites
+permalink: /actualites/
+description: "Les actualités de Gâprée (Orne) : annonces de la mairie, travaux, fêtes et rendez-vous de la commune."
+---
+<div class="page">
+  <header class="page-head">
+    <h1>Actualités</h1>
+    <p class="chapo">La vie de la commune : annonces de la mairie, travaux, fêtes et rendez-vous.</p>
+  </header>
+  {% assign actus = site.actualites | sort: "date" | reverse %}
+  {% if actus.size > 0 %}
+  <div class="grid">
+    {% for item in actus %}{% include card.html item=item type="actualite" %}{% endfor %}
+  </div>
+  {% else %}
+  <p class="empty">Aucune actualité pour le moment. Les informations de la commune paraîtront ici.</p>
+  {% endif %}
+</div>

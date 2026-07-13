@@ -1,0 +1,42 @@
+title: Gâprée
+tagline: Commune de l'Orne, en Normandie
+description: "Site officiel de la commune de Gâprée (Orne) : actualités, talents de la commune et coordonnées de la mairie."
+lang: fr
+timezone: Europe/Paris
+
+url: "https://davidlotaut.github.io"
+baseurl: "/gapree-website"
+
+markdown: kramdown
+future: true
+
+collections:
+  actualites:
+    output: true
+    permalink: /actualites/:name/
+  talents:
+    output: true
+    permalink: /talents/:name/
+  elus:
+    output: false
+
+defaults:
+  - scope:
+      path: ""
+      type: actualites
+    values:
+      layout: article
+      section: actualites
+  - scope:
+      path: ""
+      type: talents
+    values:
+      layout: article
+      section: talents
+
+exclude:
+  - README.md
+  - Gemfile
+  - Gemfile.lock
+  - vendor
+  - .bundle

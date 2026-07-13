@@ -1,0 +1,60 @@
+---
+layout: default
+title: Nous contacter
+section: contact
+permalink: /contact/
+description: "Contacter la mairie de Gâprée (Orne) : adresse, téléphone, courriel, horaires d'ouverture et équipe municipale."
+---
+<div class="page">
+  <header class="page-head">
+    <h1>Nous contacter</h1>
+  </header>
+
+  <div class="contact-grid">
+    <section class="contact-card" aria-labelledby="titre-mairie">
+      <h2 class="contact-titre" id="titre-mairie">La mairie</h2>
+      <p class="contact-adresse">{{ site.data.mairie.adresse | newline_to_br }}</p>
+      <p class="contact-tel"><a href="tel:{{ site.data.mairie.telephone | remove: ' ' | remove: '.' | replace_first: '0', '+33' }}">{{ site.data.mairie.telephone }}</a></p>
+      <p class="contact-mail"><a href="mailto:{{ site.data.mairie.email }}">{{ site.data.mairie.email }}</a></p>
+      {% if site.data.mairie.carte %}
+      <p class="contact-carte"><a class="btn" href="{{ site.data.mairie.carte }}" rel="noopener">Voir sur la carte</a></p>
+      {% endif %}
+    </section>
+
+    <section class="contact-card" aria-labelledby="titre-horaires">
+      <h2 class="contact-titre" id="titre-horaires">Horaires d'ouverture</h2>
+      <table class="horaires">
+        <tbody>
+          {% for h in site.data.mairie.horaires %}
+          <tr><th scope="row">{{ h.jours }}</th><td>{{ h.heures }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% if site.data.mairie.note_horaires and site.data.mairie.note_horaires != "" %}
+      <p class="contact-note">{{ site.data.mairie.note_horaires }}</p>
+      {% endif %}
+      <p class="contact-note">En dehors des permanences, écrivez-nous par courriel : nous vous répondrons dès que possible.</p>
+    </section>
+  </div>
+
+  <section class="section-trombi" aria-labelledby="titre-equipe">
+    <h2 class="section-title" id="titre-equipe">L'équipe municipale</h2>
+    {% assign membres = site.elus | sort: "ordre" %}
+    {% if membres.size > 0 %}
+    <ul class="trombi">
+      {% for m in membres %}
+      <li class="trombi-card">
+        {% if m.photo %}
+        <img class="trombi-photo" src="{{ m.photo | relative_url }}" alt="Portrait de {{ m.title }}" loading="lazy">
+        {% else %}
+        {% assign parts = m.title | split: " " %}
+        <span class="trombi-initiales" aria-hidden="true">{% for p in parts limit: 2 %}{{ p | slice: 0 }}{% endfor %}</span>
+        {% endif %}
+        <span class="trombi-nom">{{ m.title }}</span>
+        <span class="trombi-fonction">{{ m.fonction }}</span>
+      </li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+  </section>
+</div>
