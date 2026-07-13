@@ -1,4 +1,4 @@
-# Gâprée — site officiel de la commune
+# Gâprée · site officiel de la commune
 
 Site vitrine de **Gâprée** (Orne, Normandie, ~140 habitants), administrable par la mairie.
 
