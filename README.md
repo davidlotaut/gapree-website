@@ -30,7 +30,21 @@ admin/           Sveltia CMS (config.yml = modèle de contenu, labels français)
 
 Tout le contenu ci-dessus est modifiable depuis `/admin/` sans toucher au code.
 
-## Accès admin de la mairie
+## Phase de développement (mode actuel)
+
+`mode_dev: true` dans `_config.yml` active une porte d'aperçu : tout le site est masqué
+derrière un écran de mot de passe (côté navigateur, empreinte SHA-256, insensible à la casse)
+et une balise `noindex` tient les moteurs de recherche à l'écart.
+
+- **Mot de passe d'aperçu : `Gapre`** (mémorisé dans le navigateur après la première saisie)
+- Pour changer le mot de passe : remplacer le hash dans `_includes/dev-gate.html`
+  (`printf '%s' "nouveaumotdepasse-en-minuscules" | shasum -a 256`)
+- **Mise en ligne publique : passer `mode_dev: false`**, rien d'autre à changer
+
+C'est une protection d'aperçu, pas un coffre-fort : le dépôt est public et le contenu
+reste accessible à qui lit le code source. Suffisant pour partager une préversion.
+
+## Accès admin de la mairie (login définitif, déjà prêt)
 
 Sveltia CMS se connecte à l'API GitHub avec un **jeton d'accès personnel** (pas de backend OAuth).
 Procédure de mise en service : voir l'« Annexe technique » du guide d'administration

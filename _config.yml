@@ -10,6 +10,10 @@ baseurl: "/gapree-website"
 markdown: kramdown
 future: true
 
+# Phase de développement : site protégé par mot de passe + noindex.
+# Passer à false pour ouvrir le site au public (aucun autre changement requis).
+mode_dev: true
+
 collections:
   actualites:
     output: true

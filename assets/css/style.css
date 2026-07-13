@@ -673,6 +673,83 @@ button:focus-visible {
   color: #B9C9B6;
 }
 
+/* --- Porte de développement (site.mode_dev, voir _config.yml) ---------------------
+   Le contenu est masqué par défaut ; le script d'en-tête ajoute .deverrouille
+   sur <html> quand le mot de passe a déjà été saisi sur ce navigateur. */
+
+.mode-dev .site-header,
+.mode-dev main,
+.mode-dev .site-footer { visibility: hidden; }
+
+html.deverrouille .site-header,
+html.deverrouille main,
+html.deverrouille .site-footer { visibility: visible; }
+
+html.deverrouille .dev-gate { display: none; }
+
+.dev-gate {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: var(--craie);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.dev-gate-box { text-align: center; max-width: 440px; }
+
+.plate--gate {
+  position: static;
+  transform: none;
+  animation: none;
+  display: inline-block;
+  font-size: 2.5rem;
+  margin: 0 0 1.7rem;
+}
+
+.dev-gate-titre {
+  margin: 0 0 0.4rem;
+  font-family: var(--bulletin);
+  font-size: 1.45rem;
+}
+
+.dev-gate-texte {
+  margin: 0 0 1.3rem;
+  color: var(--ardoise);
+}
+
+.dev-gate-form {
+  display: flex;
+  justify-content: center;
+  gap: 0.6rem;
+}
+
+.dev-gate-form input {
+  width: min(200px, 55vw);
+  font-size: 1.15rem;
+  font-family: inherit;
+  padding: 0.5rem 0.8rem;
+  border: 1px solid var(--sauge);
+  border-radius: 8px;
+  background: var(--blanc);
+  color: var(--encre);
+}
+
+.dev-gate-form input:focus-visible {
+  outline: 3px solid var(--prairie);
+  outline-offset: 1px;
+}
+
+.dev-gate-form .btn { border: 0; cursor: pointer; font-size: 1.05rem; }
+
+.dev-gate-err {
+  margin: 1rem 0 0;
+  color: var(--rouge);
+  font-style: italic;
+}
+
 /* --- Ajustements mobiles --------------------------------------------------------- */
 
 @media (max-width: 640px) {

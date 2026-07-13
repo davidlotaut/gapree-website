@@ -1,0 +1,38 @@
+<div class="dev-gate" role="dialog" aria-labelledby="gate-titre">
+  <div class="dev-gate-box">
+    <p class="plate plate--gate">Gâprée</p>
+    <h1 id="gate-titre" class="dev-gate-titre">Site en cours de développement</h1>
+    <p class="dev-gate-texte">Entrez le mot de passe pour accéder à l'aperçu.</p>
+    <form id="gate-form" class="dev-gate-form">
+      <label class="visually-hidden" for="gate-mdp">Mot de passe</label>
+      <input id="gate-mdp" type="password" autocomplete="off" autofocus>
+      <button class="btn" type="submit">Entrer</button>
+    </form>
+    <p class="dev-gate-err" id="gate-err" hidden>Mot de passe incorrect.</p>
+  </div>
+</div>
+<script>
+(function () {
+  var form = document.getElementById("gate-form");
+  if (!form) return;
+  var champ = document.getElementById("gate-mdp");
+  var err = document.getElementById("gate-err");
+  var attendu = "b688914fd9e7f27915b44b36f97bec8f5aac3eb4b036229f5864fa7706925613";
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var v = champ.value.trim().toLowerCase();
+    crypto.subtle.digest("SHA-256", new TextEncoder().encode(v)).then(function (buf) {
+      var hex = Array.prototype.map.call(new Uint8Array(buf), function (b) {
+        return b.toString(16).padStart(2, "0");
+      }).join("");
+      if (hex === attendu) {
+        localStorage.setItem("gapree-acces", "ok");
+        document.documentElement.classList.add("deverrouille");
+      } else {
+        err.hidden = false;
+        champ.select();
+      }
+    });
+  });
+})();
+</script>
