@@ -8,7 +8,7 @@ chapo: "Ce guide explique comment publier et modifier le contenu du site. Aucune
 ## Se connecter
 
 1. Ouvrez la page [Administration du site]({{ '/admin/' | relative_url }}) (le lien figure aussi tout en bas de chaque page du site).
-2. Cliquez sur « Sign in with GitHub », puis choisissez la connexion par jeton (« personal access token ») et collez le jeton d'accès qui vous a été remis lors de la mise en service.
+2. Deux boutons s'affichent : cliquez sur le second, « Se connecter avec un jeton d'accès » (ou « Sign In Using Access Token » si l'écran est en anglais), puis collez le jeton qui vous a été remis lors de la mise en service.
 3. Le jeton reste enregistré dans le navigateur : sur votre ordinateur habituel, vous n'aurez pas à le ressaisir à chaque fois.
 
 En cas de jeton perdu ou expiré, contactez la personne qui a mis le site en service pour en recevoir un nouveau.
