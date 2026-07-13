@@ -6,172 +6,38 @@
     <meta name="robots" content="noindex">
     <title>Administration · Gâprée</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='4' y='4' width='56' height='56' rx='10' fill='%23fff' stroke='%23bf2a1a' stroke-width='6'/%3E%3Ctext x='32' y='45' font-family='Arial' font-size='34' font-weight='bold' text-anchor='middle' fill='%231f2b22'%3EG%3C/text%3E%3C/svg%3E">
-    <style>
-      /* Porte d'accès de l'espace d'administration (phase de développement).
-         Autonome : cette page ne charge pas la feuille de style du site. */
-      #porte-admin {
-        position: fixed;
-        inset: 0;
-        z-index: 99999;
-        background: #F5F8F3;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 24px;
-        font-family: Georgia, "Times New Roman", serif;
-        color: #1F2B22;
-      }
-      #porte-admin .boite { text-align: center; max-width: 440px; }
-      #porte-admin .plaque {
-        display: inline-block;
-        margin: 0 0 1.6rem;
-        background: #fff;
-        border: 5px solid #BF2A1A;
-        border-radius: 12px;
-        padding: 0.3em 0.75em 0.34em;
-        font-family: "Arial Narrow", Arial, sans-serif;
-        font-weight: bold;
-        font-size: 2.4rem;
-        line-height: 1;
-        letter-spacing: 0.06em;
-        text-transform: uppercase;
-        box-shadow: 0 12px 30px rgba(31, 43, 34, 0.22);
-      }
-      #porte-admin h1 { margin: 0 0 0.4rem; font-size: 1.4rem; }
-      #porte-admin .texte { margin: 0 0 1.3rem; color: #5C6B66; }
-      #porte-admin form { display: flex; justify-content: center; gap: 0.6rem; }
-      #porte-admin input {
-        width: min(200px, 55vw);
-        font-size: 1.15rem;
-        font-family: inherit;
-        padding: 0.5rem 0.8rem;
-        border: 1px solid #DCE6D8;
-        border-radius: 8px;
-        background: #fff;
-        color: #1F2B22;
-      }
-      #porte-admin button {
-        font-family: "Arial Narrow", Arial, sans-serif;
-        font-weight: bold;
-        font-size: 1.05rem;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        background: #3F6B44;
-        color: #fff;
-        padding: 0.55rem 1.25rem;
-        border: 0;
-        border-radius: 8px;
-        cursor: pointer;
-      }
-      #porte-admin button:hover { background: #2E5233; }
-      #porte-admin .erreur { margin: 1rem 0 0; color: #BF2A1A; font-style: italic; }
-      [hidden] { display: none !important; }
-    </style>
+    <link rel="stylesheet" href="admin.css">
   </head>
   <body>
-    <div id="porte-admin">
-      <div class="boite">
-        <p class="plaque">Gâprée</p>
-        <h1>Espace d'administration</h1>
-        <p class="texte">Entrez le mot de passe pour continuer.</p>
-        <form id="porte-form">
-          <label for="porte-mdp" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Mot de passe</label>
-          <input id="porte-mdp" type="password" autocomplete="off" autofocus>
-          <button type="submit">Entrer</button>
-        </form>
-        <p class="erreur" id="porte-err" hidden>Mot de passe incorrect.</p>
+    <header class="entete">
+      <div class="entete-gauche">
+        <span class="plaque">Gâprée</span>
+        <span class="entete-titre">Espace d'administration</span>
       </div>
-    </div>
-    <script>
-      (function () {
-        // Empreinte SHA-256 du mot de passe (minuscules). Pour la changer :
-        //   printf '%s' "nouveaumotdepasse" | shasum -a 256
-        var ATTENDU = "06379fbb9ed01a56ec7620c979a38226962a49ee33ae99d9b0c6e21a1e363720";
+      <a class="entete-retour" href="../">Voir le site</a>
+    </header>
 
-        // Jeton GitHub chiffré avec le mot de passe (AES-256-GCM, clé PBKDF2).
-        // Généré par : /usr/bin/python3 scripts/chiffre_jeton.py <motdepasse> <jeton>
-        // Vide = pas de connexion automatique, Sveltia affiche son propre écran.
-        var JETON_CHIFFRE = "";
+    <p class="bandeau-demo">
+      <strong>Version de démonstration.</strong> Vos modifications sont enregistrées dans ce navigateur
+      pour tester l'interface ; elles ne sont pas encore publiées sur le site en ligne.
+      La publication réelle sera activée à la mise en service.
+      <button type="button" class="lien-reinit" id="btn-reinit">Réinitialiser la démonstration</button>
+    </p>
 
-        // Sveltia CMS, version figée. Pour mettre à jour : changer le numéro de
-        // version ET recalculer le hash integrity
-        // (curl -sL <url> | openssl dgst -sha384 -binary | openssl base64 -A)
-        var SVELTIA_URL = "https://unpkg.com/@sveltia/cms@0.170.8/dist/sveltia-cms.js";
-        var SVELTIA_SRI = "sha384-tCTgsoV7Stz/AF11t9RoI9O5HeA5wgS45u60RVDA15jeDdXvr0bya5Weuh6PVba5";
+    <nav class="onglets" aria-label="Rubriques">
+      <button type="button" data-rubrique="actualites" class="actif">Actualités</button>
+      <button type="button" data-rubrique="talents">Nos talents</button>
+      <button type="button" data-rubrique="elus">Équipe municipale</button>
+      <button type="button" data-rubrique="reglages">Réglages</button>
+    </nav>
 
-        var porte = document.getElementById("porte-admin");
-        var champ = document.getElementById("porte-mdp");
-        var err = document.getElementById("porte-err");
-        var lance = false;
+    <main id="app">
+      <p class="chargement">Chargement du contenu…</p>
+    </main>
 
-        function bootSveltia() {
-          if (lance) return;
-          lance = true;
-          var s = document.createElement("script");
-          s.src = SVELTIA_URL;
-          s.integrity = SVELTIA_SRI;
-          s.crossOrigin = "anonymous";
-          document.body.appendChild(s);
-        }
+    <noscript><p style="padding:2rem;font-family:Georgia,serif">L'espace d'administration nécessite JavaScript.</p></noscript>
 
-        function hex(buf) {
-          return Array.prototype.map.call(new Uint8Array(buf), function (b) {
-            return b.toString(16).padStart(2, "0");
-          }).join("");
-        }
-
-        function dechiffreJeton(mdp) {
-          var brut = Uint8Array.from(atob(JETON_CHIFFRE), function (c) { return c.charCodeAt(0); });
-          var sel = brut.slice(0, 16);
-          var iv = brut.slice(16, 28);
-          var donnees = brut.slice(28);
-          return crypto.subtle.importKey("raw", new TextEncoder().encode(mdp), "PBKDF2", false, ["deriveKey"])
-            .then(function (base) {
-              return crypto.subtle.deriveKey(
-                { name: "PBKDF2", salt: sel, iterations: 310000, hash: "SHA-256" },
-                base, { name: "AES-GCM", length: 256 }, false, ["decrypt"]);
-            })
-            .then(function (cle) { return crypto.subtle.decrypt({ name: "AES-GCM", iv: iv }, cle, donnees); })
-            .then(function (clair) { return new TextDecoder().decode(clair); });
-        }
-
-        function entre() {
-          porte.hidden = true;
-          bootSveltia();
-        }
-
-        // Déjà déverrouillé sur ce navigateur : on entre directement, sauf si la
-        // session Sveltia attendue a disparu (alors on redemande le mot de passe
-        // pour pouvoir déchiffrer le jeton à nouveau).
-        if (localStorage.getItem("gapree-admin-acces") === "ok" &&
-            (!JETON_CHIFFRE || localStorage.getItem("sveltia-cms.user"))) {
-          entre();
-          return;
-        }
-
-        document.getElementById("porte-form").addEventListener("submit", function (e) {
-          e.preventDefault();
-          var v = champ.value.trim().toLowerCase();
-          crypto.subtle.digest("SHA-256", new TextEncoder().encode(v)).then(function (buf) {
-            if (hex(buf) !== ATTENDU) {
-              err.hidden = false;
-              champ.select();
-              return;
-            }
-            var suite = Promise.resolve();
-            if (JETON_CHIFFRE) {
-              suite = dechiffreJeton(v).then(function (jeton) {
-                // Connexion automatique : Sveltia lit cette entrée au démarrage.
-                localStorage.setItem("sveltia-cms.user", JSON.stringify({ backendName: "github", token: jeton }));
-              }).catch(function () { /* blob illisible : Sveltia affichera sa connexion */ });
-            }
-            suite.then(function () {
-              localStorage.setItem("gapree-admin-acces", "ok");
-              entre();
-            });
-          });
-        });
-      })();
-    </script>
+    <div id="toast" hidden></div>
+    <script src="app.js"></script>
   </body>
 </html>

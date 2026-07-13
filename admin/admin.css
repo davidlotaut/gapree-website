@@ -1,0 +1,435 @@
+/* Espace d'administration Gâprée : feuille autonome, mêmes couleurs et voix que le site. */
+
+@font-face {
+  font-family: "Barlow Condensed";
+  src: url("../assets/fonts/barlow-condensed-600.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --craie: #F5F8F3;
+  --blanc: #FFFFFF;
+  --encre: #1F2B22;
+  --prairie: #3F6B44;
+  --prairie-fonce: #2E5233;
+  --ardoise: #5C6B66;
+  --sauge: #DCE6D8;
+  --sauge-pale: #EDF3EA;
+  --rouge: #BF2A1A;
+  --radius: 10px;
+  --gouttiere: clamp(16px, 3vw, 40px);
+  --signaletique: "Barlow Condensed", "Arial Narrow", Arial, sans-serif;
+  --bulletin: Georgia, "Times New Roman", serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: var(--bulletin);
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: var(--encre);
+  background: var(--craie);
+}
+
+img { max-width: 100%; }
+a { color: var(--prairie); }
+
+button { font-family: inherit; }
+
+a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+  outline: 3px solid var(--prairie);
+  outline-offset: 1px;
+}
+
+/* --- En-tête ---------------------------------------------------------------- */
+
+.entete {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem 1.5rem;
+  padding: 0.9rem var(--gouttiere);
+  background: var(--blanc);
+  border-bottom: 1px solid var(--sauge);
+}
+
+.entete-gauche { display: flex; align-items: center; gap: 0.9rem; }
+
+.plaque {
+  display: inline-block;
+  background: var(--blanc);
+  border: 3px solid var(--rouge);
+  border-radius: 8px;
+  padding: 0.18em 0.5em 0.22em;
+  font-family: var(--signaletique);
+  font-weight: 600;
+  font-size: 1.25rem;
+  line-height: 1;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.entete-titre {
+  font-family: var(--signaletique);
+  font-weight: 600;
+  font-size: 1.15rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ardoise);
+}
+
+.entete-retour {
+  font-family: var(--signaletique);
+  font-weight: 600;
+  font-size: 1rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  text-decoration: none;
+}
+
+/* --- Bandeau démonstration ---------------------------------------------------- */
+
+.bandeau-demo {
+  margin: 0;
+  padding: 0.7rem var(--gouttiere);
+  background: #FBF3DC;
+  border-bottom: 1px solid #EBDDB2;
+  font-size: 0.98rem;
+  color: #5C5233;
+}
+
+.lien-reinit {
+  background: none;
+  border: 0;
+  padding: 0;
+  margin-left: 0.5rem;
+  font-size: 0.95rem;
+  font-family: inherit;
+  font-style: italic;
+  color: #8A7B45;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* --- Onglets ------------------------------------------------------------------ */
+
+.onglets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem clamp(0.8rem, 2.5vw, 2rem);
+  padding: 0.85rem var(--gouttiere) 0;
+  border-bottom: 1px solid var(--sauge);
+  background: var(--craie);
+}
+
+.onglets button {
+  background: none;
+  border: 0;
+  padding: 0.35rem 0.1rem 0.6rem;
+  font-family: var(--signaletique);
+  font-weight: 600;
+  font-size: 1.12rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--encre);
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+}
+
+.onglets button:hover { color: var(--prairie-fonce); border-bottom-color: var(--sauge); }
+.onglets button.actif { border-bottom-color: var(--rouge); }
+
+/* --- Zone principale ------------------------------------------------------------ */
+
+#app { padding: 1.6rem var(--gouttiere) 3.5rem; }
+
+.chargement, .erreur-chargement { font-style: italic; color: var(--ardoise); }
+
+.barre-liste {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  margin-bottom: 1.2rem;
+}
+
+.barre-liste h2 {
+  margin: 0;
+  font-family: var(--signaletique);
+  font-weight: 600;
+  font-size: 1.4rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--prairie-fonce);
+}
+
+.btn {
+  display: inline-block;
+  font-family: var(--signaletique);
+  font-weight: 600;
+  font-size: 1rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  background: var(--prairie);
+  color: var(--blanc);
+  padding: 0.5rem 1.1rem;
+  border: 0;
+  border-radius: 8px;
+  text-decoration: none;
+  cursor: pointer;
+}
+.btn:hover { background: var(--prairie-fonce); }
+
+.btn--secondaire { background: var(--blanc); color: var(--prairie-fonce); border: 1px solid var(--sauge); }
+.btn--secondaire:hover { background: var(--sauge-pale); }
+
+.btn--danger { background: var(--blanc); color: var(--rouge); border: 1px solid #E8C7C2; }
+.btn--danger:hover { background: #FBEEEC; }
+
+/* --- Listes ---------------------------------------------------------------------- */
+
+.lignes { display: flex; flex-direction: column; gap: 10px; }
+
+.ligne {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  text-align: left;
+  background: var(--blanc);
+  border: 1px solid var(--sauge);
+  border-radius: var(--radius);
+  padding: 0.7rem 1rem;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 1rem;
+  color: var(--encre);
+}
+
+.ligne:hover { border-color: var(--prairie); }
+
+.ligne-vignette {
+  flex: none;
+  width: 76px;
+  height: 54px;
+  border-radius: 6px;
+  object-fit: cover;
+  background: var(--sauge-pale);
+}
+
+.ligne-vignette--vide {
+  flex: none;
+  width: 76px;
+  height: 54px;
+  border-radius: 6px;
+  background: var(--sauge-pale);
+  border: 1px dashed var(--sauge);
+}
+
+.ligne-texte { min-width: 0; flex: 1; }
+
+.ligne-titre { display: block; font-weight: 700; font-size: 1.08rem; line-height: 1.35; }
+
+.ligne-meta { display: block; font-size: 0.92rem; font-style: italic; color: var(--ardoise); }
+
+.badge {
+  flex: none;
+  font-family: var(--signaletique);
+  font-weight: 600;
+  font-size: 0.85rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.15rem 0.55rem;
+  border-radius: 20px;
+}
+
+.badge--modifie { background: #FBF3DC; color: #8A7B45; }
+.badge--nouveau { background: var(--sauge-pale); color: var(--prairie-fonce); }
+
+/* --- Éditeur ------------------------------------------------------------------------ */
+
+.editeur { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(18px, 3vw, 40px); }
+@media (max-width: 900px) { .editeur { grid-template-columns: 1fr; } }
+
+.editeur-form { max-width: 640px; }
+
+.retour-liste {
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: 0 0 1rem;
+  font-family: var(--signaletique);
+  font-weight: 600;
+  font-size: 1rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--prairie);
+  cursor: pointer;
+}
+.retour-liste:hover { color: var(--prairie-fonce); }
+
+.champ { margin-bottom: 1.1rem; }
+
+.champ label {
+  display: block;
+  margin-bottom: 0.3rem;
+  font-family: var(--signaletique);
+  font-weight: 600;
+  font-size: 0.98rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ardoise);
+}
+
+.champ input[type="text"], .champ input[type="url"], .champ input[type="date"],
+.champ input[type="email"], .champ input[type="number"], .champ textarea, .champ select {
+  width: 100%;
+  font-family: inherit;
+  font-size: 1.05rem;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--sauge);
+  border-radius: 8px;
+  background: var(--blanc);
+  color: var(--encre);
+}
+
+.champ textarea { min-height: 220px; line-height: 1.55; resize: vertical; }
+
+.champ .aide { margin: 0.25rem 0 0; font-size: 0.9rem; font-style: italic; color: var(--ardoise); }
+
+.photo-actuelle { display: block; max-height: 170px; border-radius: 8px; margin-bottom: 0.5rem; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 0.7rem; margin-top: 1.4rem; }
+
+/* --- Aperçu -------------------------------------------------------------------------- */
+
+.apercu-cadre { position: sticky; top: 1rem; }
+
+.apercu-etiquette {
+  margin: 0 0 0.6rem;
+  font-family: var(--signaletique);
+  font-weight: 600;
+  font-size: 0.95rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ardoise);
+}
+
+.apercu {
+  background: var(--blanc);
+  border: 1px solid var(--sauge);
+  border-radius: var(--radius);
+  padding: 1.4rem 1.5rem 1.6rem;
+  max-height: 78vh;
+  overflow: auto;
+}
+
+.apercu img.apercu-image { width: 100%; max-height: 260px; object-fit: cover; border-radius: 8px; margin: 0.8rem 0; }
+
+.apercu h1 { margin: 0 0 0.3rem; font-size: 1.55rem; line-height: 1.25; }
+
+.apercu .apercu-meta { margin: 0 0 0.6rem; font-style: italic; color: var(--ardoise); }
+
+.apercu p { margin: 0 0 0.9em; }
+.apercu h2 { font-size: 1.2rem; margin: 1.2em 0 0.4em; }
+
+/* --- Équipe municipale ------------------------------------------------------------------ */
+
+.grille-elus {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(230px, 100%), 1fr));
+  gap: 14px;
+}
+
+.fiche-elu {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  background: var(--blanc);
+  border: 1px solid var(--sauge);
+  border-radius: var(--radius);
+  padding: 0.8rem 1rem;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 1rem;
+  text-align: left;
+  color: var(--encre);
+}
+
+.fiche-elu:hover { border-color: var(--prairie); }
+
+.elu-photo, .elu-initiales {
+  flex: none;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+}
+
+.elu-photo { object-fit: cover; }
+
+.elu-initiales {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--sauge-pale);
+  border: 1px solid var(--sauge);
+  font-family: var(--signaletique);
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: var(--prairie-fonce);
+}
+
+.elu-nom { display: block; font-weight: 700; line-height: 1.3; }
+.elu-fonction { display: block; font-size: 0.9rem; font-style: italic; color: var(--ardoise); }
+
+/* --- Réglages ------------------------------------------------------------------------------ */
+
+.panneaux { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(360px, 100%), 1fr)); gap: 20px; align-items: start; }
+
+.panneau {
+  background: var(--blanc);
+  border: 1px solid var(--sauge);
+  border-radius: var(--radius);
+  padding: 1.3rem 1.4rem 1.5rem;
+}
+
+.panneau h3 {
+  margin: 0 0 1rem;
+  font-family: var(--signaletique);
+  font-weight: 600;
+  font-size: 1.15rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--prairie-fonce);
+}
+
+.ligne-horaire { display: flex; gap: 0.6rem; margin-bottom: 0.6rem; }
+.ligne-horaire input { flex: 1; }
+.ligne-horaire .btn--danger { padding: 0.4rem 0.7rem; }
+
+/* --- Toast ------------------------------------------------------------------------------------ */
+
+#toast {
+  position: fixed;
+  bottom: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--encre);
+  color: var(--blanc);
+  font-family: var(--signaletique);
+  font-weight: 600;
+  font-size: 1.02rem;
+  letter-spacing: 0.05em;
+  padding: 0.6rem 1.3rem;
+  border-radius: 24px;
+  box-shadow: 0 8px 24px rgba(31, 43, 34, 0.3);
+  z-index: 1000;
+}
+
+[hidden] { display: none !important; }

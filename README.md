@@ -1,6 +1,6 @@
 # Gâprée · site officiel de la commune
 
-Site vitrine de **Gâprée** (Orne, Normandie, ~140 habitants), administrable par la mairie.
+Site vitrine de **Gâprée** (Orne, Normandie, ~140 habitants), avec espace d'administration intégré.
 
 - **Site** : https://davidlotaut.github.io/gapree-website/
 - **Administration** : https://davidlotaut.github.io/gapree-website/admin/
@@ -12,8 +12,28 @@ Site vitrine de **Gâprée** (Orne, Normandie, ~140 habitants), administrable pa
 |---|---|---|
 | Générateur | Jekyll (build GitHub Pages natif) | zéro maintenance : chaque commit reconstruit le site |
 | Hébergement | GitHub Pages (branche `main`, racine) | gratuit, déjà actif sur ce dépôt |
-| Admin | [Sveltia CMS](https://github.com/sveltia/sveltia-cms) sur `/admin/` | interface en français, fonctionne sur un site 100 % statique, connexion par jeton GitHub (aucun serveur OAuth à héberger) |
-| JS public | aucun | robustesse, accessibilité, confidentialité (zéro cookie) |
+| Admin | Interface maison dans `admin/` (HTML/CSS/JS sans dépendance) | en français, au design du site, contrôle total |
+| JS public | aucun (hors `/admin/`) | robustesse, accessibilité, confidentialité (zéro cookie) |
+
+## Espace d'administration (`/admin/`)
+
+Application autonome (`index.html` + `admin.css` + `app.js`), **ouverte sans authentification
+pendant la phase de démonstration**, sur décision client du 13/07/2026.
+
+- Le contenu réel du site est chargé depuis `/admin/contenu.json` (généré par Jekyll à chaque
+  build) et le texte des articles depuis les fichiers source du dépôt (raw.githubusercontent.com).
+- Onglets : Actualités, Nos talents (création, édition avec aperçu en direct, suppression,
+  photo, vidéo YouTube), Équipe municipale (fiches + ordre), Réglages (photo d'accueil,
+  coordonnées, horaires).
+- **Mode démonstration** : les modifications sont enregistrées dans le navigateur du testeur
+  (`localStorage`, clé `gapree-demo-admin`), avec bandeau explicatif et bouton de
+  réinitialisation. Elles ne sont pas publiées sur le site en ligne : un site statique n'a
+  pas de serveur, donc publier réellement exige une autorisation d'écriture sur le dépôt.
+- **À la mise en service** : brancher le bouton « Enregistrer » sur l'API GitHub (écriture des
+  fichiers du dépôt) derrière l'espace d'authentification qui sera alors défini. L'historique
+  git contient deux mécanismes déjà éprouvés réutilisables : CMS Sveltia connecté par jeton
+  (commit `9c915e9` et antérieurs) et jeton chiffré par mot de passe (`scripts/chiffre_jeton.py`,
+  même commit).
 
 ## Structure du contenu
 
@@ -24,43 +44,17 @@ _elus/         trombinoscope (title, fonction, photo?, ordre)
 _data/
   accueil.yml  photo d'accueil, sous-titre, texte de bienvenue
   mairie.yml   adresse, téléphone, email, horaires, lien carte
-images/uploads/  médias téléversés depuis l'admin
-admin/           Sveltia CMS (config.yml = modèle de contenu, labels français)
+admin/         espace d'administration (contenu.json = export Jekyll du contenu)
 ```
 
-Tout le contenu ci-dessus est modifiable depuis `/admin/` sans toucher au code.
+## Phase de développement (état actuel)
 
-## Phase de développement (mode actuel)
-
-- **Le site public est ouvert** (pas de mot de passe) mais en `noindex`
-  tant que `mode_dev: true` dans `_config.yml`. Passer à `false` à la mise en ligne définitive.
-- **`/admin/` est protégé par un mot de passe d'accès : `gapree`** (insensible à la casse,
-  mémorisé dans le navigateur). Vérification côté navigateur par empreinte SHA-256 dans
-  `admin/index.html` ; pour changer le mot de passe, remplacer le hash
-  (`printf '%s' "nouveaumotdepasse-en-minuscules" | shasum -a 256`) ET rechiffrer le jeton.
-- **Connexion automatique** : le mot de passe déchiffre aussi un jeton GitHub embarqué
-  chiffré (AES-256-GCM, clé PBKDF2 dérivée du mot de passe) et ouvre directement
-  l'interface d'édition. Le blob `JETON_CHIFFRE` de `admin/index.html` se génère avec
-  `/usr/bin/python3 scripts/chiffre_jeton.py <motdepasse> <jeton>` (jeton GitHub fine-grained limité
-  à CE dépôt, permission Contents en écriture). Blob vide = Sveltia repasse à son propre
-  écran de connexion par jeton.
-  Limite assumée pour la phase de dev : le dépôt étant public, un attaquant motivé peut
-  tenter le mot de passe hors ligne sur le blob ; le jeton étant limité à ce seul dépôt,
-  le pire cas est une modification du contenu du site de démo, réversible via git.
-  L'accès nominatif définitif (un jeton par personne, voir ci-dessous) remplacera ce
-  mécanisme à la mise en service.
-- **Contenu de démonstration** : les actualités et portraits actuels (sauf l'article
-  de lancement du site) sont fictifs mais plausibles, avec photos d'illustration libres
-  de droits (`assets/img/demo/`). Ils montrent le site « rempli » et seront remplacés
-  par les vrais contenus de la mairie via l'admin.
-
-## Accès admin de la mairie (login définitif, déjà prêt)
-
-Sveltia CMS se connecte à l'API GitHub avec un **jeton d'accès personnel** (pas de backend OAuth).
-Procédure de mise en service : voir l'« Annexe technique » du guide d'administration
-(compte GitHub dédié à la mairie + collaborateur en écriture sur ce dépôt + token classic scope `repo`).
-
-Pour tester en tant que propriétaire du dépôt : `gh auth token` fournit un jeton utilisable sur l'écran de connexion de `/admin/`.
+- Site public ouvert, en `noindex` tant que `mode_dev: true` dans `_config.yml`
+  (passer à `false` à la mise en ligne définitive).
+- `/admin/` ouvert à tous, mode démonstration (voir ci-dessus).
+- **Contenu de démonstration** : les actualités et portraits (sauf l'article de lancement)
+  sont fictifs mais plausibles, photos d'illustration libres de droits (`assets/img/demo/`,
+  licences Pexels et Unsplash). À remplacer par les vrais contenus de la mairie.
 
 ## Développement local (facultatif)
 
@@ -73,9 +67,10 @@ Sans Ruby : pousser sur `main` et laisser GitHub Pages construire (1 à 2 min), 
 
 ## Notes
 
-- **Version Sveltia figée** dans `admin/index.html` (avec hash d'intégrité SRI). Pour mettre à jour : changer la version ET recalculer le hash (commande en commentaire dans le fichier).
 - **Fonte** : Barlow Condensed 600 auto-hébergée (`assets/fonts/`, licence OFL incluse).
-- **Photo d'accueil** : image d'illustration (Pexels, licence libre), à remplacer par une photo réelle de la commune via l'admin.
-- **Élus** : les 11 noms proviennent des résultats publics des municipales 2026 (liste unique élue au 1er tour). Le titre de maire et les adjoints sont à confirmer par la mairie dans l'admin.
-- Si un nom de domaine propre est acheté un jour (ex. gapree.fr) : le configurer dans Settings → Pages du dépôt, puis vider `baseurl` dans `_config.yml`.
-- L'historique git antérieur à juillet 2026 contient l'ancienne exploration (moodboard, 6 maquettes) ; l'arborescence actuelle est le site définitif.
+- **Élus** : les 11 noms proviennent des résultats publics des municipales 2026 (liste unique
+  élue au 1er tour). Le titre de maire et les adjoints sont à confirmer par la mairie.
+- Si un nom de domaine propre est acheté un jour (ex. gapree.fr) : le configurer dans
+  Settings → Pages du dépôt, puis vider `baseurl` dans `_config.yml`.
+- L'historique git antérieur à juillet 2026 contient l'ancienne exploration (moodboard,
+  6 maquettes) ; l'arborescence actuelle est le site définitif.

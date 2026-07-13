@@ -1,0 +1,28 @@
+---
+layout: null
+permalink: /admin/contenu.json
+---
+{
+  "actualites": [
+    {%- assign items = site.actualites | sort: "date" | reverse -%}
+    {%- for a in items %}
+    { "chemin": {{ a.path | jsonify }}, "titre": {{ a.title | jsonify }}, "date": {{ a.date | date: "%Y-%m-%d" | jsonify }}, "image": {{ a.image | jsonify }}, "video": {{ a.video | jsonify }} }{% unless forloop.last %},{% endunless %}
+    {%- endfor %}
+  ],
+  "talents": [
+    {%- assign portraits = site.talents | sort: "date" | reverse -%}
+    {%- for t in portraits %}
+    { "chemin": {{ t.path | jsonify }}, "titre": {{ t.title | jsonify }}, "sous_titre": {{ t.sous_titre | jsonify }}, "date": {{ t.date | date: "%Y-%m-%d" | jsonify }}, "image": {{ t.image | jsonify }}, "video": {{ t.video | jsonify }} }{% unless forloop.last %},{% endunless %}
+    {%- endfor %}
+  ],
+  "elus": [
+    {%- assign membres = site.elus | sort: "ordre" -%}
+    {%- for m in membres %}
+    { "chemin": {{ m.path | jsonify }}, "nom": {{ m.title | jsonify }}, "fonction": {{ m.fonction | jsonify }}, "photo": {{ m.photo | jsonify }}, "ordre": {{ m.ordre | jsonify }} }{% unless forloop.last %},{% endunless %}
+    {%- endfor %}
+  ],
+  "reglages": {
+    "accueil": {{ site.data.accueil | jsonify }},
+    "mairie": {{ site.data.mairie | jsonify }}
+  }
+}
