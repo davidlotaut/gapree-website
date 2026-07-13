@@ -34,12 +34,21 @@ Tout le contenu ci-dessus est modifiable depuis `/admin/` sans toucher au code.
 
 - **Le site public est ouvert** (pas de mot de passe) mais en `noindex`
   tant que `mode_dev: true` dans `_config.yml`. Passer à `false` à la mise en ligne définitive.
-- **`/admin/` est protégé par un mot de passe d'accès : `Gapre`** (insensible à la casse,
+- **`/admin/` est protégé par un mot de passe d'accès : `gapree`** (insensible à la casse,
   mémorisé dans le navigateur). Vérification côté navigateur par empreinte SHA-256 dans
   `admin/index.html` ; pour changer le mot de passe, remplacer le hash
-  (`printf '%s' "nouveaumotdepasse-en-minuscules" | shasum -a 256`).
-  Derrière cette porte, Sveltia demande ensuite son propre jeton GitHub pour publier
-  (voir ci-dessous) ; le mot de passe seul ne donne aucun droit d'écriture.
+  (`printf '%s' "nouveaumotdepasse-en-minuscules" | shasum -a 256`) ET rechiffrer le jeton.
+- **Connexion automatique** : le mot de passe déchiffre aussi un jeton GitHub embarqué
+  chiffré (AES-256-GCM, clé PBKDF2 dérivée du mot de passe) et ouvre directement
+  l'interface d'édition. Le blob `JETON_CHIFFRE` de `admin/index.html` se génère avec
+  `/usr/bin/python3 scripts/chiffre_jeton.py <motdepasse> <jeton>` (jeton GitHub fine-grained limité
+  à CE dépôt, permission Contents en écriture). Blob vide = Sveltia repasse à son propre
+  écran de connexion par jeton.
+  Limite assumée pour la phase de dev : le dépôt étant public, un attaquant motivé peut
+  tenter le mot de passe hors ligne sur le blob ; le jeton étant limité à ce seul dépôt,
+  le pire cas est une modification du contenu du site de démo, réversible via git.
+  L'accès nominatif définitif (un jeton par personne, voir ci-dessous) remplacera ce
+  mécanisme à la mise en service.
 - **Contenu de démonstration** : les actualités et portraits actuels (sauf l'article
   de lancement du site) sont fictifs mais plausibles, avec photos d'illustration libres
   de droits (`assets/img/demo/`). Ils montrent le site « rempli » et seront remplacés

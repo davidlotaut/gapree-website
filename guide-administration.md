@@ -8,9 +8,10 @@ chapo: "Ce guide explique comment publier et modifier le contenu du site. Aucune
 ## Se connecter
 
 1. Ouvrez la page [Administration du site]({{ '/admin/' | relative_url }}) (le lien figure aussi tout en bas de chaque page du site).
-2. Pendant la phase de mise au point, la page demande d'abord un mot de passe d'accès : saisissez celui qui vous a été communiqué.
-3. Deux boutons s'affichent ensuite : cliquez sur le second, « Se connecter avec un jeton d'accès » (ou « Sign In Using Access Token » si l'écran est en anglais), puis collez le jeton qui vous a été remis lors de la mise en service.
-4. Le mot de passe et le jeton restent enregistrés dans le navigateur : sur votre ordinateur habituel, vous n'aurez pas à les ressaisir à chaque fois.
+2. Saisissez le mot de passe qui vous a été communiqué : l'interface d'administration s'ouvre directement.
+3. Le mot de passe reste enregistré dans le navigateur : sur votre ordinateur habituel, vous n'aurez pas à le ressaisir à chaque fois.
+
+Un accès nominatif plus poussé (une clé par personne) remplacera ce mot de passe unique à la mise en service définitive ; la marche à suivre figure en annexe.
 
 En cas de jeton perdu ou expiré, contactez la personne qui a mis le site en service pour en recevoir un nouveau.
 
