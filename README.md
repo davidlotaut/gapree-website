@@ -32,17 +32,18 @@ Tout le contenu ci-dessus est modifiable depuis `/admin/` sans toucher au code.
 
 ## Phase de développement (mode actuel)
 
-`mode_dev: true` dans `_config.yml` active une porte d'aperçu : tout le site est masqué
-derrière un écran de mot de passe (côté navigateur, empreinte SHA-256, insensible à la casse)
-et une balise `noindex` tient les moteurs de recherche à l'écart.
-
-- **Mot de passe d'aperçu : `Gapre`** (mémorisé dans le navigateur après la première saisie)
-- Pour changer le mot de passe : remplacer le hash dans `_includes/dev-gate.html`
-  (`printf '%s' "nouveaumotdepasse-en-minuscules" | shasum -a 256`)
-- **Mise en ligne publique : passer `mode_dev: false`**, rien d'autre à changer
-
-C'est une protection d'aperçu, pas un coffre-fort : le dépôt est public et le contenu
-reste accessible à qui lit le code source. Suffisant pour partager une préversion.
+- **Le site public est ouvert** (pas de mot de passe) mais en `noindex`
+  tant que `mode_dev: true` dans `_config.yml`. Passer à `false` à la mise en ligne définitive.
+- **`/admin/` est protégé par un mot de passe d'accès : `Gapre`** (insensible à la casse,
+  mémorisé dans le navigateur). Vérification côté navigateur par empreinte SHA-256 dans
+  `admin/index.html` ; pour changer le mot de passe, remplacer le hash
+  (`printf '%s' "nouveaumotdepasse-en-minuscules" | shasum -a 256`).
+  Derrière cette porte, Sveltia demande ensuite son propre jeton GitHub pour publier
+  (voir ci-dessous) ; le mot de passe seul ne donne aucun droit d'écriture.
+- **Contenu de démonstration** : les actualités et portraits actuels (sauf l'article
+  de lancement du site) sont fictifs mais plausibles, avec photos d'illustration libres
+  de droits (`assets/img/demo/`). Ils montrent le site « rempli » et seront remplacés
+  par les vrais contenus de la mairie via l'admin.
 
 ## Accès admin de la mairie (login définitif, déjà prêt)
 

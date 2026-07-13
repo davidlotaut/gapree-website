@@ -1,9 +1,8 @@
 <!doctype html>
 <html lang="fr">
 {% include head.html %}
-<body{% if site.mode_dev %} class="mode-dev"{% endif %}>
-{% if site.mode_dev %}{% include dev-gate.html %}
-{% endif %}{% include header.html %}
+<body>
+{% include header.html %}
 <main id="contenu">
 {{ content }}
 </main>

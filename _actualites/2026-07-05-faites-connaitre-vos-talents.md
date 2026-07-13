@@ -1,6 +1,6 @@
 ---
 title: Habitants de Gâprée, faites connaître vos talents
-date: 2026-07-13
+date: 2026-07-05
 ---
 La rubrique « Nos talents » attend ses premiers portraits.
 

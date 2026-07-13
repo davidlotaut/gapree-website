@@ -6,8 +6,107 @@
     <meta name="robots" content="noindex">
     <title>Administration · Gâprée</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='4' y='4' width='56' height='56' rx='10' fill='%23fff' stroke='%23bf2a1a' stroke-width='6'/%3E%3Ctext x='32' y='45' font-family='Arial' font-size='34' font-weight='bold' text-anchor='middle' fill='%231f2b22'%3EG%3C/text%3E%3C/svg%3E">
+    <style>
+      /* Porte d'accès de l'espace d'administration (phase de développement).
+         Autonome : cette page ne charge pas la feuille de style du site. */
+      #porte-admin {
+        position: fixed;
+        inset: 0;
+        z-index: 99999;
+        background: #F5F8F3;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        font-family: Georgia, "Times New Roman", serif;
+        color: #1F2B22;
+      }
+      #porte-admin .boite { text-align: center; max-width: 440px; }
+      #porte-admin .plaque {
+        display: inline-block;
+        margin: 0 0 1.6rem;
+        background: #fff;
+        border: 5px solid #BF2A1A;
+        border-radius: 12px;
+        padding: 0.3em 0.75em 0.34em;
+        font-family: "Arial Narrow", Arial, sans-serif;
+        font-weight: bold;
+        font-size: 2.4rem;
+        line-height: 1;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        box-shadow: 0 12px 30px rgba(31, 43, 34, 0.22);
+      }
+      #porte-admin h1 { margin: 0 0 0.4rem; font-size: 1.4rem; }
+      #porte-admin .texte { margin: 0 0 1.3rem; color: #5C6B66; }
+      #porte-admin form { display: flex; justify-content: center; gap: 0.6rem; }
+      #porte-admin input {
+        width: min(200px, 55vw);
+        font-size: 1.15rem;
+        font-family: inherit;
+        padding: 0.5rem 0.8rem;
+        border: 1px solid #DCE6D8;
+        border-radius: 8px;
+        background: #fff;
+        color: #1F2B22;
+      }
+      #porte-admin button {
+        font-family: "Arial Narrow", Arial, sans-serif;
+        font-weight: bold;
+        font-size: 1.05rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        background: #3F6B44;
+        color: #fff;
+        padding: 0.55rem 1.25rem;
+        border: 0;
+        border-radius: 8px;
+        cursor: pointer;
+      }
+      #porte-admin button:hover { background: #2E5233; }
+      #porte-admin .erreur { margin: 1rem 0 0; color: #BF2A1A; font-style: italic; }
+      [hidden] { display: none !important; }
+    </style>
   </head>
   <body>
+    <div id="porte-admin">
+      <div class="boite">
+        <p class="plaque">Gâprée</p>
+        <h1>Espace d'administration</h1>
+        <p class="texte">Entrez le mot de passe pour continuer.</p>
+        <form id="porte-form">
+          <label for="porte-mdp" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Mot de passe</label>
+          <input id="porte-mdp" type="password" autocomplete="off" autofocus>
+          <button type="submit">Entrer</button>
+        </form>
+        <p class="erreur" id="porte-err" hidden>Mot de passe incorrect.</p>
+      </div>
+    </div>
+    <script>
+      (function () {
+        var porte = document.getElementById("porte-admin");
+        if (localStorage.getItem("gapree-admin-acces") === "ok") { porte.hidden = true; return; }
+        var champ = document.getElementById("porte-mdp");
+        var err = document.getElementById("porte-err");
+        var attendu = "b688914fd9e7f27915b44b36f97bec8f5aac3eb4b036229f5864fa7706925613";
+        document.getElementById("porte-form").addEventListener("submit", function (e) {
+          e.preventDefault();
+          var v = champ.value.trim().toLowerCase();
+          crypto.subtle.digest("SHA-256", new TextEncoder().encode(v)).then(function (buf) {
+            var hex = Array.prototype.map.call(new Uint8Array(buf), function (b) {
+              return b.toString(16).padStart(2, "0");
+            }).join("");
+            if (hex === attendu) {
+              localStorage.setItem("gapree-admin-acces", "ok");
+              porte.hidden = true;
+            } else {
+              err.hidden = false;
+              champ.select();
+            }
+          });
+        });
+      })();
+    </script>
     <!-- Sveltia CMS, version figée. Pour mettre à jour : changer le numéro de version ET recalculer le hash integrity
          (curl -sL <url> | openssl dgst -sha384 -binary | openssl base64 -A) -->
     <script src="https://unpkg.com/@sveltia/cms@0.170.8/dist/sveltia-cms.js"

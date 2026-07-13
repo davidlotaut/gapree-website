@@ -12,17 +12,58 @@ section: accueil
   {% if site.data.accueil.texte %}<p class="intro-texte">{{ site.data.accueil.texte }}</p>{% endif %}
 </section>
 
+{% assign actus = site.actualites | sort: "date" | reverse %}
 <section class="section" aria-labelledby="titre-actualites">
   <div class="section-head">
     <h2 class="section-title" id="titre-actualites">Actualités</h2>
     <a class="section-link" href="{{ '/actualites/' | relative_url }}">Toutes les actualités</a>
   </div>
-  {% assign actus = site.actualites | sort: "date" | reverse %}
+
   {% if actus.size > 0 %}
+  {% assign une = actus | first %}
+  <a class="une" href="{{ une.url | relative_url }}">
+    <div class="une-img{% unless une.image %} une-img--vide{% endunless %}">
+      {% if une.image %}<img src="{{ une.image | relative_url }}" alt="">{% endif %}
+    </div>
+    <div class="une-body">
+      <p class="une-date">{% include date_fr.html date=une.date %}</p>
+      <h3 class="une-titre">{{ une.title }}</h3>
+      <p class="une-extrait">{{ une.content | strip_html | normalize_whitespace | truncate: 250 }}</p>
+      <span class="btn">Lire l'article</span>
+    </div>
+  </a>
+
+  {% if actus.size > 1 %}
   <div class="grid">
-    {% for item in actus limit: 6 %}{% include card.html item=item type="actualite" %}{% endfor %}
+    {% for item in actus offset: 1 limit: 6 %}{% include card.html item=item type="actualite" %}{% endfor %}
   </div>
+  {% endif %}
   {% else %}
   <p class="empty">Aucune actualité pour le moment. Les informations de la commune paraîtront ici.</p>
   {% endif %}
+</section>
+
+{% assign portraits = site.talents | sort: "date" | reverse %}
+{% if portraits.size > 0 %}
+<section class="section section--blanche" aria-labelledby="titre-talents">
+  <div class="section-head">
+    <h2 class="section-title" id="titre-talents">Nos talents</h2>
+    <a class="section-link" href="{{ '/talents/' | relative_url }}">Tous les talents</a>
+  </div>
+  <div class="grid">
+    {% for item in portraits limit: 3 %}{% include card.html item=item type="talent" %}{% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<section class="bande-contact" aria-labelledby="titre-bande-contact">
+  <div class="bande-texte">
+    <h2 class="bande-titre" id="titre-bande-contact">La mairie vous accueille</h2>
+    <p class="bande-infos">{{ site.data.mairie.adresse | newline_to_br }}</p>
+    <p class="bande-horaires">{% for h in site.data.mairie.horaires %}Ouvert le {{ h.jours | downcase }}, {{ h.heures }}{% unless forloop.last %} · {% endunless %}{% endfor %}</p>
+  </div>
+  <div class="bande-actions">
+    <p class="bande-tel"><a href="tel:{{ site.data.mairie.telephone | remove: ' ' | remove: '.' | replace_first: '0', '+33' }}">{{ site.data.mairie.telephone }}</a></p>
+    <a class="btn btn--clair" href="{{ '/contact/' | relative_url }}">Nous contacter</a>
+  </div>
 </section>

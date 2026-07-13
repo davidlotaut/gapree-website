@@ -27,6 +27,6 @@ Pour toute question, vous pouvez écrire à la mairie : mairie.gapree@wanadoo.fr
 
 ## Crédits
 
-Photographie d'accueil : image d'illustration (paysage normand), licence libre Pexels, en attendant une photographie de la commune.
+Photographies d'illustration : images sous licences libres Pexels et Unsplash, en attendant les photographies de la commune.
 
 Les textes et images publiés dans les rubriques Actualités et Nos talents sont la propriété de la commune de Gâprée ou de leurs auteurs respectifs.
