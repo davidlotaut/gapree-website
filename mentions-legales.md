@@ -10,7 +10,7 @@ Ce site est édité par la commune de Gâprée.
 Mairie de Gâprée
 21 bis rue Saint-Sulpice
 61390 Gâprée
-Téléphone : 02 33 15 04 77
+Téléphone : {{ site.data.mairie.telephone }}
 Courriel : mairie.gapree@wanadoo.fr
 
 **Directeur de la publication** : le maire de Gâprée.

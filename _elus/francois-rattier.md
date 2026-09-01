@@ -1,5 +1,5 @@
 ---
 title: François Rattier
-fonction: Conseiller municipal
-ordre: 8
+fonction: Adjoint au maire
+ordre: 2
 ---

@@ -31,7 +31,7 @@ Les mêmes étapes valent pour l'onglet « Nos talents » : un portrait a en plu
 
 Dans l'onglet « Équipe municipale », chaque membre a une fiche : prénom et nom, fonction, photo (facultative) et ordre d'affichage (1 pour le maire, 2 pour le premier adjoint, et ainsi de suite). Après une élection ou un changement de fonction, il suffit de modifier ces fiches.
 
-À la mise en service, les fonctions ont été préremplies à partir des résultats publics des élections de mars 2026 : **pensez à vérifier le titre de maire et à renseigner les adjoints.**
+Les fonctions ont été renseignées à partir des indications de la mairie : Laëtitia Raimbourg, maire, et François Rattier, adjoint au maire. Les neuf conseillers suivent par ordre alphabétique.
 
 ## Changer la photo d'accueil ou les coordonnées
 

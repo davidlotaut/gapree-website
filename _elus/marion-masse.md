@@ -1,5 +1,5 @@
 ---
 title: Marion Masse
 fonction: Conseillère municipale
-ordre: 6
+ordre: 7
 ---

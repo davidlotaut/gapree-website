@@ -1,5 +1,5 @@
 ---
 title: Jérôme Havard
 fonction: Conseiller municipal
-ordre: 5
+ordre: 6
 ---

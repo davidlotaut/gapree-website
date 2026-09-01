@@ -1,5 +1,5 @@
 ---
 title: Jean Breton
 fonction: Conseiller municipal
-ordre: 2
+ordre: 3
 ---
