@@ -6,4 +6,4 @@
    Renseignée = chaque personne se connecte avec son adresse électronique et
    son mot de passe, et la publication est réelle.                            */
 
-window.GAPREE_SERVEUR = "";
+window.GAPREE_SERVEUR = "https://gapree-admin.david-lotaut.workers.dev";
