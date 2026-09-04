@@ -4,8 +4,8 @@ description: "Site officiel de la commune de Gâprée (Orne) : actualités, tale
 lang: fr
 timezone: Europe/Paris
 
-url: "https://davidlotaut.github.io"
-baseurl: "/gapree-website"
+url: "https://gapree.com"
+baseurl: ""
 
 markdown: kramdown
 future: true
