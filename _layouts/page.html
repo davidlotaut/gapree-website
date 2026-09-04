@@ -1,11 +1,19 @@
 ---
 layout: default
 ---
-<div class="page">
+<div class="page{% if page.sommaire %} page--avec-sommaire{% endif %}">
   <header class="page-head">
     <h1>{{ page.title }}</h1>
     {% if page.chapo %}<p class="chapo">{{ page.chapo }}</p>{% endif %}
   </header>
+  {% if page.sommaire %}
+  <nav class="sommaire" aria-label="Sommaire">
+    <p class="sommaire-titre">Sommaire</p>
+    <ol>
+      {% for entree in page.sommaire %}<li><a href="#{{ entree.ancre }}">{{ entree.titre }}</a></li>{% endfor %}
+    </ol>
+  </nav>
+  {% endif %}
   <div class="prose">
 {{ content }}
   </div>
