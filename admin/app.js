@@ -161,6 +161,7 @@
   };
 
   function rendre() {
+    majBarrePublication();
     document.querySelectorAll(".onglets button").forEach(function (b) {
       b.classList.toggle("actif", b.dataset.rubrique === vue.rubrique);
     });
@@ -551,7 +552,195 @@
     });
   }
 
+  /* ------------------------------------------------------------ publication
+
+     Les modifications enregistrées dans ce navigateur (la « surcouche ») sont
+     traduites en fichiers du site, puis écrites en une seule fois par
+     publication.js. Sans jeton installé, rien de tout cela ne s'active.      */
+
+  function slug(t) {
+    return String(t || "")
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "")
+      .slice(0, 60) || "sans-titre";
+  }
+
+  /* Chaîne YAML entre guillemets : sûre quel que soit le contenu saisi. */
+  function yTexte(v) {
+    return '"' + String(v == null ? "" : v).replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\n/g, " ") + '"';
+  }
+
+  /* Bloc YAML littéral, pour les valeurs qui peuvent tenir sur plusieurs lignes. */
+  function yBloc(cle, v, retrait) {
+    var texte = String(v == null ? "" : v).replace(/\r/g, "").trim();
+    if (!texte) return retrait + cle + ': ""';
+    return retrait + cle + ": |-\n" + texte.split("\n").map(function (l) {
+      return retrait + "  " + l;
+    }).join("\n");
+  }
+
+  var EXTENSIONS = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp", "image/gif": "gif" };
+
+  /* Une photo choisie dans l'éditeur arrive en data: ; elle devient un fichier du site. */
+  function extraitPhoto(valeur, base, fichiers) {
+    if (!valeur || String(valeur).indexOf("data:") !== 0) return valeur || null;
+    var m = String(valeur).match(/^data:([^;]+);base64,(.+)$/);
+    if (!m) return null;
+    var chemin = "assets/img/" + slug(base) + "-" + Date.now().toString(36) + "." + (EXTENSIONS[m[1]] || "jpg");
+    fichiers.push({ chemin: chemin, base64: m[2] });
+    return "/" + chemin;
+  }
+
+  function fichierArticle(rubrique, valeurs, chemin, fichiers) {
+    var image = extraitPhoto(valeurs.image, valeurs.titre, fichiers);
+    var lignes = ["---", "title: " + yTexte(valeurs.titre), "date: " + (valeurs.date || "")];
+    if (rubrique === "talents" && valeurs.sous_titre) lignes.push("sous_titre: " + yTexte(valeurs.sous_titre));
+    if (image) lignes.push("image: " + yTexte(image));
+    if (valeurs.video) lignes.push("video: " + yTexte(valeurs.video));
+    lignes.push("---");
+    var corps = String(valeurs.texte || "").replace(/\r/g, "").trim();
+    return { chemin: chemin, texte: lignes.join("\n") + "\n" + corps + "\n" };
+  }
+
+  function fichierElu(valeurs, chemin, fichiers) {
+    var photo = extraitPhoto(valeurs.photo, valeurs.nom, fichiers);
+    var lignes = ["---", "title: " + yTexte(valeurs.nom), "fonction: " + yTexte(valeurs.fonction),
+      "ordre: " + (parseInt(valeurs.ordre, 10) || 10)];
+    if (photo) lignes.push("photo: " + yTexte(photo));
+    lignes.push("---");
+    return { chemin: chemin, texte: lignes.join("\n") + "\n" };
+  }
+
+  function fichierAccueil(reglages, fichiers) {
+    var photo = extraitPhoto(reglages.photo, "accueil", fichiers) || "/assets/img/hero-gapree.jpg";
+    return {
+      chemin: "_data/accueil.yml",
+      texte: [
+        "photo: " + yTexte(photo),
+        "alt_photo: " + yTexte(reglages.alt_photo || ""),
+        "sous_titre: " + yTexte(reglages.sous_titre || ""),
+        yBloc("texte", reglages.texte, "")
+      ].join("\n") + "\n"
+    };
+  }
+
+  function fichierMairie(reglages) {
+    var horaires = (reglages.horaires || []).map(function (h) {
+      return "  - jours: " + yTexte(h.jours) + "\n    heures: " + yTexte(h.heures);
+    }).join("\n");
+    return {
+      chemin: "_data/mairie.yml",
+      texte: [
+        yBloc("adresse", reglages.adresse, ""),
+        "telephone: " + yTexte(reglages.telephone || ""),
+        "email: " + yTexte(reglages.email || ""),
+        "horaires:" + (horaires ? "\n" + horaires : " []"),
+        "note_horaires: " + yTexte(reglages.note_horaires || ""),
+        "carte: " + yTexte(reglages.carte || "")
+      ].join("\n") + "\n"
+    };
+  }
+
+  /* Traduit tout ce qui attend dans le navigateur en fichiers à écrire. */
+  function construitChangements() {
+    var fichiers = [];
+    var suppressions = surcouche.supprimes.slice();
+    var resume = [];
+
+    ["actualites", "talents"].forEach(function (rubrique) {
+      (surcouche.nouveaux[rubrique] || []).forEach(function (v) {
+        var nom = rubrique === "actualites"
+          ? (v.date || new Date().toISOString().slice(0, 10)) + "-" + slug(v.titre)
+          : slug(v.titre);
+        fichiers.push(fichierArticle(rubrique, v, "_" + rubrique + "/" + nom + ".md", fichiers));
+        resume.push("ajout : " + v.titre);
+      });
+    });
+
+    (surcouche.nouveaux.elus || []).forEach(function (v) {
+      fichiers.push(fichierElu(v, "_elus/" + slug(v.nom) + ".md", fichiers));
+      resume.push("ajout : " + v.nom);
+    });
+
+    Object.keys(surcouche.modifies).forEach(function (chemin) {
+      if (estSupprime(chemin)) return;
+      var v = surcouche.modifies[chemin];
+      if (chemin.indexOf("_elus/") === 0) {
+        fichiers.push(fichierElu(v, chemin, fichiers));
+        resume.push("modification : " + v.nom);
+      } else {
+        var rubrique = chemin.indexOf("_talents/") === 0 ? "talents" : "actualites";
+        fichiers.push(fichierArticle(rubrique, v, chemin, fichiers));
+        resume.push("modification : " + v.titre);
+      }
+    });
+
+    if (surcouche.reglages.accueil) {
+      fichiers.push(fichierAccueil(reglagesFusionnes("accueil"), fichiers));
+      resume.push("page d'accueil");
+    }
+    if (surcouche.reglages.mairie) {
+      fichiers.push(fichierMairie(reglagesFusionnes("mairie")));
+      resume.push("coordonnées de la mairie");
+    }
+
+    suppressions.forEach(function (chemin) { resume.push("suppression : " + chemin.split("/").pop()); });
+
+    return {
+      fichiers: fichiers,
+      suppressions: suppressions,
+      resume: resume,
+      message: "Mise à jour du site depuis l'espace d'administration\n\n" + resume.join("\n") + "\n"
+    };
+  }
+
+  function nombreEnAttente() {
+    var c = surcouche.supprimes.length + Object.keys(surcouche.modifies).length;
+    ["actualites", "talents", "elus"].forEach(function (r) { c += (surcouche.nouveaux[r] || []).length; });
+    if (surcouche.reglages.accueil) c++;
+    if (surcouche.reglages.mairie) c++;
+    return c;
+  }
+
+  function majBarrePublication() {
+    var barre = document.getElementById("barre-publication");
+    if (!barre || !window.GapreePublication.estConnecte()) return;
+    var n = nombreEnAttente();
+    var etat = document.getElementById("etat-publication");
+    var bouton = document.getElementById("btn-publier");
+    barre.hidden = false;
+    bouton.disabled = n === 0;
+    etat.textContent = n === 0
+      ? "Le site en ligne est à jour."
+      : n + (n > 1 ? " modifications en attente de publication." : " modification en attente de publication.");
+  }
+
+  function publieMaintenant() {
+    var bouton = document.getElementById("btn-publier");
+    var changements = construitChangements();
+    if (!changements.fichiers.length && !changements.suppressions.length) return;
+    if (!confirm("Publier " + changements.resume.length + " modification(s) sur le site en ligne ?\n\n"
+      + changements.resume.join("\n"))) return;
+
+    bouton.disabled = true;
+    document.getElementById("etat-publication").textContent = "Publication en cours…";
+    window.GapreePublication.publie(changements).then(function () {
+      surcouche = { modifies: {}, nouveaux: { actualites: [], talents: [], elus: [] }, supprimes: [], reglages: {} };
+      ecritSurcouche(surcouche);
+      document.getElementById("etat-publication").textContent =
+        "Publié. Le site en ligne se met à jour dans une minute environ.";
+      toast("Publié sur le site");
+      setTimeout(function () { window.location.reload(); }, 60000);
+    }).catch(function (e) {
+      document.getElementById("etat-publication").textContent = e.message || "La publication a échoué.";
+      bouton.disabled = false;
+      toast("La publication a échoué");
+    });
+  }
+
   /* ------------------------------------------------------------- initialisation */
+
+  var pub = window.GapreePublication;
 
   document.querySelectorAll(".onglets button").forEach(function (b) {
     b.addEventListener("click", function () {
@@ -560,22 +749,84 @@
     });
   });
 
-  document.getElementById("btn-reinit").addEventListener("click", function () {
-    if (!confirm("Effacer toutes les modifications de démonstration faites sur ce navigateur ?")) return;
+  function videBrouillon(question) {
+    if (!confirm(question)) return;
     localStorage.removeItem(CLE_DEMO);
     surcouche = litSurcouche();
-    toast("Démonstration réinitialisée");
-    vue = { type: "liste", rubrique: vue.rubrique === "reglages" ? "reglages" : vue.rubrique };
+    toast("Modifications effacées");
     rendre();
+  }
+
+  document.getElementById("btn-reinit").addEventListener("click", function () {
+    videBrouillon("Effacer toutes les modifications de démonstration faites sur ce navigateur ?");
   });
 
-  fetch("contenu.json", { cache: "no-store" })
-    .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
-    .then(function (json) {
-      donnees = json;
-      rendre();
-    })
-    .catch(function () {
-      app.innerHTML = '<p class="erreur-chargement">Le contenu du site n\'a pas pu être chargé. Vérifiez la connexion internet, puis rechargez la page.</p>';
+  document.getElementById("btn-annule-brouillon").addEventListener("click", function () {
+    videBrouillon("Effacer les modifications qui n'ont pas encore été publiées ?");
+  });
+
+  document.getElementById("btn-publier").addEventListener("click", publieMaintenant);
+
+  function chargeContenu() {
+    fetch("contenu.json", { cache: "no-store" })
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function (json) {
+        donnees = json;
+        rendre();
+      })
+      .catch(function () {
+        app.innerHTML = '<p class="erreur-chargement">Le contenu du site n\'a pas pu être chargé. Vérifiez la connexion internet, puis rechargez la page.</p>';
+      });
+  }
+
+  /* En publication réelle, on prévient avant de quitter avec des modifications en attente. */
+  window.addEventListener("beforeunload", function (e) {
+    if (pub.estConnecte() && nombreEnAttente() > 0) {
+      e.preventDefault();
+      e.returnValue = "";
+    }
+  });
+
+  function ouvreEspace() {
+    document.getElementById("connexion").hidden = true;
+    document.getElementById("espace").hidden = false;
+    if (pub.estConnecte()) document.getElementById("bandeau-demo").hidden = true;
+    chargeContenu();
+  }
+
+  if (pub.estArme()) {
+    /* Publication réelle installée : le mot de passe ouvre l'espace. */
+    var connexion = document.getElementById("connexion");
+    var erreur = document.getElementById("erreur-connexion");
+    var btnConnexion = document.getElementById("btn-connexion");
+    connexion.hidden = false;
+    document.getElementById("ch-mdp").focus();
+
+    document.getElementById("form-connexion").addEventListener("submit", function (e) {
+      e.preventDefault();
+      var champ = document.getElementById("ch-mdp");
+      erreur.hidden = true;
+      btnConnexion.disabled = true;
+      btnConnexion.textContent = "Vérification…";
+      pub.deverrouille(champ.value)
+        .then(function () { return pub.verifieAcces(); })
+        .then(ouvreEspace)
+        .catch(function (err) {
+          pub.oublie();
+          erreur.textContent = err && err.message && err.message.indexOf("Accès refusé") === 0
+            ? err.message
+            : "Mot de passe incorrect.";
+          erreur.hidden = false;
+          champ.value = "";
+          champ.focus();
+        })
+        .then(function () {
+          btnConnexion.disabled = false;
+          btnConnexion.textContent = "Entrer";
+        });
     });
+  } else {
+    /* Aucun jeton installé : espace ouvert, en démonstration. */
+    ouvreEspace();
+  }
 })();

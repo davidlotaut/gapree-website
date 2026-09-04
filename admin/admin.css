@@ -433,3 +433,81 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 }
 
 [hidden] { display: none !important; }
+
+/* --- Connexion (publication réelle) ------------------------------------------- */
+
+.connexion {
+  max-width: 30rem;
+  margin: clamp(2rem, 8vh, 5rem) auto;
+  padding: clamp(1.6rem, 4vw, 2.4rem);
+  background: var(--blanc);
+  border: 1px solid var(--sauge);
+  border-radius: var(--radius);
+}
+
+.connexion h1 {
+  margin: 0 0 0.4rem;
+  font-family: var(--bulletin);
+  font-size: 1.6rem;
+  line-height: 1.25;
+}
+
+.connexion p { margin: 0 0 1.4rem; color: var(--ardoise); }
+
+.connexion label {
+  display: block;
+  font-family: var(--signaletique);
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  margin-bottom: 0.35rem;
+}
+
+.connexion input {
+  width: 100%;
+  font-family: inherit;
+  font-size: 1.1rem;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid var(--sauge);
+  border-radius: 8px;
+  margin-bottom: 1.1rem;
+}
+
+.connexion .btn { width: 100%; text-align: center; cursor: pointer; }
+
+.erreur-connexion {
+  margin: 1rem 0 0;
+  color: var(--rouge);
+  font-size: 1rem;
+}
+
+/* --- Barre de publication ------------------------------------------------------ */
+
+.barre-publication {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem 1.5rem;
+  padding: 0.8rem var(--gouttiere);
+  background: var(--sauge-pale);
+  border-bottom: 1px solid var(--sauge);
+}
+
+.etat-publication { margin: 0; font-size: 1rem; }
+
+.barre-publication-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.barre-publication .btn { cursor: pointer; }
+
+.barre-publication .btn:disabled {
+  background: var(--sauge);
+  color: var(--ardoise);
+  cursor: default;
+}
+
+.barre-publication .lien-reinit { color: var(--ardoise); margin-left: 0; }

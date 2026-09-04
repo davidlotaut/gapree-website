@@ -17,27 +17,50 @@
       <a class="entete-retour" href="../">Voir le site</a>
     </header>
 
-    <p class="bandeau-demo">
-      <strong>Version de démonstration.</strong> Vos modifications sont enregistrées dans ce navigateur
-      pour tester l'interface ; elles ne sont pas encore publiées sur le site en ligne.
-      La publication réelle sera activée à la mise en service.
-      <button type="button" class="lien-reinit" id="btn-reinit">Réinitialiser la démonstration</button>
-    </p>
+    <section class="connexion" id="connexion" hidden>
+      <h1>Modifier le site de la commune</h1>
+      <p>Entrez le mot de passe de la mairie.</p>
+      <form id="form-connexion" autocomplete="on">
+        <label for="ch-mdp">Mot de passe</label>
+        <input type="password" id="ch-mdp" autocomplete="current-password" required>
+        <button type="submit" class="btn" id="btn-connexion">Entrer</button>
+        <p class="erreur-connexion" id="erreur-connexion" hidden></p>
+      </form>
+    </section>
 
-    <nav class="onglets" aria-label="Rubriques">
-      <button type="button" data-rubrique="actualites" class="actif">Actualités</button>
-      <button type="button" data-rubrique="talents">Nos talents</button>
-      <button type="button" data-rubrique="elus">Équipe municipale</button>
-      <button type="button" data-rubrique="reglages">Réglages</button>
-    </nav>
+    <div id="espace" hidden>
+      <p class="bandeau-demo" id="bandeau-demo">
+        <strong>Version de démonstration.</strong> Vos modifications sont enregistrées dans ce navigateur
+        pour tester l'interface ; elles ne sont pas encore publiées sur le site en ligne.
+        La publication réelle sera activée à la mise en service.
+        <button type="button" class="lien-reinit" id="btn-reinit">Réinitialiser la démonstration</button>
+      </p>
 
-    <main id="app">
-      <p class="chargement">Chargement du contenu…</p>
-    </main>
+      <div class="barre-publication" id="barre-publication" hidden>
+        <p class="etat-publication" id="etat-publication"></p>
+        <div class="barre-publication-actions">
+          <button type="button" class="lien-reinit" id="btn-annule-brouillon">Annuler les modifications non publiées</button>
+          <button type="button" class="btn" id="btn-publier">Publier sur le site</button>
+        </div>
+      </div>
+
+      <nav class="onglets" aria-label="Rubriques">
+        <button type="button" data-rubrique="actualites" class="actif">Actualités</button>
+        <button type="button" data-rubrique="talents">Nos talents</button>
+        <button type="button" data-rubrique="elus">Équipe municipale</button>
+        <button type="button" data-rubrique="reglages">Réglages</button>
+      </nav>
+
+      <main id="app">
+        <p class="chargement">Chargement du contenu…</p>
+      </main>
+    </div>
 
     <noscript><p style="padding:2rem;font-family:Georgia,serif">L'espace d'administration nécessite JavaScript.</p></noscript>
 
     <div id="toast" hidden></div>
+    <script src="jeton.js"></script>
+    <script src="publication.js"></script>
     <script src="app.js"></script>
   </body>
 </html>
