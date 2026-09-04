@@ -100,6 +100,10 @@
     return appel("/utilisateurs", { method: "POST", corps: { email: email, reinitialiser: true } });
   }
 
+  function changeDroits(email, admin) {
+    return appel("/utilisateurs", { method: "PATCH", corps: { email: email, admin: !!admin } });
+  }
+
   function retireUtilisateur(email) {
     return appel("/utilisateurs?email=" + encodeURIComponent(email), { method: "DELETE" });
   }
@@ -126,6 +130,7 @@
     listeUtilisateurs: listeUtilisateurs,
     ajouteUtilisateur: ajouteUtilisateur,
     reinitialiseUtilisateur: reinitialiseUtilisateur,
+    changeDroits: changeDroits,
     retireUtilisateur: retireUtilisateur,
     publie: publie
   };

@@ -109,7 +109,7 @@ function reponse(donnees, statut, requete, env) {
       "Content-Type": "application/json; charset=utf-8",
       "Access-Control-Allow-Origin": origineAutorisee(requete, env),
       "Access-Control-Allow-Headers": "Content-Type, Authorization",
-      "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
+      "Access-Control-Allow-Methods": "GET, POST, PATCH, DELETE, OPTIONS",
       "Access-Control-Max-Age": "86400",
       "Vary": "Origin"
     }
@@ -296,6 +296,20 @@ export default {
             ? await creeCompte(env, email, existant.admin)
             : await creeCompte(env, email, corps.admin);
           return reponse({ email, motDePasse }, 200, requete, env);
+        }
+
+        /* Promouvoir ou rétrograder quelqu'un, sans changer son mot de passe. */
+        if (requete.method === "PATCH") {
+          const corps = await requete.json();
+          const email = normaliseEmail(corps.email);
+          const compte = await litCompte(env, email);
+          if (!compte) return erreur("Ce compte n'existe pas.", 404, requete, env);
+          if (email === session.compte.email && !corps.admin) {
+            return erreur("Vous ne pouvez pas vous retirer le droit de gérer les accès.", 400, requete, env);
+          }
+          compte.admin = !!corps.admin;
+          await ecritCompte(env, compte);
+          return reponse({ email, admin: compte.admin }, 200, requete, env);
         }
 
         if (requete.method === "DELETE") {

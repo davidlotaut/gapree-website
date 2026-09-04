@@ -65,7 +65,13 @@ L'onglet « Accès » n'apparaît que pour les personnes autorisées à gérer l
 2. Cochez la case si elle doit pouvoir, à son tour, donner et retirer des accès.
 3. Cliquez sur « Créer l'accès ». Un mot de passe apparaît : **notez-le et transmettez-le tout de suite**, il ne sera plus affiché. La personne le remplacera par le sien en se connectant.
 
-Dans la liste, chaque accès peut recevoir un nouveau mot de passe (l'ancien cesse aussitôt de fonctionner) ou être retiré. Vous ne pouvez pas retirer le vôtre, pour éviter de fermer la porte de l'intérieur.
+Dans la liste, chaque accès dispose de trois boutons :
+
+- **Autoriser à gérer les accès**, ou **Ne plus gérer les accès** : change le niveau de la personne sans toucher à son mot de passe, elle n'a rien à refaire de son côté.
+- **Nouveau mot de passe** : en fabrique un autre, l'ancien cesse aussitôt de fonctionner. C'est la réponse à un mot de passe oublié.
+- **Retirer l'accès** : la personne ne peut plus modifier le site.
+
+Vous ne pouvez ni retirer votre propre accès, ni vous enlever à vous-même le droit de gérer les accès : cela éviterait de fermer la porte de l'intérieur.
 
 Quelqu'un quitte la mairie, ou un mot de passe a traîné sur un papier : retirez l'accès, ou fabriquez-en un nouveau. C'est immédiat, et cela ne demande l'aide de personne.
 
