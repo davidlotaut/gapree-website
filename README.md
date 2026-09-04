@@ -17,36 +17,25 @@ Site vitrine de **Gâprée** (Orne, Normandie, ~140 habitants), avec espace d'ad
 
 ## Espace d'administration (`/admin/`)
 
-Application autonome (`index.html` + `admin.css` + `app.js` + `publication.js`), sans dépendance
-externe. Deux états, décidés par la seule présence d'un jeton dans `admin/jeton.js` :
+Application autonome (`index.html` + `admin.css` + `app.js` + `publication.js`), sans
+dépendance externe. Deux états, décidés par la seule présence d'une adresse dans
+`admin/config.js` :
 
-| `admin/jeton.js` | Accès | Enregistrer | Publier |
+| `admin/config.js` | Accès | Enregistrer | Publier |
 |---|---|---|---|
-| vide (état actuel) | ouvert à tous | navigateur (`localStorage`) | indisponible, bandeau de démonstration |
-| jeton chiffré collé | mot de passe | navigateur (brouillon) | écrit dans le dépôt |
+| vide | ouvert à tous | navigateur (`localStorage`) | indisponible, bandeau de démonstration |
+| adresse du serveur | adresse électronique + mot de passe | navigateur (brouillon) | écrit dans le dépôt |
 
 - Le contenu réel du site est chargé depuis `/admin/contenu.json` (généré par Jekyll à chaque
   build) et le texte des articles depuis les fichiers source du dépôt (raw.githubusercontent.com).
 - Onglets : Actualités, Nos talents (création, édition avec aperçu en direct, suppression,
-  photo, vidéo YouTube), Équipe municipale (fiches + ordre), Réglages (photo d'accueil,
-  coordonnées, horaires).
+  photo, description de la photo, vidéo YouTube), Équipe municipale, Réglages, et Accès
+  pour les personnes autorisées à gérer les comptes.
 - **Publication** : le brouillon local est traduit en fichiers du site (markdown avec front
-  matter, `_data/*.yml`, photos écrites dans `assets/img/`) puis poussé en **un seul commit**
-  via l'API Git de GitHub, donc une seule reconstruction du site. Les conflits (publication
-  concurrente) sont détectés et signalés en clair.
-- **Sécurité** : le jeton est embarqué chiffré (AES-256-GCM, clé PBKDF2-SHA256 310 000
-  itérations dérivée du mot de passe), déchiffré dans le navigateur par WebCrypto. Le dépôt
-  étant public, le blob chiffré l'est aussi : le mot de passe doit être long, et le jeton doit
-  être un PAT *fine-grained* limité à ce seul dépôt en écriture de contenu.
-
-### Activer la publication réelle
-
-```bash
-/usr/bin/python3 scripts/chiffre_jeton.py "<mot de passe mairie>" "<PAT GitHub>"
-# coller la ligne obtenue dans admin/jeton.js, puis commit + push
-```
-
-Pour revenir en démonstration : remettre la chaîne vide.
+  matter, `_data/*.yml`, photos écrites dans `assets/img/`) et envoyé au serveur, qui écrit
+  le tout en **un seul commit**, donc une seule reconstruction du site.
+- **Le jeton d'écriture ne descend jamais dans le navigateur** : il vit dans le serveur
+  (`serveur/`, voir son README). Le dépôt public ne contient aucun secret, même chiffré.
 
 ## Structure du contenu
 
@@ -64,21 +53,12 @@ admin/         espace d'administration (contenu.json = export Jekyll du contenu)
 
 - Site public ouvert, en `noindex` tant que `mode_dev: true` dans `_config.yml`
   (passer à `false` à la mise en ligne définitive).
-- `/admin/` ouvert à tous, en démonstration, tant que `admin/jeton.js` est vide.
-- **Contenu vide** : actualités et portraits ont été retirés le 04/09/2026 (ils étaient
-  fictifs). Le site attend la matière de la mairie ; les pages gèrent l'état vide.
-  Seuls les 11 élus sont du contenu réel.
+- `/admin/` ouvert à tous, en démonstration, tant que `admin/config.js` est vide.
+- **Contenu de démonstration** : les 9 actualités et les 5 portraits sont fictifs,
+  remis en ligne le 04/09/2026 pour la présentation à la mairie. À remplacer par la
+  matière de la commune avant la mise en service. Seuls les 11 élus sont réels.
 - La photo d'accueil reste une illustration libre de droits, à remplacer par une vraie
   photo de la commune.
-
-## Développement local (facultatif)
-
-```bash
-bundle install   # nécessite Ruby ; gem github-pages
-bundle exec jekyll serve
-```
-
-Sans Ruby : pousser sur `main` et laisser GitHub Pages construire (1 à 2 min), statut dans l'onglet Actions.
 
 ## Basculer sur le nom de domaine de la commune
 

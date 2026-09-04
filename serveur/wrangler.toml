@@ -1,0 +1,15 @@
+name = "gapree-admin"
+main = "src/index.js"
+compatibility_date = "2026-06-01"
+workers_dev = true
+
+# Rien de secret ici : le jeton d'écriture GitHub est posé à part,
+# par `wrangler secret put JETON_GITHUB`, et n'apparaît dans aucun fichier.
+[vars]
+DEPOT = "davidlotaut/gapree-website"
+BRANCHE = "main"
+ORIGINES = "https://davidlotaut.github.io,https://gapree.com,https://www.gapree.com"
+
+[[kv_namespaces]]
+binding = "COMPTES"
+id = "À_REMPLIR_A_LA_CREATION_DU_STOCKAGE"

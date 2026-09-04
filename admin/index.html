@@ -14,13 +14,19 @@
         <span class="plaque">Gâprée</span>
         <span class="entete-titre">Espace d'administration</span>
       </div>
-      <a class="entete-retour" href="../">Voir le site</a>
+      <div class="entete-droite">
+        <span class="entete-qui" id="entete-qui" hidden></span>
+        <button type="button" class="lien-reinit" id="btn-deconnexion" hidden>Se déconnecter</button>
+        <a class="entete-retour" href="../">Voir le site</a>
+      </div>
     </header>
 
     <section class="connexion" id="connexion" hidden>
       <h1>Modifier le site de la commune</h1>
-      <p>Entrez le mot de passe de la mairie.</p>
+      <p>Connectez-vous avec l'adresse électronique et le mot de passe qui vous ont été remis.</p>
       <form id="form-connexion" autocomplete="on">
+        <label for="ch-email">Adresse électronique</label>
+        <input type="email" id="ch-email" autocomplete="username" required>
         <label for="ch-mdp">Mot de passe</label>
         <input type="password" id="ch-mdp" autocomplete="current-password" required>
         <button type="submit" class="btn" id="btn-connexion">Entrer</button>
@@ -28,11 +34,23 @@
       </form>
     </section>
 
+    <section class="connexion" id="changer-mdp" hidden>
+      <h1>Choisissez votre mot de passe</h1>
+      <p>Le mot de passe qui vous a été remis est provisoire. Choisissez le vôtre pour continuer.</p>
+      <form id="form-mdp">
+        <label for="ch-mdp-1">Nouveau mot de passe</label>
+        <input type="password" id="ch-mdp-1" autocomplete="new-password" required minlength="8">
+        <label for="ch-mdp-2">Répétez-le</label>
+        <input type="password" id="ch-mdp-2" autocomplete="new-password" required minlength="8">
+        <button type="submit" class="btn" id="btn-mdp">Enregistrer</button>
+        <p class="erreur-connexion" id="erreur-mdp" hidden></p>
+      </form>
+    </section>
+
     <div id="espace" hidden>
       <p class="bandeau-demo" id="bandeau-demo">
         <strong>Version de démonstration.</strong> Vos modifications sont enregistrées dans ce navigateur
-        pour tester l'interface ; elles ne sont pas encore publiées sur le site en ligne.
-        La publication réelle sera activée à la mise en service.
+        pour tester l'interface ; elles ne sont pas publiées sur le site en ligne.
         <button type="button" class="lien-reinit" id="btn-reinit">Réinitialiser la démonstration</button>
       </p>
 
@@ -49,6 +67,7 @@
         <button type="button" data-rubrique="talents">Nos talents</button>
         <button type="button" data-rubrique="elus">Équipe municipale</button>
         <button type="button" data-rubrique="reglages">Réglages</button>
+        <button type="button" data-rubrique="acces" id="onglet-acces" hidden>Accès</button>
       </nav>
 
       <main id="app">
@@ -59,7 +78,7 @@
     <noscript><p style="padding:2rem;font-family:Georgia,serif">L'espace d'administration nécessite JavaScript.</p></noscript>
 
     <div id="toast" hidden></div>
-    <script src="jeton.js"></script>
+    <script src="config.js"></script>
     <script src="publication.js"></script>
     <script src="app.js"></script>
   </body>

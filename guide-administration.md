@@ -9,9 +9,9 @@ chapo: "Ce guide explique comment publier et modifier le contenu du site. Aucune
 
 Ouvrez la page [Administration du site]({{ '/admin/' | relative_url }}) : le lien figure aussi tout en bas de chaque page du site.
 
-Un mot de passe est demandé. Il est remis à la mairie et ne se partage pas en dehors des personnes qui mettent le site à jour.
+Votre adresse électronique et votre mot de passe vous sont demandés. À la première connexion, le mot de passe qui vous a été remis est provisoire : vous choisissez le vôtre, que personne d'autre ne connaît.
 
-Tant que la publication n'a pas été activée, l'espace s'ouvre sans mot de passe et affiche un bandeau jaune : dans cet état, tout peut être essayé sans risque, et rien n'est publié.
+Tant que la publication n'a pas été activée, l'espace s'ouvre sans rien demander et affiche un bandeau jaune : dans cet état, tout peut être essayé sans risque, et rien n'est publié.
 
 ## Les deux gestes à connaître
 
@@ -55,6 +55,18 @@ Dans l'onglet « Réglages » :
 - « Page d'accueil » : la grande photo, le sous-titre et le texte de bienvenue. La photo actuelle est une image d'illustration : remplacez-la dès que possible par une belle photo de la commune (photo en largeur, dite « paysage », de préférence).
 - « Coordonnées de la mairie » : adresse, téléphone, courriel, horaires. Ces informations s'affichent sur la page « Nous contacter » et au bas de toutes les pages.
 
+## Donner ou retirer un accès
+
+L'onglet « Accès » n'apparaît que pour les personnes autorisées à gérer les autres.
+
+1. Saisissez l'adresse électronique de la personne.
+2. Cochez la case si elle doit pouvoir, à son tour, donner et retirer des accès.
+3. Cliquez sur « Créer l'accès ». Un mot de passe apparaît : **notez-le et transmettez-le tout de suite**, il ne sera plus affiché. La personne le remplacera par le sien en se connectant.
+
+Dans la liste, chaque accès peut recevoir un nouveau mot de passe (l'ancien cesse aussitôt de fonctionner) ou être retiré. Vous ne pouvez pas retirer le vôtre, pour éviter de fermer la porte de l'intérieur.
+
+Quelqu'un quitte la mairie, ou un mot de passe a traîné sur un papier : retirez l'accès, ou fabriquez-en un nouveau. C'est immédiat, et cela ne demande l'aide de personne.
+
 ## Bon à savoir
 
 - Préférez des photos de moins de 4 Mo. Les photos au format paysage rendent mieux dans les cartes.
@@ -66,6 +78,8 @@ Dans l'onglet « Réglages » :
 
 ## En cas de souci
 
-- « Mot de passe incorrect » : vérifiez la casse ; les majuscules et minuscules ne comptent pas, les espaces avant et après non plus.
+- « Adresse ou mot de passe incorrect » : vérifiez l'adresse électronique, puis le mot de passe. Après dix essais ratés, le compte se bloque un quart d'heure : c'est ce qui protège le site des tentatives automatiques.
+- Mot de passe perdu : une personne qui gère les accès en fabrique un nouveau depuis l'onglet « Accès », en quelques secondes.
 - « Le site a été modifié entre-temps » : quelqu'un d'autre a publié pendant votre travail. Rechargez la page, puis publiez à nouveau.
+- « La clé d'écriture du site n'est plus valable » : rien à faire de votre côté, prévenez la personne qui a installé le site.
 - Une photo refusée : elle dépasse 4 Mo. Réduisez-la, ou choisissez une autre prise de vue.

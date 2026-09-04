@@ -169,6 +169,7 @@
     if (vue.type === "liste") {
       if (vue.rubrique === "elus") return rendListeElus();
       if (vue.rubrique === "reglages") return rendReglages();
+      if (vue.rubrique === "acces") return rendAcces();
       return rendListeArticles(vue.rubrique);
     }
     if (vue.type === "article") return rendEditeurArticle(vue.rubrique, vue.chemin);
@@ -749,6 +750,103 @@
     });
   }
 
+  /* --------------------------------------------------------------- accès */
+
+  function rendAcces() {
+    app.innerHTML = '<div class="barre-liste"><h2>Qui peut modifier le site</h2></div>' +
+      '<p class="aide aide--large">Chaque personne se connecte avec son adresse électronique. ' +
+      'Le mot de passe est fabriqué ici : notez-le et transmettez-le à la personne, ' +
+      'elle le remplacera par le sien à sa première connexion.</p>' +
+      '<div class="panneau panneau--acces">' +
+      '<h3>Donner un accès</h3>' +
+      '<div class="champ"><label for="ch-nouvel-email">Adresse électronique</label>' +
+      '<input type="email" id="ch-nouvel-email" placeholder="prenom.nom@exemple.fr"></div>' +
+      '<label class="case"><input type="checkbox" id="ch-nouvel-admin"> Cette personne pourra aussi donner et retirer des accès</label>' +
+      '<div class="actions"><button type="button" class="btn" id="btn-nouvel-acces">Créer l\'accès</button></div>' +
+      '<div id="mdp-genere"></div>' +
+      "</div>" +
+      '<div id="zone-acces"><p class="chargement">Chargement…</p></div>';
+
+    document.getElementById("btn-nouvel-acces").addEventListener("click", function () {
+      var champ = document.getElementById("ch-nouvel-email");
+      var email = champ.value.trim();
+      if (!email) { toast("Indiquez une adresse électronique"); champ.focus(); return; }
+      var admin = document.getElementById("ch-nouvel-admin").checked;
+      pub.ajouteUtilisateur(email, admin).then(function (r) {
+        champ.value = "";
+        document.getElementById("ch-nouvel-admin").checked = false;
+        montreMotDePasse(r.email, r.motDePasse);
+        listeAcces();
+      }).catch(function (e) { toast(e.message); });
+    });
+
+    listeAcces();
+  }
+
+  /* Le mot de passe ne s'affiche qu'une fois : il reste sous les yeux
+     jusqu'à ce qu'on le referme, avec de quoi le copier. */
+  function montreMotDePasse(email, motDePasse) {
+    var zone = document.getElementById("mdp-genere");
+    zone.innerHTML = '<div class="mdp-encart">' +
+      "<p class=\"mdp-titre\">Mot de passe de " + echap(email) + "</p>" +
+      '<p class="mdp-valeur" id="mdp-valeur">' + echap(motDePasse) + "</p>" +
+      '<p class="mdp-aide">Notez-le et transmettez-le maintenant : il ne sera plus affiché. ' +
+      'La personne choisira le sien en se connectant.</p>' +
+      '<div class="actions"><button type="button" class="btn btn--secondaire" id="btn-copier">Copier</button>' +
+      '<button type="button" class="btn btn--secondaire" id="btn-fermer-mdp">J\'ai noté</button></div></div>';
+
+    document.getElementById("btn-copier").addEventListener("click", function () {
+      var texte = document.getElementById("mdp-valeur").textContent;
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(texte).then(function () { toast("Mot de passe copié"); },
+          function () { toast("Copie impossible, notez-le à la main"); });
+      } else {
+        toast("Copie impossible, notez-le à la main");
+      }
+    });
+    document.getElementById("btn-fermer-mdp").addEventListener("click", function () { zone.innerHTML = ""; });
+  }
+
+  function listeAcces() {
+    var zone = document.getElementById("zone-acces");
+    pub.listeUtilisateurs().then(function (comptes) {
+      var moi = pub.utilisateur() || {};
+      zone.innerHTML = '<h3 class="titre-liste-acces">Accès en place</h3><div class="lignes">' + comptes.map(function (c) {
+        var soi = c.email === moi.email;
+        return '<div class="ligne ligne--acces">' +
+          '<span class="ligne-texte"><span class="ligne-titre">' + echap(c.email) + (soi ? " (vous)" : "") + "</span>" +
+          '<span class="ligne-meta">' + (c.admin ? "Peut gérer les accès" : "Peut modifier le site") +
+          (c.aChange ? "" : " · mot de passe provisoire, jamais utilisé") + "</span></span>" +
+          '<span class="acces-actions">' +
+          '<button type="button" class="lien-reinit" data-reinit="' + echap(c.email) + '">Nouveau mot de passe</button>' +
+          (soi ? "" : '<button type="button" class="lien-reinit lien-reinit--danger" data-retire="' + echap(c.email) + '">Retirer l\'accès</button>') +
+          "</span></div>";
+      }).join("") + "</div>";
+
+      zone.querySelectorAll("[data-reinit]").forEach(function (b) {
+        b.addEventListener("click", function () {
+          if (!confirm("Fabriquer un nouveau mot de passe pour " + b.dataset.reinit + " ?\n\nL'ancien cessera aussitôt de fonctionner.")) return;
+          pub.reinitialiseUtilisateur(b.dataset.reinit).then(function (r) {
+            montreMotDePasse(r.email, r.motDePasse);
+            listeAcces();
+          }).catch(function (e) { toast(e.message); });
+        });
+      });
+
+      zone.querySelectorAll("[data-retire]").forEach(function (b) {
+        b.addEventListener("click", function () {
+          if (!confirm("Retirer l'accès de " + b.dataset.retire + " ?\n\nCette personne ne pourra plus modifier le site.")) return;
+          pub.retireUtilisateur(b.dataset.retire).then(function () {
+            toast("Accès retiré");
+            listeAcces();
+          }).catch(function (e) { toast(e.message); });
+        });
+      });
+    }).catch(function (e) {
+      zone.innerHTML = '<p class="erreur-chargement">' + echap(e.message) + "</p>";
+    });
+  }
+
   /* ------------------------------------------------------------- initialisation */
 
   var pub = window.GapreePublication;
@@ -778,6 +876,18 @@
 
   document.getElementById("btn-publier").addEventListener("click", publieMaintenant);
 
+  document.getElementById("btn-deconnexion").addEventListener("click", function () {
+    if (nombreEnAttente() > 0 && !confirm("Des modifications ne sont pas publiées. Se déconnecter quand même ?")) return;
+    pub.deconnecte().then(function () { window.location.reload(); });
+  });
+
+  window.addEventListener("beforeunload", function (e) {
+    if (pub.estConnecte() && nombreEnAttente() > 0) {
+      e.preventDefault();
+      e.returnValue = "";
+    }
+  });
+
   function chargeContenu() {
     fetch("contenu.json", { cache: "no-store" })
       .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
@@ -790,54 +900,89 @@
       });
   }
 
-  /* En publication réelle, on prévient avant de quitter avec des modifications en attente. */
-  window.addEventListener("beforeunload", function (e) {
-    if (pub.estConnecte() && nombreEnAttente() > 0) {
-      e.preventDefault();
-      e.returnValue = "";
-    }
-  });
-
   function ouvreEspace() {
+    var moi = pub.utilisateur();
     document.getElementById("connexion").hidden = true;
+    document.getElementById("changer-mdp").hidden = true;
     document.getElementById("espace").hidden = false;
-    if (pub.estConnecte()) document.getElementById("bandeau-demo").hidden = true;
+    if (pub.estConnecte()) {
+      document.getElementById("bandeau-demo").hidden = true;
+      document.getElementById("btn-deconnexion").hidden = false;
+      var qui = document.getElementById("entete-qui");
+      qui.textContent = moi.email;
+      qui.hidden = false;
+      document.getElementById("onglet-acces").hidden = !moi.admin;
+    }
     chargeContenu();
   }
 
-  if (pub.estArme()) {
-    /* Publication réelle installée : le mot de passe ouvre l'espace. */
+  /* Un mot de passe provisoire doit être remplacé avant d'entrer. */
+  function demandeNouveauMotDePasse() {
+    var ecran = document.getElementById("changer-mdp");
+    var erreur = document.getElementById("erreur-mdp");
+    document.getElementById("connexion").hidden = true;
+    ecran.hidden = false;
+    document.getElementById("ch-mdp-1").focus();
+
+    document.getElementById("form-mdp").addEventListener("submit", function (e) {
+      e.preventDefault();
+      var a = document.getElementById("ch-mdp-1").value;
+      var b = document.getElementById("ch-mdp-2").value;
+      erreur.hidden = true;
+      if (a !== b) {
+        erreur.textContent = "Les deux mots de passe ne sont pas identiques.";
+        erreur.hidden = false;
+        return;
+      }
+      pub.changeMotDePasse(a).then(ouvreEspace).catch(function (err) {
+        erreur.textContent = err.message;
+        erreur.hidden = false;
+      });
+    });
+  }
+
+  function apresConnexion() {
+    var moi = pub.utilisateur();
+    if (moi && moi.doitChangerMotDePasse) return demandeNouveauMotDePasse();
+    ouvreEspace();
+  }
+
+  function ecranConnexion() {
     var connexion = document.getElementById("connexion");
     var erreur = document.getElementById("erreur-connexion");
-    var btnConnexion = document.getElementById("btn-connexion");
+    var bouton = document.getElementById("btn-connexion");
     connexion.hidden = false;
-    document.getElementById("ch-mdp").focus();
+    document.getElementById("ch-email").focus();
 
     document.getElementById("form-connexion").addEventListener("submit", function (e) {
       e.preventDefault();
-      var champ = document.getElementById("ch-mdp");
+      var email = document.getElementById("ch-email").value;
+      var champMdp = document.getElementById("ch-mdp");
       erreur.hidden = true;
-      btnConnexion.disabled = true;
-      btnConnexion.textContent = "Vérification…";
-      pub.deverrouille(champ.value)
-        .then(function () { return pub.verifieAcces(); })
-        .then(ouvreEspace)
+      bouton.disabled = true;
+      bouton.textContent = "Vérification…";
+      pub.connecte(email, champMdp.value)
+        .then(apresConnexion)
         .catch(function (err) {
-          pub.oublie();
-          erreur.textContent = err && err.message && err.message.indexOf("Accès refusé") === 0
-            ? err.message
-            : "Mot de passe incorrect.";
+          erreur.textContent = err.message;
           erreur.hidden = false;
-          champ.value = "";
-          champ.focus();
+          champMdp.value = "";
+          champMdp.focus();
         })
         .then(function () {
-          btnConnexion.disabled = false;
-          btnConnexion.textContent = "Entrer";
+          bouton.disabled = false;
+          bouton.textContent = "Entrer";
         });
     });
+  }
+
+  if (pub.estArme()) {
+    pub.reprendSession().then(function (ouverte) {
+      if (ouverte) return apresConnexion();
+      ecranConnexion();
+    });
   } else {
-    /* Aucun jeton installé : espace ouvert, en démonstration. */
+    /* Aucun serveur configuré : espace ouvert, en démonstration. */
     ouvreEspace();
   }
 })();
