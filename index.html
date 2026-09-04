@@ -20,41 +20,29 @@ section: accueil
   </div>
 
   {% if actus.size > 0 %}
-  {% assign une = actus | first %}
-  <a class="une" href="{{ une.url | relative_url }}">
-    <div class="une-img{% unless une.image %} une-img--vide{% endunless %}">
-      {% if une.image %}<img src="{{ une.image | relative_url }}" alt="">{% endif %}
-    </div>
-    <div class="une-body">
-      <p class="une-date">{% include date_fr.html date=une.date %}</p>
-      <h3 class="une-titre">{{ une.title }}</h3>
-      <p class="une-extrait">{{ une.content | strip_html | normalize_whitespace | truncate: 250 }}</p>
-      <span class="btn">Lire l'article</span>
-    </div>
-  </a>
-
-  {% if actus.size > 1 %}
   <div class="grid">
-    {% for item in actus offset: 1 limit: 6 %}{% include card.html item=item type="actualite" %}{% endfor %}
+    {% for item in actus limit: 3 %}{% include card.html item=item type="actualite" %}{% endfor %}
   </div>
-  {% endif %}
   {% else %}
   <p class="empty">Aucune actualité pour le moment. Les informations de la commune paraîtront ici.</p>
   {% endif %}
 </section>
 
 {% assign portraits = site.talents | sort: "date" | reverse %}
-{% if portraits.size > 0 %}
 <section class="section section--blanche" aria-labelledby="titre-talents">
   <div class="section-head">
     <h2 class="section-title" id="titre-talents">Nos talents</h2>
     <a class="section-link" href="{{ '/talents/' | relative_url }}">Tous les talents</a>
   </div>
+
+  {% if portraits.size > 0 %}
   <div class="grid">
     {% for item in portraits limit: 3 %}{% include card.html item=item type="talent" %}{% endfor %}
   </div>
+  {% else %}
+  <p class="empty">Aucun portrait pour le moment. Vous avez un savoir-faire ou une passion à partager ? Faites-vous connaître auprès de la mairie.</p>
+  {% endif %}
 </section>
-{% endif %}
 
 <section class="bande-contact" aria-labelledby="titre-bande-contact">
   <div class="bande-texte">
