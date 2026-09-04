@@ -9,7 +9,18 @@ chapo: "Ce guide explique comment publier et modifier le contenu du site. Aucune
 
 Ouvrez la page [Administration du site]({{ '/admin/' | relative_url }}) : le lien figure aussi tout en bas de chaque page du site.
 
-**Pendant la phase de démonstration**, l'espace est ouvert à tous et vos modifications sont enregistrées dans votre navigateur pour tester l'interface : elles ne sont pas encore publiées sur le site en ligne. À la mise en service, un accès réservé sera installé et les modifications seront publiées réellement.
+Un mot de passe est demandé. Il est remis à la mairie et ne se partage pas en dehors des personnes qui mettent le site à jour.
+
+Tant que la publication n'a pas été activée, l'espace s'ouvre sans mot de passe et affiche un bandeau jaune : dans cet état, tout peut être essayé sans risque, et rien n'est publié.
+
+## Les deux gestes à connaître
+
+C'est le seul point qui demande un peu d'attention, et il vaut pour toutes les rubriques.
+
+- **Enregistrer** met votre travail de côté sur votre ordinateur. L'article n'est pas encore visible par les habitants. Vous pouvez fermer la page et reprendre plus tard.
+- **Publier sur le site** envoie d'un coup tout ce qui a été enregistré vers le site en ligne. C'est le geste qui rend le contenu public.
+
+Le bandeau vert, en haut de l'espace, indique en permanence où vous en êtes : « Le site en ligne est à jour » ou « 2 modifications en attente de publication ». Après une publication, comptez une minute avant de voir le changement sur le site.
 
 ## Publier une actualité
 
@@ -18,6 +29,9 @@ Ouvrez la page [Administration du site]({{ '/admin/' | relative_url }}) : le lie
 3. Renseignez le titre, la date, une photo si vous en avez une, et le texte. L'aperçu à droite montre le résultat au fur et à mesure.
 4. Pour une vidéo : mettez-la d'abord en ligne sur YouTube, puis collez son lien dans le champ « Vidéo YouTube ».
 5. Cliquez sur « Enregistrer ».
+6. Cliquez sur « Publier sur le site », en haut, et confirmez.
+
+La page d'accueil montre les trois actualités les plus récentes. Les autres restent accessibles par « Toutes les actualités ».
 
 Les mêmes étapes valent pour l'onglet « Nos talents » : un portrait a en plus un champ « Sous-titre » pour indiquer le métier ou l'activité.
 
@@ -26,6 +40,7 @@ Les mêmes étapes valent pour l'onglet « Nos talents » : un portrait a en plu
 1. Ouvrez la rubrique concernée, puis cliquez sur l'article à modifier.
 2. Faites vos changements et cliquez sur « Enregistrer ».
 3. Pour supprimer : ouvrez l'article et utilisez le bouton « Supprimer ».
+4. Dans les deux cas, terminez par « Publier sur le site ».
 
 ## Mettre à jour l'équipe municipale
 
@@ -44,5 +59,13 @@ Dans l'onglet « Réglages » :
 
 - Préférez des photos de moins de 4 Mo. Les photos au format paysage rendent mieux dans les cartes.
 - Les vidéos ne sont pas stockées sur le site : elles doivent être sur YouTube, seul le lien est collé ici.
-- Le bouton « Réinitialiser la démonstration », en haut de l'espace d'administration, efface les modifications d'essai faites sur votre navigateur.
+- Si vous fermez la page en laissant des modifications non publiées, le navigateur vous prévient. Elles vous attendront à votre retour, sur le même ordinateur.
+- « Annuler les modifications non publiées » efface ce qui n'a pas encore été envoyé. Ce qui est déjà publié n'est pas touché.
+- Une publication ne supprime jamais l'historique : chaque version du site est conservée et peut être rétablie.
 - Ce guide n'apparaît pas dans les menus du site ; conservez son adresse.
+
+## En cas de souci
+
+- « Mot de passe incorrect » : vérifiez la casse ; les majuscules et minuscules ne comptent pas, les espaces avant et après non plus.
+- « Le site a été modifié entre-temps » : quelqu'un d'autre a publié pendant votre travail. Rechargez la page, puis publiez à nouveau.
+- Une photo refusée : elle dépasse 4 Mo. Réduisez-la, ou choisissez une autre prise de vue.
