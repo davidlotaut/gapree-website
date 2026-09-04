@@ -20,8 +20,13 @@ section: accueil
   </div>
 
   {% if actus.size > 0 %}
-  <div class="grid">
+  <div class="grid grid--accueil">
     {% for item in actus limit: 3 %}{% include card.html item=item type="actualite" %}{% endfor %}
+    <a class="card card--tout" href="{{ '/actualites/' | relative_url }}">
+      <span class="card-tout-titre">Toutes les actualités</span>
+      <span class="card-tout-compte">{{ actus.size }} article{% if actus.size > 1 %}s{% endif %} en ligne</span>
+      <span class="card-tout-fleche" aria-hidden="true">&rarr;</span>
+    </a>
   </div>
   {% else %}
   <p class="empty">Aucune actualité pour le moment. Les informations de la commune paraîtront ici.</p>
@@ -36,8 +41,13 @@ section: accueil
   </div>
 
   {% if portraits.size > 0 %}
-  <div class="grid">
+  <div class="grid grid--accueil">
     {% for item in portraits limit: 3 %}{% include card.html item=item type="talent" %}{% endfor %}
+    <a class="card card--tout" href="{{ '/talents/' | relative_url }}">
+      <span class="card-tout-titre">Tous les talents</span>
+      <span class="card-tout-compte">{{ portraits.size }} portrait{% if portraits.size > 1 %}s{% endif %} en ligne</span>
+      <span class="card-tout-fleche" aria-hidden="true">&rarr;</span>
+    </a>
   </div>
   {% else %}
   <p class="empty">Aucun portrait pour le moment. Vous avez un savoir-faire ou une passion à partager ? Faites-vous connaître auprès de la mairie.</p>

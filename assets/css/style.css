@@ -253,6 +253,56 @@ button:focus-visible {
   gap: clamp(18px, 2.2vw, 30px);
 }
 
+/* Accueil : trois contenus plus la carte « tout voir », sur une seule ligne. */
+.grid--accueil { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+@media (max-width: 1179px) {
+  .grid--accueil { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 700px) {
+  .grid--accueil { grid-template-columns: 1fr; }
+}
+
+/* Quatrième carte : l'accès à la rubrique complète, en vert de prairie pâle. */
+.card--tout {
+  justify-content: center;
+  gap: 0.55rem;
+  padding: clamp(1.4rem, 2.2vw, 2rem);
+  background: var(--sauge-pale);
+  border-color: var(--sauge);
+  text-decoration: none;
+  color: var(--encre);
+}
+
+.card--tout:hover { background: #E4EEDF; color: var(--encre); }
+
+.card-tout-titre {
+  font-family: var(--bulletin);
+  font-size: clamp(1.25rem, 1.6vw, 1.5rem);
+  line-height: 1.25;
+  color: var(--prairie-fonce);
+}
+
+.card-tout-compte {
+  font-family: var(--signaletique);
+  font-weight: 600;
+  font-size: 1.02rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ardoise);
+}
+
+.card-tout-fleche {
+  margin-top: 0.35rem;
+  font-size: 1.9rem;
+  line-height: 1;
+  color: var(--prairie);
+  transition: transform 0.2s;
+}
+
+.card--tout:hover .card-tout-fleche { transform: translateX(6px); }
+
 .empty {
   max-width: 70ch;
   background: var(--sauge-pale);
@@ -290,11 +340,13 @@ button:focus-visible {
 .card:focus-within .card-title a { outline: none; }
 
 /* Sans photo, la carte devient un « avis » officiel, souligné de vert.
-   align-self: start évite qu'elle s'étire à la hauteur des cartes à photo. */
+   Elle occupe toute la hauteur de la ligne, comme les cartes à photo. */
 .card--avis {
   border-top: 4px solid var(--prairie);
-  align-self: start;
+  background: linear-gradient(var(--sauge-pale), var(--blanc) 60%);
 }
+
+.card--avis .card-body { flex: 1; }
 
 .card-img {
   position: relative;
