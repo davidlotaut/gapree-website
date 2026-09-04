@@ -80,12 +80,41 @@ bundle exec jekyll serve
 
 Sans Ruby : pousser sur `main` et laisser GitHub Pages construire (1 à 2 min), statut dans l'onglet Actions.
 
+## Basculer sur le nom de domaine de la commune
+
+Le domaine `gapree.com` existe déjà : enregistré chez **OVH** le 01/06/2022, expire le
+01/06/2027, il sert aujourd'hui la page « Site en construction » d'OVH (hébergement vide)
+et porte des enregistrements MX OVH. Il est détenu par Nicolas Huguenin, qui doit
+transmettre les accès.
+
+Dans le dépôt, en un seul commit :
+
+1. créer un fichier `CNAME` à la racine contenant la seule ligne `gapree.com` ;
+2. dans `_config.yml` : `url: "https://gapree.com"` et `baseurl: ""` ;
+3. passer `mode_dev: false` pour lever le `noindex` (à ne faire qu'une fois le vrai
+   contenu en ligne, sinon les moteurs indexent une coquille vide).
+
+Chez OVH, zone DNS du domaine :
+
+| Type | Sous-domaine | Cible |
+|---|---|---|
+| A | (vide) | 185.199.108.153 |
+| A | (vide) | 185.199.109.153 |
+| A | (vide) | 185.199.110.153 |
+| A | (vide) | 185.199.111.153 |
+| CNAME | www | davidlotaut.github.io. |
+
+**Ne pas toucher aux enregistrements MX** : ils portent la messagerie du domaine, qui n'a
+rien à voir avec le site. Seuls les A de la racine (qui pointent vers l'hébergement OVH
+vide) et le CNAME `www` changent.
+
+Enfin, dans Settings → Pages du dépôt : renseigner le domaine, puis cocher « Enforce
+HTTPS » une fois le certificat émis (quelques minutes à une heure).
+
 ## Notes
 
 - **Fonte** : Barlow Condensed 600 auto-hébergée (`assets/fonts/`, licence OFL incluse).
 - **Élus** : les 11 noms proviennent des résultats publics des municipales 2026 (liste unique
   élue au 1er tour). Le titre de maire et les adjoints sont à confirmer par la mairie.
-- Si un nom de domaine propre est acheté un jour (ex. gapree.fr) : le configurer dans
-  Settings → Pages du dépôt, puis vider `baseurl` dans `_config.yml`.
 - L'historique git antérieur à juillet 2026 contient l'ancienne exploration (moodboard,
   6 maquettes) ; l'arborescence actuelle est le site définitif.
