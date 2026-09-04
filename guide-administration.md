@@ -11,7 +11,9 @@ Ouvrez la page [Administration du site]({{ '/admin/' | relative_url }}) : le lie
 
 Votre adresse électronique et votre mot de passe vous sont demandés. À la première connexion, le mot de passe qui vous a été remis est provisoire : vous choisissez le vôtre, que personne d'autre ne connaît.
 
-Tant que la publication n'a pas été activée, l'espace s'ouvre sans rien demander et affiche un bandeau jaune : dans cet état, tout peut être essayé sans risque, et rien n'est publié.
+Vous restez connecté douze heures sur le même ordinateur : inutile de saisir le mot de passe à chaque fois. Le bouton « Se déconnecter », en haut à droite, ferme la session tout de suite, par exemple sur un ordinateur partagé.
+
+Le site public, lui, n'a jamais demandé de mot de passe et n'en demandera jamais : seule cette page d'administration est protégée.
 
 ## Les deux gestes à connaître
 
