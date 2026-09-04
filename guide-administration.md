@@ -3,6 +3,25 @@ layout: page
 title: Guide d'administration du site
 permalink: /guide-administration/
 noindex: true
+sommaire:
+  - titre: Accéder à l'espace d'administration
+    ancre: "accéder-à-lespace-dadministration"
+  - titre: Les deux gestes à connaître
+    ancre: "les-deux-gestes-à-connaître"
+  - titre: Publier une actualité
+    ancre: "publier-une-actualité"
+  - titre: Modifier ou supprimer un contenu
+    ancre: "modifier-ou-supprimer-un-contenu"
+  - titre: Mettre à jour l'équipe municipale
+    ancre: "mettre-à-jour-léquipe-municipale"
+  - titre: Changer la photo ou les coordonnées
+    ancre: "changer-la-photo-daccueil-ou-les-coordonnées"
+  - titre: Donner ou retirer un accès
+    ancre: "donner-ou-retirer-un-accès"
+  - titre: Bon à savoir
+    ancre: "bon-à-savoir"
+  - titre: En cas de souci
+    ancre: "en-cas-de-souci"
 chapo: "Ce guide explique comment publier et modifier le contenu du site. Aucune connaissance technique n'est nécessaire."
 ---
 ## Accéder à l'espace d'administration

@@ -848,3 +848,67 @@ button:focus-visible {
   font-style: italic;
   color: var(--ardoise);
 }
+
+/* --- Page avec sommaire latéral (guide d'administration) ---------------------- */
+
+.page--avec-sommaire {
+  display: grid;
+  grid-template-columns: minmax(210px, 270px) minmax(0, 1fr);
+  gap: clamp(28px, 3.5vw, 64px);
+  align-items: start;
+}
+
+.page--avec-sommaire .page-head { grid-column: 1 / -1; }
+
+.page--avec-sommaire .prose { max-width: 82ch; }
+
+.sommaire {
+  position: sticky;
+  top: 24px;
+  background: var(--sauge-pale);
+  border: 1px solid var(--sauge);
+  border-radius: var(--radius);
+  padding: 1.2rem 1.3rem 1.4rem;
+}
+
+.sommaire-titre {
+  margin: 0 0 0.7rem;
+  font-family: var(--signaletique);
+  font-weight: 600;
+  font-size: 1.05rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--prairie-fonce);
+}
+
+.sommaire ol {
+  margin: 0;
+  padding-left: 1.2rem;
+  counter-reset: none;
+}
+
+.sommaire li { margin-bottom: 0.55rem; line-height: 1.35; }
+
+.sommaire a {
+  color: var(--encre);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+
+.sommaire a:hover {
+  color: var(--prairie-fonce);
+  border-bottom-color: var(--sauge);
+}
+
+/* Les titres visés ne collent pas au bord haut de la fenêtre. */
+.page--avec-sommaire .prose h2 { scroll-margin-top: 24px; }
+
+@media (max-width: 900px) {
+  .page--avec-sommaire { grid-template-columns: 1fr; }
+  .sommaire { position: static; }
+}
+
+@media print {
+  .sommaire { display: none; }
+  .page--avec-sommaire { display: block; }
+}
