@@ -31,7 +31,7 @@ Le bandeau vert, en haut de l'espace, indique en permanence où vous en êtes : 
 5. Cliquez sur « Enregistrer ».
 6. Cliquez sur « Publier sur le site », en haut, et confirmez.
 
-La page d'accueil montre les trois actualités les plus récentes. Les autres restent accessibles par « Toutes les actualités ».
+La page d'accueil montre les trois actualités les plus récentes, suivies d'une carte verte qui mène à la liste complète.
 
 Les mêmes étapes valent pour l'onglet « Nos talents » : un portrait a en plus un champ « Sous-titre » pour indiquer le métier ou l'activité.
 
