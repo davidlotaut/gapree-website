@@ -2,9 +2,12 @@
 
 Site vitrine de **Gâprée** (Orne, Normandie, ~140 habitants), avec espace d'administration intégré.
 
-- **Site** : https://davidlotaut.github.io/gapree-website/
-- **Administration** : https://davidlotaut.github.io/gapree-website/admin/
-- **Guide d'administration** (à transmettre à la mairie) : https://davidlotaut.github.io/gapree-website/guide-administration/
+- **Site** : https://gapree.com
+- **Administration** : https://gapree.com/admin/
+- **Guide d'administration** (à transmettre à la mairie) : https://gapree.com/guide-administration/
+- **Serveur d'administration** : https://gapree-admin.david-lotaut.workers.dev (voir `serveur/`)
+
+L'ancienne adresse `davidlotaut.github.io/gapree-website/` redirige vers le domaine.
 
 ## Architecture
 
@@ -60,21 +63,12 @@ admin/         espace d'administration (contenu.json = export Jekyll du contenu)
 - La photo d'accueil reste une illustration libre de droits, à remplacer par une vraie
   photo de la commune.
 
-## Basculer sur le nom de domaine de la commune
+## Nom de domaine
 
-Le domaine `gapree.com` existe déjà : enregistré chez **OVH** le 01/06/2022, expire le
-01/06/2027, il sert aujourd'hui la page « Site en construction » d'OVH (hébergement vide)
-et porte des enregistrements MX OVH. Il est détenu par Nicolas Huguenin, qui doit
-transmettre les accès.
+Le site vit sur **`gapree.com`**, domaine enregistré chez **OVH** (créé le 01/06/2022,
+expire le 01/06/2027), détenu par Nicolas Huguenin. Bascule faite le 04/09/2026.
 
-Dans le dépôt, en un seul commit :
-
-1. créer un fichier `CNAME` à la racine contenant la seule ligne `gapree.com` ;
-2. dans `_config.yml` : `url: "https://gapree.com"` et `baseurl: ""` ;
-3. passer `mode_dev: false` pour lever le `noindex` (à ne faire qu'une fois le vrai
-   contenu en ligne, sinon les moteurs indexent une coquille vide).
-
-Chez OVH, zone DNS du domaine :
+Zone DNS d'OVH, partie qui concerne le site :
 
 | Type | Sous-domaine | Cible |
 |---|---|---|
@@ -84,12 +78,16 @@ Chez OVH, zone DNS du domaine :
 | A | (vide) | 185.199.111.153 |
 | CNAME | www | davidlotaut.github.io. |
 
-**Ne pas toucher aux enregistrements MX** : ils portent la messagerie du domaine, qui n'a
-rien à voir avec le site. Seuls les A de la racine (qui pointent vers l'hébergement OVH
-vide) et le CNAME `www` changent.
+Les enregistrements **MX** (`mx3` et `mx4.mail.ovh.net`) portent la messagerie du
+domaine : **ne jamais y toucher**. Idem pour `autoconfig`, `autodiscover` et les SRV.
 
-Enfin, dans Settings → Pages du dépôt : renseigner le domaine, puis cocher « Enforce
-HTTPS » une fois le certificat émis (quelques minutes à une heure).
+Deux pièges rencontrés lors de la bascule :
+- un **CNAME est interdit sur le domaine racine** (d'où les quatre A) ;
+- un CNAME ne peut **cohabiter avec aucun autre enregistrement** sur le même nom :
+  il a fallu supprimer le `TXT "3|welcome"` posé sur `www` avant de créer le CNAME.
+
+Côté dépôt : fichier `CNAME`, `url: "https://gapree.com"` et `baseurl: ""` dans
+`_config.yml`. HTTPS forcé, certificat émis par GitHub et renouvelé automatiquement.
 
 ## Notes
 
