@@ -3,6 +3,7 @@ title: Le Rucher des Pommiers
 sous_titre: Apiculteur, lieu-dit la Pâture aux Abeilles
 date: 2026-04-15
 image: /assets/img/demo/ruches.jpg
+alt: "Ruches de bois peintes en bleu et jaune, alignées en lisière de bois"
 ---
 Quarante ruches en lisière de la forêt d'Écouves, et un miel qui change au fil des saisons : miel de printemps porté par les fleurs de pommier et d'aubépine, miel d'été toutes fleurs, plus corsé.
 

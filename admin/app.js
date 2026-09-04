@@ -230,6 +230,8 @@
       '<div class="champ"><label for="ch-date">Date</label><input type="date" id="ch-date" value="' + echap(item.date) + '"></div>' +
       (rubrique === "talents" ? '<div class="champ"><label for="ch-soustitre">Sous-titre</label><input type="text" id="ch-soustitre" value="' + echap(item.sous_titre || "") + '"><p class="aide">Le métier ou l\'activité. Exemple : Apicultrice au bourg.</p></div>' : "") +
       champPhoto(item.image, "Photo") +
+      '<div class="champ"><label for="ch-alt">Description de la photo</label><input type="text" id="ch-alt" value="' + echap(item.alt || "") + '">' +
+      '<p class="aide">Ce que montre la photo, en une phrase. Elle s\'affiche sous la photo et permet aux personnes malvoyantes de savoir ce qu\'elle représente.</p></div>' +
       '<div class="champ"><label for="ch-video">Vidéo YouTube</label><input type="url" id="ch-video" value="' + echap(item.video || "") + '"><p class="aide">Facultatif. Collez le lien d\'une vidéo YouTube.</p></div>' +
       '<div class="champ"><label for="ch-texte">Texte</label><textarea id="ch-texte">Chargement du texte…</textarea>' +
       '<p class="aide">Texte simple. Une ligne vide sépare les paragraphes ; **mot** met en gras.</p></div>' +
@@ -243,6 +245,7 @@
       titre: document.getElementById("ch-titre"),
       date: document.getElementById("ch-date"),
       sousTitre: document.getElementById("ch-soustitre"),
+      alt: document.getElementById("ch-alt"),
       video: document.getElementById("ch-video"),
       texte: document.getElementById("ch-texte"),
       image: item.image || null
@@ -253,13 +256,16 @@
       html += '<p class="apercu-meta">' + (rubrique === "actualites"
         ? "Publié le " + dateFr(refs.date.value)
         : echap(refs.sousTitre && refs.sousTitre.value || "")) + "</p>";
-      if (refs.image) html += '<img class="apercu-image" src="' + echap(urlImage(refs.image)) + '" alt="">';
+      if (refs.image) {
+        html += '<img class="apercu-image" src="' + echap(urlImage(refs.image)) + '" alt="' + echap(refs.alt && refs.alt.value || "") + '">';
+        if (refs.alt && refs.alt.value.trim()) html += '<p class="apercu-legende">' + echap(refs.alt.value.trim()) + "</p>";
+      }
       html += rendMarkdown(refs.texte.value);
       document.getElementById("apercu").innerHTML = html;
     }
 
     ["input", "change"].forEach(function (ev) {
-      [refs.titre, refs.date, refs.sousTitre, refs.video, refs.texte].forEach(function (el) {
+      [refs.titre, refs.date, refs.sousTitre, refs.alt, refs.video, refs.texte].forEach(function (el) {
         if (el) el.addEventListener(ev, apercu);
       });
     });
@@ -297,6 +303,7 @@
         titre: refs.titre.value.trim(),
         date: refs.date.value || item.date,
         image: refs.image,
+        alt: (refs.alt.value || "").trim() || null,
         video: (refs.video.value || "").trim() || null,
         texte: refs.texte.value
       };
@@ -474,6 +481,8 @@
       '<img class="photo-actuelle" id="photo-accueil" src="' + echap(urlImage(accueil.photo)) + '" alt="">' +
       '<input type="file" id="ch-photo-accueil" accept="image/*">' +
       '<p class="aide">La grande photo en haut de la page d\'accueil (moins de 4 Mo).</p></div>' +
+      '<div class="champ"><label for="ch-alt-accueil">Description de la photo d\'accueil</label><input type="text" id="ch-alt-accueil" value="' + echap(accueil.alt_photo || "") + '">' +
+      '<p class="aide">Ce que montre la photo, en une phrase, pour les personnes malvoyantes.</p></div>' +
       '<div class="champ"><label for="ch-sous-titre">Sous-titre</label><input type="text" id="ch-sous-titre" value="' + echap(accueil.sous_titre || "") + '"></div>' +
       '<div class="champ"><label for="ch-texte-accueil">Texte de bienvenue</label><textarea id="ch-texte-accueil" style="min-height:110px">' + echap(accueil.texte || "") + "</textarea></div>" +
       '<div class="actions"><button type="button" class="btn" id="btn-enregistre-accueil">Enregistrer</button></div>' +
@@ -533,6 +542,7 @@
     document.getElementById("btn-enregistre-accueil").addEventListener("click", function () {
       surcouche.reglages.accueil = Object.assign({}, accueil, {
         photo: photoAccueil,
+        alt_photo: document.getElementById("ch-alt-accueil").value.trim(),
         sous_titre: document.getElementById("ch-sous-titre").value.trim(),
         texte: document.getElementById("ch-texte-accueil").value.trim()
       });
@@ -596,6 +606,7 @@
     var lignes = ["---", "title: " + yTexte(valeurs.titre), "date: " + (valeurs.date || "")];
     if (rubrique === "talents" && valeurs.sous_titre) lignes.push("sous_titre: " + yTexte(valeurs.sous_titre));
     if (image) lignes.push("image: " + yTexte(image));
+    if (image && valeurs.alt) lignes.push("alt: " + yTexte(valeurs.alt));
     if (valeurs.video) lignes.push("video: " + yTexte(valeurs.video));
     lignes.push("---");
     var corps = String(valeurs.texte || "").replace(/\r/g, "").trim();

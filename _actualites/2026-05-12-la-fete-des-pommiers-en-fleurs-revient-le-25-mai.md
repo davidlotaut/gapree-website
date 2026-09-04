@@ -2,6 +2,7 @@
 title: La fête des pommiers en fleurs revient le 25 mai
 date: 2026-05-12
 image: /assets/img/demo/fete-pommiers.jpg
+alt: "Pommier chargé de fruits, à contre-jour dans le soleil"
 ---
 Le comité des fêtes organise sa traditionnelle fête des pommiers en fleurs autour du verger conservatoire, le dimanche 25 mai à partir de 10 heures.
 

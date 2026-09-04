@@ -2,6 +2,7 @@
 title: Le verger communal inauguré sur la parcelle des Quatre-Vents
 date: 2026-04-22
 image: /assets/img/demo/verger-communal.jpg
+alt: "Allée d'un verger de pommiers chargés de fruits rouges, sous un ciel bleu"
 ---
 Trente-six arbres fruitiers, pommiers, poiriers et pruniers d'Ente, ont été plantés sur la parcelle des Quatre-Vents par les enfants de l'école, avec l'appui technique du Parc naturel régional.
 

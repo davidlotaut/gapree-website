@@ -3,6 +3,7 @@ title: La Forge Renault
 sous_titre: Maréchal-ferrant et forgeron, rue des Forges
 date: 2026-05-20
 image: /assets/img/demo/forge.jpg
+alt: "Forgeron en tablier de cuir attisant le feu de sa forge"
 ---
 La forge de la rue des Forges porte bien son nom : on y ferre les chevaux des haras voisins depuis trois générations.
 

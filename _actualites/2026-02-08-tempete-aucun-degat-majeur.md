@@ -2,6 +2,7 @@
 title: "Tempête : aucun dégât majeur sur la commune"
 date: 2026-02-08
 image: /assets/img/demo/tempete-bocage.jpg
+alt: "Arbres nus et prairie noyés dans la brume, sous un ciel bas"
 ---
 Les fortes rafales du week-end ont occasionné quelques chutes de branches, principalement sur la route de Saint-Léonard, dégagées dès le lundi matin par l'employé communal et des bénévoles.
 

@@ -511,3 +511,10 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 }
 
 .barre-publication .lien-reinit { color: var(--ardoise); margin-left: 0; }
+
+.apercu-legende {
+  margin: 0.5rem 0 1rem;
+  font-size: 0.95rem;
+  font-style: italic;
+  color: var(--ardoise);
+}

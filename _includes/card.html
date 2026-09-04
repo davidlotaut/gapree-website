@@ -19,7 +19,7 @@
 <article class="card{% unless item.image %} card--avis{% endunless %}">
   {%- if item.image %}
   <div class="card-img">
-    <img src="{{ item.image | relative_url }}" alt="" loading="lazy">
+    <img src="{{ item.image | relative_url }}" alt="{{ item.alt }}" loading="lazy">
     {%- if include.type == "actualite" %}
     <p class="card-chip">
       <span class="visually-hidden">Publié le {% include date_fr.html date=item.date %}. </span>

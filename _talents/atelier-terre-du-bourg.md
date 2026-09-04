@@ -3,6 +3,7 @@ title: L'Atelier Terre du Bourg
 sous_titre: Potière, le Bourg
 date: 2026-03-10
 image: /assets/img/demo/poterie.jpg
+alt: "Mains couvertes d'argile façonnant une pièce sur un tour de potier"
 ---
 Installé dans une ancienne étable du bourg, l'atelier façonne au tour une poterie utilitaire en grès : bols, pichets, plats à four, terrines à pâté.
 

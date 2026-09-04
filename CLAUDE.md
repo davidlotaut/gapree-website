@@ -9,6 +9,6 @@ Site Jekyll de Gâprée (Orne, ~140 habitants), en ligne. Suivi : fiche `memory_
 
 ## Pièges
 - **`admin/jeton.js` est l'interrupteur unique** : vide, l'espace d'administration est ouvert et en démonstration (localStorage) ; rempli, il demande un mot de passe et publie réellement dans le dépôt. Ne jamais y écrire un jeton sans l'accord de David : le dépôt est public, donc le blob chiffré l'est aussi
-- Le contenu est VIDE depuis le 04/09/2026 (les actualités et portraits étaient fictifs, retirés à la demande de la mairie). Ne jamais réinventer du contenu de commune : tout vient de la mairie
+- Le contenu en ligne est une DÉMONSTRATION (9 actualités, 5 portraits, photos libres dans `assets/img/demo/`), remise le 04/09/2026 pour que David présente un site plein. Il est fictif et doit partir avant la mise en service réelle. Ne jamais inventer de nouveau contenu de commune : le vrai vient de la mairie
 - Site public d'une commune : ton institutionnel, zéro mention technique en front (règle UI)
 - `mode_dev: true` = `noindex` global. À passer à `false` seulement quand du vrai contenu est en ligne

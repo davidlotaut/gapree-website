@@ -788,3 +788,10 @@ button:focus-visible {
     transition: none !important;
   }
 }
+
+.article-figure figcaption {
+  margin-top: 0.6rem;
+  font-size: 0.98rem;
+  font-style: italic;
+  color: var(--ardoise);
+}

@@ -3,6 +3,7 @@ title: Le Fournil de Gâprée
 sous_titre: Boulanger au feu de bois, place de l'Église
 date: 2026-06-05
 image: /assets/img/demo/fournil.jpg
+alt: "Miche de pain de campagne farinée, posée sur une planche de bois"
 ---
 Pain de campagne, miches au levain naturel, fougasses aux pommes : au Fournil, tout est pétri à la main et cuit au four à bois, alimenté au bois de pommier de récupération.
 

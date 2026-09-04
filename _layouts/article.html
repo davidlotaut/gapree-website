@@ -11,7 +11,10 @@ layout: default
   <p class="article-meta">{{ page.sous_titre }}</p>
   {% endif %}
   {% if page.image %}
-  <figure class="article-figure"><img src="{{ page.image | relative_url }}" alt=""></figure>
+  <figure class="article-figure">
+    <img src="{{ page.image | relative_url }}" alt="{{ page.alt }}">
+    {% if page.alt %}<figcaption>{{ page.alt }}</figcaption>{% endif %}
+  </figure>
   {% endif %}
   {% if page.video %}{% include youtube.html url=page.video %}{% endif %}
   <div class="prose">

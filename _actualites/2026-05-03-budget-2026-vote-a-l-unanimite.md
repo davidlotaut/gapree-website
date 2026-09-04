@@ -2,6 +2,7 @@
 title: "Conseil municipal : le budget 2026 voté à l'unanimité"
 date: 2026-05-03
 image: /assets/img/demo/clocher-eglise.jpg
+alt: "Petite église de pierre, au clocher-mur à deux cloches"
 ---
 Réuni le 29 avril, le conseil municipal a adopté le budget 2026 à l'unanimité.
 

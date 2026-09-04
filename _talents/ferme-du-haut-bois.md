@@ -3,6 +3,7 @@ title: La Ferme du Haut-Bois
 sous_titre: Cidre fermier et pommeau, route de Trémont
 date: 2026-06-20
 image: /assets/img/demo/pommes.jpg
+alt: "Pommes rouges mûres sur l'arbre, dans un verger"
 ---
 Sur les hauteurs de la route de Trémont, la Ferme du Haut-Bois cultive un verger conservatoire de sept hectares, planté d'une vingtaine de variétés de pommes anciennes : Bisquet, Mettais, Argile rouge et autres noms qui fleurent bon le bocage.
 
