@@ -264,8 +264,9 @@ button:focus-visible {
   .grid--accueil { grid-template-columns: 1fr; }
 }
 
-/* Quatrième carte : l'accès à la rubrique complète, en vert de prairie pâle. */
-.card--tout {
+/* Quatrième carte : l'accès à la rubrique complète, en vert de prairie pâle.
+   Sélecteur doublé pour passer devant le fond blanc de .card, défini plus bas. */
+.card.card--tout {
   justify-content: center;
   gap: 0.55rem;
   padding: clamp(1.4rem, 2.2vw, 2rem);
@@ -275,7 +276,7 @@ button:focus-visible {
   color: var(--encre);
 }
 
-.card--tout:hover { background: #E4EEDF; color: var(--encre); }
+.card.card--tout:hover { background: #E4EEDF; color: var(--encre); }
 
 .card-tout-titre {
   font-family: var(--bulletin);
