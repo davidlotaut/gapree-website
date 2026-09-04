@@ -1,6 +1,8 @@
 ---
 title: Habitants de Gâprée, faites connaître vos talents
 date: 2026-07-05
+image: /assets/img/demo/atelier-etabli.jpg
+alt: "Ponceuse, tasseau et copeaux de bois sur un établi d'atelier"
 ---
 La rubrique « Nos talents » attend ses premiers portraits.
 
