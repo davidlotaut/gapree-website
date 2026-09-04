@@ -4,6 +4,7 @@ Site vitrine de **Gâprée** (Orne, Normandie, ~140 habitants), avec espace d'ad
 
 - **Site** : https://gapree.com
 - **Administration** : https://gapree.com/admin/
+- **Guide d'administration** (à transmettre à la mairie) : https://gapree.com/guide-administration/
 - **Serveur d'administration** : https://gapree-admin.david-lotaut.workers.dev (voir `serveur/`)
 
 L'ancienne adresse `davidlotaut.github.io/gapree-website/` redirige vers le domaine.
