@@ -25,7 +25,7 @@ rien qui touche aux autres projets du compte Cloudflare qui l'héberge.
 | `DELETE /utilisateurs?email=` | gestionnaire | Retire un accès. Personne ne peut retirer le sien. |
 | `POST /publier` | connecté | Écrit tous les changements dans le dépôt, en un seul enregistrement. |
 
-Mots de passe : PBKDF2-SHA256, 310 000 itérations, sel de 16 octets propre à
+Mots de passe : PBKDF2-SHA256, 100 000 itérations (le maximum accepté par le runtime Cloudflare), sel de 16 octets propre à
 chaque compte. Comparaison à durée constante. Les mots de passe fabriqués
 évitent les caractères qu'on confond au téléphone (ni `0`/`O`, ni `1`/`l`/`I`).
 

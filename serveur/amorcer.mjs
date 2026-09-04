@@ -11,7 +11,7 @@
 import { webcrypto as crypto } from "node:crypto";
 import { execFileSync } from "node:child_process";
 
-const ITERATIONS = 310000;
+const ITERATIONS = 100000;   // doit rester identique au serveur
 
 const email = (process.argv[2] || "").trim().toLowerCase();
 const local = process.argv.includes("--local");
