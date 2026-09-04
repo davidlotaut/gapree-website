@@ -22,6 +22,7 @@ rien qui touche aux autres projets du compte Cloudflare qui l'héberge.
 | `POST /motdepasse` | connecté | Remplace son propre mot de passe (8 caractères minimum). |
 | `GET /utilisateurs` | gestionnaire | Liste les accès. |
 | `POST /utilisateurs` | gestionnaire | Crée un accès (ou en réinitialise un) et rend le mot de passe une seule fois. |
+| `PATCH /utilisateurs` | gestionnaire | Promeut ou rétrograde un compte, sans toucher à son mot de passe. Personne ne peut se rétrograder soi-même. |
 | `DELETE /utilisateurs?email=` | gestionnaire | Retire un accès. Personne ne peut retirer le sien. |
 | `POST /publier` | connecté | Écrit tous les changements dans le dépôt, en un seul enregistrement. |
 

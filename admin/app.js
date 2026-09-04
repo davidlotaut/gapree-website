@@ -818,10 +818,26 @@
           '<span class="ligne-meta">' + (c.admin ? "Peut gérer les accès" : "Peut modifier le site") +
           (c.aChange ? "" : " · mot de passe provisoire, jamais utilisé") + "</span></span>" +
           '<span class="acces-actions">' +
+          (soi ? "" : '<button type="button" class="lien-reinit" data-droits="' + echap(c.email) + '" data-vers="' + (c.admin ? "0" : "1") + '">' +
+            (c.admin ? "Ne plus gérer les accès" : "Autoriser à gérer les accès") + "</button>") +
           '<button type="button" class="lien-reinit" data-reinit="' + echap(c.email) + '">Nouveau mot de passe</button>' +
           (soi ? "" : '<button type="button" class="lien-reinit lien-reinit--danger" data-retire="' + echap(c.email) + '">Retirer l\'accès</button>') +
           "</span></div>";
       }).join("") + "</div>";
+
+      zone.querySelectorAll("[data-droits]").forEach(function (b) {
+        b.addEventListener("click", function () {
+          var vers = b.dataset.vers === "1";
+          var question = vers
+            ? "Autoriser " + b.dataset.droits + " à donner et retirer des accès ?"
+            : "Retirer à " + b.dataset.droits + " le droit de gérer les accès ?\n\nCette personne pourra toujours modifier et publier le site.";
+          if (!confirm(question)) return;
+          pub.changeDroits(b.dataset.droits, vers).then(function () {
+            toast(vers ? "Peut désormais gérer les accès" : "Ne gère plus les accès");
+            listeAcces();
+          }).catch(function (e) { toast(e.message); });
+        });
+      });
 
       zone.querySelectorAll("[data-reinit]").forEach(function (b) {
         b.addEventListener("click", function () {
