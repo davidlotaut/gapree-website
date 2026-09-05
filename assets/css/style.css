@@ -198,12 +198,11 @@ button:focus-visible {
   color: var(--ardoise);
 }
 
-/* Phrase d'accueil : une accroche, pas un paragraphe. Elle occupe la largeur
-   de la page au lieu de laisser une colonne vide sur sa droite. */
+/* Sans limite de largeur, la phrase d'accueil tient sur une seule ligne :
+   c'est la limite à 76 caractères qui la coupait et creusait le blanc à droite. */
 .intro-texte {
   margin: 0;
-  font-size: clamp(1.3rem, 2.4vw, 2rem);
-  line-height: 1.4;
+  font-size: 1.18rem;
 }
 
 /* --- Sections et grilles --------------------------------------------------- */
