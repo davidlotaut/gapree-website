@@ -1,7 +1,7 @@
 ---
 title: "Le site de la commune fait peau neuve"
 date: 2026-07-13
-image: "/assets/img/hero-gapree.jpg"
+image: "/assets/img/le-site-de-la-commune-fait-peau-neuve-mto57qa8.jpg"
 alt: "Collines, haies et prairies d'un paysage de bocage normand"
 ---
 Bienvenue sur le nouveau site officiel de Gâprée. Pensé pour les habitants, il rassemble l'essentiel de la vie communale en trois rubriques.
