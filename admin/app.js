@@ -221,18 +221,27 @@
     var lib = LIBELLES[rubrique];
     var creation = !chemin;
     var item = creation
-      ? { chemin: "nouveau:" + rubrique + ":" + Date.now(), titre: "", date: new Date().toISOString().slice(0, 10), image: null, video: null, texte: "" }
+      ? { chemin: "nouveau:" + rubrique + ":" + Date.now(), titre: "", date: new Date().toISOString().slice(0, 10), image: null, alt: null, photos: [], video: null, texte: "" }
       : trouve(rubrique, chemin);
     if (!item) { vue = { type: "liste", rubrique: rubrique }; return rendre(); }
+
+    /* Une seule liste de photos : la première est celle qui illustre la carte. */
+    var photos = [];
+    if (item.image) photos.push({ src: item.image, alt: item.alt || "" });
+    (item.photos || []).forEach(function (ph) {
+      if (ph && ph.src) photos.push({ src: ph.src, alt: ph.alt || "" });
+    });
 
     app.innerHTML = '<button type="button" class="retour-liste" id="btn-retour">&larr; ' + lib.titre + "</button>" +
       '<div class="editeur"><div class="editeur-form">' +
       '<div class="champ"><label for="ch-titre">Titre</label><input type="text" id="ch-titre" value="' + echap(item.titre) + '"></div>' +
       '<div class="champ"><label for="ch-date">Date</label><input type="date" id="ch-date" value="' + echap(item.date) + '"></div>' +
       (rubrique === "talents" ? '<div class="champ"><label for="ch-soustitre">Sous-titre</label><input type="text" id="ch-soustitre" value="' + echap(item.sous_titre || "") + '"><p class="aide">Le métier ou l\'activité. Exemple : Apicultrice au bourg.</p></div>' : "") +
-      champPhoto(item.image, "Photo") +
-      '<div class="champ"><label for="ch-alt">Description de la photo</label><input type="text" id="ch-alt" value="' + echap(item.alt || "") + '">' +
-      '<p class="aide">Ce que montre la photo, en une phrase. Elle s\'affiche sous la photo et permet aux personnes malvoyantes de savoir ce qu\'elle représente.</p></div>' +
+      '<div class="champ"><label for="ch-images">Photos</label>' +
+      '<div id="liste-photos"></div>' +
+      '<input type="file" id="ch-images" accept="image/*" multiple>' +
+      '<p class="aide">Vous pouvez en choisir plusieurs d\'un coup (moins de 4 Mo chacune). ' +
+      'La première illustre l\'article dans les listes ; les suivantes défilent à côté d\'elle.</p></div>' +
       '<div class="champ"><label for="ch-video">Vidéo YouTube</label><input type="url" id="ch-video" value="' + echap(item.video || "") + '"><p class="aide">Facultatif. Collez le lien d\'une vidéo YouTube.</p></div>' +
       '<div class="champ"><label for="ch-texte">Texte</label><textarea id="ch-texte">Chargement du texte…</textarea>' +
       '<p class="aide">Texte simple. Une ligne vide sépare les paragraphes ; **mot** met en gras.</p></div>' +
@@ -246,52 +255,101 @@
       titre: document.getElementById("ch-titre"),
       date: document.getElementById("ch-date"),
       sousTitre: document.getElementById("ch-soustitre"),
-      alt: document.getElementById("ch-alt"),
       video: document.getElementById("ch-video"),
-      texte: document.getElementById("ch-texte"),
-      image: item.image || null
+      texte: document.getElementById("ch-texte")
     };
+
+    function rendPhotos() {
+      var zone = document.getElementById("liste-photos");
+      if (!photos.length) {
+        zone.innerHTML = '<p class="aide aide--vide">Aucune photo pour le moment.</p>';
+      } else {
+        zone.innerHTML = photos.map(function (ph, i) {
+          return '<div class="photo-ligne">' +
+            '<img class="photo-vignette" src="' + echap(urlImage(ph.src)) + '" alt="">' +
+            '<div class="photo-champs">' +
+            (i === 0 ? '<p class="photo-role">Photo principale</p>' : "") +
+            '<input type="text" class="photo-alt" data-i="' + i + '" placeholder="Ce que montre la photo" value="' + echap(ph.alt) + '">' +
+            "</div>" +
+            '<div class="photo-boutons">' +
+            (i > 0 ? '<button type="button" class="lien-reinit" data-monte="' + i + '" title="Mettre avant">&uarr;</button>' : "") +
+            (i < photos.length - 1 ? '<button type="button" class="lien-reinit" data-descend="' + i + '" title="Mettre après">&darr;</button>' : "") +
+            '<button type="button" class="lien-reinit lien-reinit--danger" data-retire="' + i + '">Retirer</button>' +
+            "</div></div>";
+        }).join("");
+      }
+
+      zone.querySelectorAll(".photo-alt").forEach(function (inp) {
+        inp.addEventListener("input", function () {
+          photos[parseInt(inp.dataset.i, 10)].alt = inp.value;
+          apercu();
+        });
+      });
+      zone.querySelectorAll("[data-retire]").forEach(function (b) {
+        b.addEventListener("click", function () {
+          photos.splice(parseInt(b.dataset.retire, 10), 1);
+          rendPhotos(); apercu();
+        });
+      });
+      zone.querySelectorAll("[data-monte]").forEach(function (b) {
+        b.addEventListener("click", function () {
+          var i = parseInt(b.dataset.monte, 10);
+          photos.splice(i - 1, 0, photos.splice(i, 1)[0]);
+          rendPhotos(); apercu();
+        });
+      });
+      zone.querySelectorAll("[data-descend]").forEach(function (b) {
+        b.addEventListener("click", function () {
+          var i = parseInt(b.dataset.descend, 10);
+          photos.splice(i + 1, 0, photos.splice(i, 1)[0]);
+          rendPhotos(); apercu();
+        });
+      });
+    }
 
     function apercu() {
       var html = "<h1>" + echap(refs.titre.value || "(sans titre)") + "</h1>";
       html += '<p class="apercu-meta">' + (rubrique === "actualites"
         ? "Publié le " + dateFr(refs.date.value)
         : echap(refs.sousTitre && refs.sousTitre.value || "")) + "</p>";
-      if (refs.image) {
-        html += '<img class="apercu-image" src="' + echap(urlImage(refs.image)) + '" alt="' + echap(refs.alt && refs.alt.value || "") + '">';
-        if (refs.alt && refs.alt.value.trim()) html += '<p class="apercu-legende">' + echap(refs.alt.value.trim()) + "</p>";
+      if (photos.length === 1) {
+        html += '<img class="apercu-image" src="' + echap(urlImage(photos[0].src)) + '" alt="">';
+        if (photos[0].alt.trim()) html += '<p class="apercu-legende">' + echap(photos[0].alt.trim()) + "</p>";
+      } else if (photos.length > 1) {
+        html += '<div class="apercu-galerie">' + photos.map(function (ph) {
+          return '<figure><img src="' + echap(urlImage(ph.src)) + '" alt="">' +
+            (ph.alt.trim() ? "<figcaption>" + echap(ph.alt.trim()) + "</figcaption>" : "") + "</figure>";
+        }).join("") + "</div>";
+        html += '<p class="apercu-legende">' + photos.length + " photos qui défilent</p>";
       }
       html += rendMarkdown(refs.texte.value);
       document.getElementById("apercu").innerHTML = html;
     }
 
     ["input", "change"].forEach(function (ev) {
-      [refs.titre, refs.date, refs.sousTitre, refs.alt, refs.video, refs.texte].forEach(function (el) {
+      [refs.titre, refs.date, refs.sousTitre, refs.video, refs.texte].forEach(function (el) {
         if (el) el.addEventListener(ev, apercu);
       });
     });
 
-    var inputImage = document.getElementById("ch-image");
-    inputImage.addEventListener("change", function () {
-      var f = inputImage.files[0];
-      if (!f) return;
-      if (f.size > TAILLE_PHOTO_MAX) { toast("Photo trop lourde (4 Mo maximum)"); inputImage.value = ""; return; }
-      var lecteur = new FileReader();
-      lecteur.onload = function () {
-        refs.image = lecteur.result;
-        var img = document.getElementById("photo-actuelle");
-        img.src = refs.image;
-        img.hidden = false;
-        apercu();
-      };
-      lecteur.readAsDataURL(f);
-    });
-
-    var btnRetirePhoto = document.getElementById("btn-retire-photo");
-    if (btnRetirePhoto) btnRetirePhoto.addEventListener("click", function () {
-      refs.image = null;
-      document.getElementById("photo-actuelle").hidden = true;
-      apercu();
+    var inputImages = document.getElementById("ch-images");
+    inputImages.addEventListener("change", function () {
+      var fichiersChoisis = [].slice.call(inputImages.files || []);
+      inputImages.value = "";
+      if (!fichiersChoisis.length) return;
+      var trop = fichiersChoisis.filter(function (f) { return f.size > TAILLE_PHOTO_MAX; });
+      if (trop.length) toast(trop.length + (trop.length > 1 ? " photos trop lourdes, ignorées" : " photo trop lourde, ignorée"));
+      var aLire = fichiersChoisis.filter(function (f) { return f.size <= TAILLE_PHOTO_MAX; });
+      var restant = aLire.length;
+      if (!restant) return;
+      aLire.forEach(function (f) {
+        var lecteur = new FileReader();
+        lecteur.onload = function () {
+          photos.push({ src: lecteur.result, alt: "" });
+          if (--restant === 0) { rendPhotos(); apercu(); }
+        };
+        lecteur.readAsDataURL(f);
+      });
     });
 
     function retourListe() { vue = { type: "liste", rubrique: rubrique }; rendre(); }
@@ -303,8 +361,9 @@
       var valeurs = {
         titre: refs.titre.value.trim(),
         date: refs.date.value || item.date,
-        image: refs.image,
-        alt: (refs.alt.value || "").trim() || null,
+        image: photos.length ? photos[0].src : null,
+        alt: photos.length ? (photos[0].alt || "").trim() || null : null,
+        photos: photos.slice(1).map(function (ph) { return { src: ph.src, alt: (ph.alt || "").trim() }; }),
         video: (refs.video.value || "").trim() || null,
         texte: refs.texte.value
       };
@@ -337,6 +396,8 @@
       toast("Supprimé");
       retourListe();
     });
+
+    rendPhotos();
 
     if (creation || typeof item.texte === "string") {
       refs.texte.value = item.texte || "";
@@ -597,7 +658,10 @@
     if (!valeur || String(valeur).indexOf("data:") !== 0) return valeur || null;
     var m = String(valeur).match(/^data:([^;]+);base64,(.+)$/);
     if (!m) return null;
-    var chemin = "assets/img/" + slug(base) + "-" + Date.now().toString(36) + "." + (EXTENSIONS[m[1]] || "jpg");
+    /* L'horodatage seul ne suffit pas : plusieurs photos d'un même article
+       partent dans la même milliseconde et s'écraseraient l'une l'autre. */
+    var marque = Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 7);
+    var chemin = "assets/img/" + slug(base) + "-" + marque + "." + (EXTENSIONS[m[1]] || "jpg");
     fichiers.push({ chemin: chemin, base64: m[2] });
     return "/" + chemin;
   }
@@ -608,6 +672,16 @@
     if (rubrique === "talents" && valeurs.sous_titre) lignes.push("sous_titre: " + yTexte(valeurs.sous_titre));
     if (image) lignes.push("image: " + yTexte(image));
     if (image && valeurs.alt) lignes.push("alt: " + yTexte(valeurs.alt));
+    var autres = (valeurs.photos || []).map(function (ph) {
+      return { src: extraitPhoto(ph.src, valeurs.titre, fichiers), alt: ph.alt };
+    }).filter(function (ph) { return ph.src; });
+    if (autres.length) {
+      lignes.push("photos:");
+      autres.forEach(function (ph) {
+        lignes.push("  - src: " + yTexte(ph.src));
+        if (ph.alt) lignes.push("    alt: " + yTexte(ph.alt));
+      });
+    }
     if (valeurs.video) lignes.push("video: " + yTexte(valeurs.video));
     lignes.push("---");
     var corps = String(valeurs.texte || "").replace(/\r/g, "").trim();

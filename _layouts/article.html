@@ -10,7 +10,27 @@ layout: default
   {% elsif page.sous_titre %}
   <p class="article-meta">{{ page.sous_titre }}</p>
   {% endif %}
-  {% if page.image %}
+  {%- comment -%}
+    Une seule photo : elle s'affiche en grand. Plusieurs : elles défilent
+    côte à côte, sans JavaScript, avec un arrêt sur chaque photo.
+  {%- endcomment -%}
+  {% if page.photos and page.photos.size > 0 %}
+  <div class="galerie" role="group" aria-label="Photos de l'article" tabindex="0">
+    {% if page.image %}
+    <figure class="galerie-photo">
+      <img src="{{ page.image | relative_url }}" alt="{{ page.alt }}">
+      {% if page.alt %}<figcaption>{{ page.alt }}</figcaption>{% endif %}
+    </figure>
+    {% endif %}
+    {% for photo in page.photos %}
+    <figure class="galerie-photo">
+      <img src="{{ photo.src | relative_url }}" alt="{{ photo.alt }}" loading="lazy">
+      {% if photo.alt %}<figcaption>{{ photo.alt }}</figcaption>{% endif %}
+    </figure>
+    {% endfor %}
+  </div>
+  <p class="galerie-compte">{{ page.photos.size | plus: 1 }} photos, faites glisser pour les voir</p>
+  {% elsif page.image %}
   <figure class="article-figure">
     <img src="{{ page.image | relative_url }}" alt="{{ page.alt }}">
     {% if page.alt %}<figcaption>{{ page.alt }}</figcaption>{% endif %}

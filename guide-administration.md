@@ -47,10 +47,11 @@ Le bandeau vert, en haut de l'espace, indique en permanence où vous en êtes : 
 
 1. Ouvrez l'onglet « Actualités ».
 2. Cliquez sur « Nouvelle actualité ».
-3. Renseignez le titre, la date, une photo si vous en avez une, et le texte. L'aperçu à droite montre le résultat au fur et à mesure.
-4. Pour une vidéo : mettez-la d'abord en ligne sur YouTube, puis collez son lien dans le champ « Vidéo YouTube ».
-5. Cliquez sur « Enregistrer ».
-6. Cliquez sur « Publier sur le site », en haut, et confirmez.
+3. Renseignez le titre, la date, les photos et le texte. L'aperçu à droite montre le résultat au fur et à mesure.
+4. Pour les photos : cliquez sur « Choisir des fichiers » et sélectionnez-en autant que vous voulez d'un coup. La première illustre l'article dans les listes ; les suivantes défilent à côté d'elle dans l'article. Les flèches permettent de changer l'ordre, et chaque photo a son champ de description.
+5. Pour une vidéo : mettez-la d'abord en ligne sur YouTube, puis collez son lien dans le champ « Vidéo YouTube ».
+6. Cliquez sur « Enregistrer ».
+7. Cliquez sur « Publier sur le site », en haut, et confirmez.
 
 La page d'accueil montre les trois actualités les plus récentes, suivies d'une carte verte qui mène à la liste complète.
 

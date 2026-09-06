@@ -616,3 +616,83 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
   font-size: 0.98rem;
   color: var(--ardoise);
 }
+
+/* --- Liste des photos d'un article --------------------------------------------- */
+
+.photo-ligne {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.6rem;
+  background: var(--blanc);
+  border: 1px solid var(--sauge);
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.photo-vignette {
+  width: 92px;
+  height: 66px;
+  object-fit: cover;
+  border-radius: 6px;
+  flex-shrink: 0;
+  background: var(--sauge-pale);
+}
+
+.photo-champs { flex: 1; min-width: 0; }
+
+.photo-role {
+  margin: 0 0 0.25rem;
+  font-family: var(--signaletique);
+  font-weight: 600;
+  font-size: 0.9rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--prairie-fonce);
+}
+
+.photo-champs input {
+  width: 100%;
+  font-family: inherit;
+  font-size: 1rem;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--sauge);
+  border-radius: 6px;
+}
+
+.photo-boutons {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.photo-boutons .lien-reinit { margin-left: 0; font-style: normal; }
+
+.aide--vide { font-style: italic; margin: 0 0 0.6rem; }
+
+.apercu-galerie {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 78%;
+  gap: 10px;
+  overflow-x: auto;
+  margin-bottom: 0.4rem;
+  padding-bottom: 0.4rem;
+}
+
+.apercu-galerie figure { margin: 0; }
+
+.apercu-galerie img {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.apercu-galerie figcaption {
+  margin-top: 0.3rem;
+  font-size: 0.9rem;
+  font-style: italic;
+  color: var(--ardoise);
+}
