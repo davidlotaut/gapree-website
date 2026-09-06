@@ -542,8 +542,8 @@ button:focus-visible {
 }
 
 .prose {
-  max-width: min(100%, 96ch);
-  font-size: 1.15rem;
+  max-width: min(100%, 92ch);
+  font-size: inherit;
   line-height: 1.75;
 }
 
