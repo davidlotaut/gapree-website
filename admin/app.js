@@ -90,41 +90,16 @@
     }
   }
 
-  /* Une photo de téléphone pèse 3 à 5 Mo pour 4000 pixels de large, alors que le
-     site n'en affiche jamais plus de 1600. On la réduit dans le navigateur avant
-     de l'envoyer : le site reste rapide, y compris sur une connexion de campagne. */
-  var LARGEUR_MAX = 1600;
-  var POIDS_SANS_RETOUCHE = 600 * 1024;
+  /* Les photos partent telles quelles, à leur qualité d'origine (choix de David
+     du 06/09 : les habitants sont en fibre). Un plafond large évite seulement
+     qu'un fichier hors norme fasse échouer la publication. */
+  var TAILLE_PHOTO_MAX = 12 * 1024 * 1024;
 
-  function reduitPhoto(fichier) {
+  function litPhoto(fichier) {
     return new Promise(function (resolve, reject) {
       var lecteur = new FileReader();
       lecteur.onerror = function () { reject(new Error("lecture impossible")); };
-      lecteur.onload = function () {
-        var brut = lecteur.result;
-        var img = new Image();
-        img.onerror = function () { resolve(brut); };
-        img.onload = function () {
-          var w = img.naturalWidth, h = img.naturalHeight;
-          if (!w || !h) return resolve(brut);
-          if (fichier.size <= POIDS_SANS_RETOUCHE && w <= LARGEUR_MAX && h <= LARGEUR_MAX) return resolve(brut);
-          var ratio = Math.min(LARGEUR_MAX / w, LARGEUR_MAX / h, 1);
-          var toile = document.createElement("canvas");
-          toile.width = Math.round(w * ratio);
-          toile.height = Math.round(h * ratio);
-          var ctx = toile.getContext("2d");
-          ctx.fillStyle = "#FFFFFF";
-          ctx.fillRect(0, 0, toile.width, toile.height);
-          ctx.drawImage(img, 0, 0, toile.width, toile.height);
-          try {
-            var reduit = toile.toDataURL("image/jpeg", 0.82);
-            resolve(reduit.length < brut.length ? reduit : brut);
-          } catch (e) {
-            resolve(brut);
-          }
-        };
-        img.src = brut;
-      };
+      lecteur.onload = function () { resolve(lecteur.result); };
       lecteur.readAsDataURL(fichier);
     });
   }
@@ -375,11 +350,11 @@
       var fichiersChoisis = [].slice.call(inputImages.files || []);
       inputImages.value = "";
       if (!fichiersChoisis.length) return;
-      var images = fichiersChoisis.filter(function (f) { return /^image\//.test(f.type); });
-      if (images.length < fichiersChoisis.length) toast("Seules les photos peuvent être ajoutées");
+      var images = fichiersChoisis.filter(function (f) { return /^image\//.test(f.type) && f.size <= TAILLE_PHOTO_MAX; });
+      if (images.length < fichiersChoisis.length) toast("Une photo a été écartée : ce n'est pas une image, ou elle dépasse 12 Mo");
       if (!images.length) return;
-      toast(images.length > 1 ? "Préparation des photos…" : "Préparation de la photo…");
-      Promise.all(images.map(reduitPhoto)).then(function (sources) {
+      toast(images.length > 1 ? "Chargement des photos…" : "Chargement de la photo…");
+      Promise.all(images.map(litPhoto)).then(function (sources) {
         sources.forEach(function (src) { photos.push({ src: src, alt: "" }); });
         rendPhotos();
         apercu();
@@ -506,7 +481,7 @@
       var f = inputImage.files[0];
       if (!f) return;
       inputImage.value = "";
-      reduitPhoto(f).then(function (src) {
+      litPhoto(f).then(function (src) {
         photo = src;
         var img = document.getElementById("photo-actuelle");
         img.src = photo;
@@ -597,7 +572,7 @@
       var f = inputPhoto.files[0];
       if (!f) return;
       inputPhoto.value = "";
-      reduitPhoto(f).then(function (src) {
+      litPhoto(f).then(function (src) {
         photoAccueil = src;
         document.getElementById("photo-accueil").src = photoAccueil;
       }).catch(function () { toast("La photo n'a pas pu être lue"); });

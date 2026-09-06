@@ -3,6 +3,7 @@
   <div class="site-header-inner">
     <a class="brand" href="{{ '/' | relative_url }}">Gâprée<span class="brand-dep"> · Orne</span></a>
     <nav aria-label="Navigation principale">
+      <a href="{{ '/' | relative_url }}"{% if page.section == "accueil" %} aria-current="page"{% endif %}>Accueil</a>
       <a href="{{ '/actualites/' | relative_url }}"{% if page.section == "actualites" %} aria-current="page"{% endif %}>Actualités</a>
       <a href="{{ '/talents/' | relative_url }}"{% if page.section == "talents" %} aria-current="page"{% endif %}>Nos talents</a>
       <a href="{{ '/contact/' | relative_url }}"{% if page.section == "contact" %} aria-current="page"{% endif %}>Nous contacter</a>

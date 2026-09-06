@@ -39,8 +39,8 @@ html { -webkit-text-size-adjust: 100%; }
 body {
   margin: 0;
   font-family: var(--bulletin);
-  font-size: 1.15rem;
-  line-height: 1.7;
+  font-size: clamp(1.15rem, 0.98rem + 0.42vw, 1.4rem);
+  line-height: 1.65;
   color: var(--encre);
   background: var(--craie);
 }
@@ -306,7 +306,7 @@ button:focus-visible {
 .card--tout:hover .card-tout-fleche { transform: translateX(6px); }
 
 .empty {
-  max-width: 70ch;
+  max-width: min(100%, 88ch);
   background: var(--sauge-pale);
   border: 1px dashed var(--sauge);
   border-radius: var(--radius);
@@ -481,15 +481,13 @@ button:focus-visible {
 
 .chapo {
   margin: 0 0 2.1rem;
-  max-width: 70ch;
   font-style: italic;
-  font-size: 1.18rem;
+  font-size: clamp(1.2rem, 1rem + 0.5vw, 1.5rem);
   color: var(--ardoise);
 }
 
 .article {
   padding: 2.7rem var(--gouttiere) 3.6rem;
-  max-width: 1020px;
 }
 
 .crumb { margin: 0 0 1.6rem; }
@@ -533,7 +531,7 @@ button:focus-visible {
 .video {
   margin: 1.4rem 0 1.8rem;
   aspect-ratio: 16 / 9;
-  max-width: 900px;
+  max-width: min(100%, 1180px);
 }
 
 .video iframe {
@@ -544,7 +542,7 @@ button:focus-visible {
 }
 
 .prose {
-  max-width: 74ch;
+  max-width: min(100%, 96ch);
   font-size: 1.15rem;
   line-height: 1.75;
 }
@@ -861,7 +859,7 @@ button:focus-visible {
 
 .page--avec-sommaire .page-head { grid-column: 1 / -1; }
 
-.page--avec-sommaire .prose { max-width: 82ch; }
+.page--avec-sommaire .prose { max-width: min(100%, 88ch); }
 
 .sommaire {
   position: sticky;
