@@ -9,7 +9,6 @@
 
   var DEPOT_RAW = "https://raw.githubusercontent.com/davidlotaut/gapree-website/main/";
   var CLE_DEMO = "gapree-demo-admin";
-  var TAILLE_PHOTO_MAX = 4 * 1024 * 1024;
 
   var app = document.getElementById("app");
   var donnees = null;
@@ -89,6 +88,45 @@
       h = h.replace(/(^|[\s(])\*([^*\n]+)\*(?=[\s).,;:!?]|$)/g, "$1<em>$2</em>");
       return h;
     }
+  }
+
+  /* Une photo de téléphone pèse 3 à 5 Mo pour 4000 pixels de large, alors que le
+     site n'en affiche jamais plus de 1600. On la réduit dans le navigateur avant
+     de l'envoyer : le site reste rapide, y compris sur une connexion de campagne. */
+  var LARGEUR_MAX = 1600;
+  var POIDS_SANS_RETOUCHE = 600 * 1024;
+
+  function reduitPhoto(fichier) {
+    return new Promise(function (resolve, reject) {
+      var lecteur = new FileReader();
+      lecteur.onerror = function () { reject(new Error("lecture impossible")); };
+      lecteur.onload = function () {
+        var brut = lecteur.result;
+        var img = new Image();
+        img.onerror = function () { resolve(brut); };
+        img.onload = function () {
+          var w = img.naturalWidth, h = img.naturalHeight;
+          if (!w || !h) return resolve(brut);
+          if (fichier.size <= POIDS_SANS_RETOUCHE && w <= LARGEUR_MAX && h <= LARGEUR_MAX) return resolve(brut);
+          var ratio = Math.min(LARGEUR_MAX / w, LARGEUR_MAX / h, 1);
+          var toile = document.createElement("canvas");
+          toile.width = Math.round(w * ratio);
+          toile.height = Math.round(h * ratio);
+          var ctx = toile.getContext("2d");
+          ctx.fillStyle = "#FFFFFF";
+          ctx.fillRect(0, 0, toile.width, toile.height);
+          ctx.drawImage(img, 0, 0, toile.width, toile.height);
+          try {
+            var reduit = toile.toDataURL("image/jpeg", 0.82);
+            resolve(reduit.length < brut.length ? reduit : brut);
+          } catch (e) {
+            resolve(brut);
+          }
+        };
+        img.src = brut;
+      };
+      lecteur.readAsDataURL(fichier);
+    });
   }
 
   var toastTimer = null;
@@ -213,7 +251,7 @@
       (valeur ? '<img class="photo-actuelle" id="photo-actuelle" src="' + echap(urlImage(valeur)) + '" alt="">' :
         '<img class="photo-actuelle" id="photo-actuelle" src="" alt="" hidden>') +
       '<input type="file" id="ch-image" accept="image/*">' +
-      '<p class="aide">Choisissez une photo depuis votre ordinateur (moins de 4 Mo).' +
+      '<p class="aide">Choisissez une photo depuis votre ordinateur.' +
       (valeur ? ' <button type="button" class="lien-reinit" id="btn-retire-photo">Retirer la photo</button>' : "") + "</p></div>";
   }
 
@@ -240,7 +278,7 @@
       '<div class="champ"><label for="ch-images">Photos</label>' +
       '<div id="liste-photos"></div>' +
       '<input type="file" id="ch-images" accept="image/*" multiple>' +
-      '<p class="aide">Vous pouvez en choisir plusieurs d\'un coup (moins de 4 Mo chacune). ' +
+      '<p class="aide">Vous pouvez en choisir plusieurs d\'un coup, telles qu\'elles sortent de votre appareil. ' +
       'La première illustre l\'article dans les listes ; les suivantes défilent à côté d\'elle.</p></div>' +
       '<div class="champ"><label for="ch-video">Vidéo YouTube</label><input type="url" id="ch-video" value="' + echap(item.video || "") + '"><p class="aide">Facultatif. Collez le lien d\'une vidéo YouTube.</p></div>' +
       '<div class="champ"><label for="ch-texte">Texte</label><textarea id="ch-texte">Chargement du texte…</textarea>' +
@@ -337,19 +375,16 @@
       var fichiersChoisis = [].slice.call(inputImages.files || []);
       inputImages.value = "";
       if (!fichiersChoisis.length) return;
-      var trop = fichiersChoisis.filter(function (f) { return f.size > TAILLE_PHOTO_MAX; });
-      if (trop.length) toast(trop.length + (trop.length > 1 ? " photos trop lourdes, ignorées" : " photo trop lourde, ignorée"));
-      var aLire = fichiersChoisis.filter(function (f) { return f.size <= TAILLE_PHOTO_MAX; });
-      var restant = aLire.length;
-      if (!restant) return;
-      aLire.forEach(function (f) {
-        var lecteur = new FileReader();
-        lecteur.onload = function () {
-          photos.push({ src: lecteur.result, alt: "" });
-          if (--restant === 0) { rendPhotos(); apercu(); }
-        };
-        lecteur.readAsDataURL(f);
-      });
+      var images = fichiersChoisis.filter(function (f) { return /^image\//.test(f.type); });
+      if (images.length < fichiersChoisis.length) toast("Seules les photos peuvent être ajoutées");
+      if (!images.length) return;
+      toast(images.length > 1 ? "Préparation des photos…" : "Préparation de la photo…");
+      Promise.all(images.map(reduitPhoto)).then(function (sources) {
+        sources.forEach(function (src) { photos.push({ src: src, alt: "" }); });
+        rendPhotos();
+        apercu();
+        toast(images.length > 1 ? images.length + " photos ajoutées" : "Photo ajoutée");
+      }).catch(function () { toast("Une photo n'a pas pu être lue"); });
     });
 
     function retourListe() { vue = { type: "liste", rubrique: rubrique }; rendre(); }
@@ -470,15 +505,13 @@
     inputImage.addEventListener("change", function () {
       var f = inputImage.files[0];
       if (!f) return;
-      if (f.size > TAILLE_PHOTO_MAX) { toast("Photo trop lourde (4 Mo maximum)"); inputImage.value = ""; return; }
-      var lecteur = new FileReader();
-      lecteur.onload = function () {
-        photo = lecteur.result;
+      inputImage.value = "";
+      reduitPhoto(f).then(function (src) {
+        photo = src;
         var img = document.getElementById("photo-actuelle");
         img.src = photo;
         img.hidden = false;
-      };
-      lecteur.readAsDataURL(f);
+      }).catch(function () { toast("La photo n'a pas pu être lue"); });
     });
     var btnRetirePhoto = document.getElementById("btn-retire-photo");
     if (btnRetirePhoto) btnRetirePhoto.addEventListener("click", function () {
@@ -542,7 +575,7 @@
       '<div class="champ"><label>Photo d\'accueil</label>' +
       '<img class="photo-actuelle" id="photo-accueil" src="' + echap(urlImage(accueil.photo)) + '" alt="">' +
       '<input type="file" id="ch-photo-accueil" accept="image/*">' +
-      '<p class="aide">La grande photo en haut de la page d\'accueil (moins de 4 Mo).</p></div>' +
+      '<p class="aide">La grande photo en haut de la page d\'accueil.</p></div>' +
       '<div class="champ"><label for="ch-alt-accueil">Description de la photo d\'accueil</label><input type="text" id="ch-alt-accueil" value="' + echap(accueil.alt_photo || "") + '">' +
       '<p class="aide">Ce que montre la photo, en une phrase, pour les personnes malvoyantes.</p></div>' +
       '<div class="champ"><label for="ch-sous-titre">Sous-titre</label><input type="text" id="ch-sous-titre" value="' + echap(accueil.sous_titre || "") + '"></div>' +
@@ -563,13 +596,11 @@
     inputPhoto.addEventListener("change", function () {
       var f = inputPhoto.files[0];
       if (!f) return;
-      if (f.size > TAILLE_PHOTO_MAX) { toast("Photo trop lourde (4 Mo maximum)"); inputPhoto.value = ""; return; }
-      var lecteur = new FileReader();
-      lecteur.onload = function () {
-        photoAccueil = lecteur.result;
+      inputPhoto.value = "";
+      reduitPhoto(f).then(function (src) {
+        photoAccueil = src;
         document.getElementById("photo-accueil").src = photoAccueil;
-      };
-      lecteur.readAsDataURL(f);
+      }).catch(function () { toast("La photo n'a pas pu être lue"); });
     });
 
     function rendHoraires() {
