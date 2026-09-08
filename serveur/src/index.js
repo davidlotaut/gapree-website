@@ -19,7 +19,17 @@ const FENETRE_ESSAIS = 900;
    plafond refuse proprement un paquet hors norme au lieu de mourir en silence,
    comme le 08/09/2026 où deux publications de 55 photos ont été perdues. */
 const LOT_MAX = 24 * 1024 * 1024;
-const BLOBS_EN_PARALLELE = 3;           // au-delà, GitHub commence à freiner
+
+/* GitHub compte cinq points par écriture et n'en accepte que 900 par minute sur
+   un même point d'entrée, soit 180 photos par minute au plus. Sans ce rythme,
+   un reportage de cent photos se ferait refuser en cours de route, avec un
+   message parlant à tort d'une clé devenue invalide. */
+const BLOBS_EN_PARALLELE = 3;
+const PAUSE_ENTRE_GROUPES = 1200;       // millisecondes, soit 150 photos par minute
+
+function patiente(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 /* ------------------------------------------------------------------ outils */
 
@@ -147,7 +157,7 @@ async function sessionDe(requete, env) {
 
 /* --------------------------------------------------------------- GitHub */
 
-async function appelGitHub(env, chemin, options) {
+async function appelGitHub(env, chemin, options, secondEssai) {
   const o = options || {};
   const r = await fetch("https://api.github.com/repos/" + env.DEPOT + chemin, {
     method: o.method || "GET",
@@ -164,6 +174,14 @@ async function appelGitHub(env, chemin, options) {
     const detail = await r.text();
     /* Messages compréhensibles par la mairie ; le détail technique reste dans les journaux. */
     console.log("GitHub " + r.status + " : " + detail.slice(0, 300));
+    /* Freinage passager : GitHub demande d'attendre, la clé n'est pas en cause. */
+    const attenteDemandee = r.headers.get("retry-after");
+    if ((r.status === 403 || r.status === 429)
+      && (attenteDemandee || /secondary rate limit|abuse detection/i.test(detail))) {
+      if (secondEssai) throw new Error("Le site reçoit trop de photos à la fois. Réessayez dans une minute.");
+      await patiente(Math.min(parseInt(attenteDemandee || "60", 10), 90) * 1000);
+      return await appelGitHub(env, chemin, options, true);
+    }
     if (r.status === 401 || r.status === 403) {
       throw new Error("La clé d'écriture du site n'est plus valable. Prévenez la personne qui a installé le site.");
     }
@@ -183,10 +201,13 @@ async function televerse(env, fichiers) {
   const deposes = [];
   for (let i = 0; i < fichiers.length; i += BLOBS_EN_PARALLELE) {
     const paquet = fichiers.slice(i, i + BLOBS_EN_PARALLELE);
+    const debut = Date.now();
     const blobs = await Promise.all(paquet.map((f) => appelGitHub(env, "/git/blobs", {
       method: "POST", corps: { content: f.base64, encoding: "base64" }
     })));
     paquet.forEach((f, j) => deposes.push({ chemin: f.chemin, sha: blobs[j].sha }));
+    const reste = PAUSE_ENTRE_GROUPES - (Date.now() - debut);
+    if (i + BLOBS_EN_PARALLELE < fichiers.length && reste > 0) await patiente(reste);
   }
   return deposes;
 }
