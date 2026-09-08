@@ -22,25 +22,88 @@
       .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   }
 
-  function litSurcouche() {
-    try {
-      var brut = JSON.parse(localStorage.getItem(CLE_DEMO) || "{}");
-      return {
-        modifies: brut.modifies || {},
-        nouveaux: brut.nouveaux || { actualites: [], talents: [], elus: [] },
-        supprimes: brut.supprimes || [],
-        reglages: brut.reglages || {}
-      };
-    } catch (e) {
-      return { modifies: {}, nouveaux: { actualites: [], talents: [], elus: [] }, supprimes: [], reglages: {} };
-    }
+  function surcoucheVide() {
+    return { modifies: {}, nouveaux: { actualites: [], talents: [], elus: [] }, supprimes: [], reglages: {} };
+  }
+
+  function rangeSurcouche(brut) {
+    if (!brut) return surcoucheVide();
+    return {
+      modifies: brut.modifies || {},
+      nouveaux: brut.nouveaux || { actualites: [], talents: [], elus: [] },
+      supprimes: brut.supprimes || [],
+      reglages: brut.reglages || {}
+    };
+  }
+
+  /* Le brouillon vit dans la base du navigateur, et non plus dans sa petite
+     réserve de 5 Mo : celle-ci débordait dès la deuxième photo, et le débordement
+     était muet, si bien que le travail semblait enregistré alors qu'il était
+     perdu (constaté le 08/09/2026). La réserve reste le filet de secours quand
+     la base n'est pas disponible, en navigation privée par exemple. */
+  var BASE = "gapree-admin";
+  var MAGASIN = "brouillon";
+
+  function ouvreBase() {
+    return new Promise(function (resolve, reject) {
+      if (!window.indexedDB) return reject(new Error("pas de base"));
+      var demande = indexedDB.open(BASE, 1);
+      demande.onupgradeneeded = function () { demande.result.createObjectStore(MAGASIN); };
+      demande.onsuccess = function () { resolve(demande.result); };
+      demande.onerror = function () { reject(demande.error || new Error("base inaccessible")); };
+    });
+  }
+
+  function dansLaBase(mode, action) {
+    return ouvreBase().then(function (base) {
+      return new Promise(function (resolve, reject) {
+        var t = base.transaction(MAGASIN, mode);
+        var demande = action(t.objectStore(MAGASIN));
+        t.oncomplete = function () { base.close(); resolve(demande ? demande.result : undefined); };
+        t.onerror = t.onabort = function () { base.close(); reject(t.error || new Error("écriture refusée")); };
+      });
+    });
+  }
+
+  function litReserve() {
+    try { return JSON.parse(localStorage.getItem(CLE_DEMO) || "null"); } catch (e) { return null; }
+  }
+
+  function chargeSurcouche() {
+    return dansLaBase("readonly", function (magasin) { return magasin.get("etat"); })
+      .then(function (enregistre) {
+        /* Un brouillon commencé avant ce changement est repris, puis la réserve
+           est libérée : il n'y a aucune raison de le perdre. */
+        var ancien = litReserve();
+        if (!enregistre && ancien) {
+          try { localStorage.removeItem(CLE_DEMO); } catch (e) { /* tant pis */ }
+          return rangeSurcouche(ancien);
+        }
+        return rangeSurcouche(enregistre);
+      })
+      .catch(function () { return rangeSurcouche(litReserve()); });
   }
 
   function ecritSurcouche(s) {
-    localStorage.setItem(CLE_DEMO, JSON.stringify(s));
+    dansLaBase("readwrite", function (magasin) { return magasin.put(s, "etat"); })
+      .catch(function () {
+        /* Sans base, on retombe sur la réserve : elle suffit au texte, pas aux
+           photos, donc on le dit au lieu d'échouer sans un mot. */
+        try {
+          localStorage.setItem(CLE_DEMO, JSON.stringify(s));
+        } catch (e) {
+          toast("Ce navigateur ne peut pas garder un brouillon aussi lourd : publiez sans fermer la page");
+        }
+      });
   }
 
-  var surcouche = litSurcouche();
+  function effaceSurcouche() {
+    try { localStorage.removeItem(CLE_DEMO); } catch (e) { /* rien à faire */ }
+    return dansLaBase("readwrite", function (magasin) { return magasin.delete("etat"); })
+      .catch(function () { /* déjà propre */ });
+  }
+
+  var surcouche = surcoucheVide();
 
   var MOIS = ["janvier", "février", "mars", "avril", "mai", "juin",
     "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
@@ -90,17 +153,98 @@
     }
   }
 
-  /* Les photos partent telles quelles, à leur qualité d'origine (choix de David
-     du 06/09 : les habitants sont en fibre). Un plafond large évite seulement
-     qu'un fichier hors norme fasse échouer la publication. */
-  var TAILLE_PHOTO_MAX = 12 * 1024 * 1024;
+  /* Une photo d'appareil pèse 3 à 10 Mo, alors que le site n'en montre jamais
+     plus de 620 points de large, soit 1240 sur un écran fin. Elle est donc
+     ramenée à la taille d'un écran avant de partir. Mesuré le 08/09/2026 :
+     une photo de 15 millions de points passe de 2,8 Mo à 500 Ko sans
+     différence visible, et un reportage de 55 photos tient en 27 Mo au lieu
+     de 165. Sans cette réduction, un tel reportage ne peut pas être publié du
+     tout : il dépasse la mémoire du serveur comme la place réservée aux
+     brouillons. */
+  var COTE_MAX = 1800;
+  var QUALITE = 0.85;
+  var COTE_VIGNETTE = 240;     // aperçu dans l'éditeur, jamais envoyé
+  var TAILLE_PHOTO_MAX = 60 * 1024 * 1024;
+
+  function dessine(image, coteMax, qualite) {
+    var reduction = Math.min(1, coteMax / Math.max(image.width, image.height));
+    var largeur = Math.round(image.width * reduction);
+    var hauteur = Math.round(image.height * reduction);
+    var toile = document.createElement("canvas");
+    toile.width = largeur;
+    toile.height = hauteur;
+    var ctx = toile.getContext("2d");
+    /* Un fond blanc : sans lui, une image transparente ressortirait noire. */
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, largeur, hauteur);
+    ctx.drawImage(image, 0, 0, largeur, hauteur);
+    return toile.toDataURL("image/jpeg", qualite);
+  }
+
+  /* Décodage par createImageBitmap quand il existe : il tient l'orientation de
+     l'appareil et libère la mémoire tout de suite, ce qui compte sur cent
+     photos d'affilée. Sinon, décodage classique. */
+  function ouvreImage(fichier) {
+    if (typeof createImageBitmap === "function") {
+      return createImageBitmap(fichier, { imageOrientation: "from-image" })
+        .catch(function () { return ouvreImageClassique(fichier); });
+    }
+    return ouvreImageClassique(fichier);
+  }
+
+  function ouvreImageClassique(fichier) {
+    return new Promise(function (resolve, reject) {
+      var adresse = URL.createObjectURL(fichier);
+      var image = new Image();
+      image.onload = function () { resolve(image); };
+      image.onerror = function () {
+        URL.revokeObjectURL(adresse);
+        reject(new Error("lecture impossible"));
+      };
+      image.src = adresse;
+    });
+  }
 
   function litPhoto(fichier) {
-    return new Promise(function (resolve, reject) {
-      var lecteur = new FileReader();
-      lecteur.onerror = function () { reject(new Error("lecture impossible")); };
-      lecteur.onload = function () { resolve(lecteur.result); };
-      lecteur.readAsDataURL(fichier);
+    return ouvreImage(fichier).then(function (image) {
+      var reduite = { src: dessine(image, COTE_MAX, QUALITE), vignette: dessine(image, COTE_VIGNETTE, 0.7) };
+      if (image.close) image.close();
+      if (image.src && image.src.indexOf("blob:") === 0) URL.revokeObjectURL(image.src);
+      return reduite;
+    });
+  }
+
+  /* Jauge d'attente : appeler avec un texte et une part faite, puis sans rien
+     pour la faire disparaître. */
+  function progression(texte, fait, total) {
+    var bloc = document.getElementById("progression");
+    if (!texte) { bloc.hidden = true; return; }
+    bloc.hidden = false;
+    document.getElementById("progression-texte").textContent = texte;
+    var part = total > 0 ? Math.round((fait / total) * 100) : 0;
+    document.getElementById("progression-jauge").style.width = part + "%";
+  }
+
+  /* Laisse le navigateur redessiner entre deux photos : sans cette respiration,
+     la page se fige et la jauge n'avance qu'à la fin. */
+  function respire() {
+    return new Promise(function (resolve) { setTimeout(resolve, 0); });
+  }
+
+  /* Enchaîne un traitement lent sur une liste, en tenant la jauge à jour. */
+  function unParUn(liste, texte, traite) {
+    var resultats = [];
+    return liste.reduce(function (file, element, i) {
+      return file.then(function () {
+        progression(texte(i + 1, liste.length), i, liste.length);
+        return respire().then(function () { return traite(element, i); });
+      }).then(function (r) { resultats.push(r); });
+    }, Promise.resolve()).then(function () {
+      progression(null);
+      return resultats;
+    }, function (e) {
+      progression(null);
+      throw e;
     });
   }
 
@@ -279,7 +423,7 @@
       } else {
         zone.innerHTML = photos.map(function (ph, i) {
           return '<div class="photo-ligne">' +
-            '<img class="photo-vignette" src="' + echap(urlImage(ph.src)) + '" alt="">' +
+            '<img class="photo-vignette" src="' + echap(urlImage(ph.vignette || ph.src)) + '" alt="">' +
             '<div class="photo-champs">' +
             (i === 0 ? '<p class="photo-role">Photo principale</p>' : "") +
             '<input type="text" class="photo-alt" data-i="' + i + '" placeholder="Ce que montre la photo" value="' + echap(ph.alt) + '">' +
@@ -329,11 +473,15 @@
         html += '<img class="apercu-image" src="' + echap(urlImage(photos[0].src)) + '" alt="">';
         if (photos[0].alt.trim()) html += '<p class="apercu-legende">' + echap(photos[0].alt.trim()) + "</p>";
       } else if (photos.length > 1) {
-        html += '<div class="apercu-galerie">' + photos.map(function (ph) {
-          return '<figure><img src="' + echap(urlImage(ph.src)) + '" alt="">' +
+        /* L'aperçu s'arrête aux douze premières : les redessiner toutes à
+           chaque lettre tapée fige la page sur un gros reportage. */
+        var montrees = photos.slice(0, 12);
+        html += '<div class="apercu-galerie">' + montrees.map(function (ph) {
+          return '<figure><img src="' + echap(urlImage(ph.vignette || ph.src)) + '" alt="">' +
             (ph.alt.trim() ? "<figcaption>" + echap(ph.alt.trim()) + "</figcaption>" : "") + "</figure>";
         }).join("") + "</div>";
-        html += '<p class="apercu-legende">' + photos.length + " photos qui défilent</p>";
+        html += '<p class="apercu-legende">' + photos.length + " photos qui défilent"
+          + (photos.length > montrees.length ? " (les " + montrees.length + " premières sont montrées ici)" : "") + "</p>";
       }
       html += rendMarkdown(refs.texte.value);
       document.getElementById("apercu").innerHTML = html;
@@ -351,15 +499,27 @@
       inputImages.value = "";
       if (!fichiersChoisis.length) return;
       var images = fichiersChoisis.filter(function (f) { return /^image\//.test(f.type) && f.size <= TAILLE_PHOTO_MAX; });
-      if (images.length < fichiersChoisis.length) toast("Une photo a été écartée : ce n'est pas une image, ou elle dépasse 12 Mo");
+      var ecartees = fichiersChoisis.length - images.length;
+      if (ecartees > 0) toast(ecartees + (ecartees > 1 ? " fichiers écartés : " : " fichier écarté : ") + "ce ne sont pas des photos");
       if (!images.length) return;
-      toast(images.length > 1 ? "Chargement des photos…" : "Chargement de la photo…");
-      Promise.all(images.map(litPhoto)).then(function (sources) {
-        sources.forEach(function (src) { photos.push({ src: src, alt: "" }); });
+
+      /* Une par une : cent photos décodées en même temps saturent la mémoire
+         de la page, et la jauge doit pouvoir avancer. */
+      var illisibles = 0;
+      unParUn(images, function (n, total) {
+        return total > 1 ? "Préparation des photos… " + n + " sur " + total : "Préparation de la photo…";
+      }, function (fichier) {
+        return litPhoto(fichier).catch(function () { illisibles++; return null; });
+      }).then(function (reduites) {
+        reduites.forEach(function (r) {
+          if (r) photos.push({ src: r.src, vignette: r.vignette, alt: "" });
+        });
         rendPhotos();
         apercu();
-        toast(images.length > 1 ? images.length + " photos ajoutées" : "Photo ajoutée");
-      }).catch(function () { toast("Une photo n'a pas pu être lue"); });
+        var ajoutees = images.length - illisibles;
+        toast(ajoutees > 1 ? ajoutees + " photos ajoutées" : "Photo ajoutée");
+        if (illisibles > 0) toast(illisibles + (illisibles > 1 ? " photos n'ont pas pu être lues" : " photo n'a pas pu être lue"));
+      });
     });
 
     function retourListe() { vue = { type: "liste", rubrique: rubrique }; rendre(); }
@@ -807,24 +967,79 @@
       : n + (n > 1 ? " modifications en attente de publication." : " modification en attente de publication.");
   }
 
+  /* Le serveur ne peut pas recevoir un reportage entier d'un coup : les photos
+     partent par paquets, puis le site est mis à jour une seule fois, à la fin.
+     Quel que soit leur nombre, la personne n'a donc qu'un bouton à presser. */
+  var POIDS_PAQUET = 10 * 1024 * 1024;
+
+  function decoupeEnPaquets(fichiers) {
+    var paquets = [], courant = [], poids = 0;
+    fichiers.forEach(function (f) {
+      if (courant.length && poids + f.base64.length > POIDS_PAQUET) {
+        paquets.push(courant);
+        courant = [];
+        poids = 0;
+      }
+      courant.push(f);
+      poids += f.base64.length;
+    });
+    if (courant.length) paquets.push(courant);
+    return paquets;
+  }
+
+  /* Une coupure passagère ne doit pas coûter tout le reportage. */
+  function reessaieUneFois(action) {
+    return action().catch(function (premiere) {
+      return respire().then(action).catch(function () { throw premiere; });
+    });
+  }
+
   function publieMaintenant() {
     var bouton = document.getElementById("btn-publier");
+    var etat = document.getElementById("etat-publication");
     var changements = construitChangements();
     if (!changements.fichiers.length && !changements.suppressions.length) return;
     if (!confirm("Publier " + changements.resume.length + " modification(s) sur le site en ligne ?\n\n"
       + changements.resume.join("\n"))) return;
 
+    var aEnvoyer = changements.fichiers.filter(function (f) { return f.base64; });
+    var textes = changements.fichiers.filter(function (f) { return !f.base64; });
+    var paquets = decoupeEnPaquets(aEnvoyer);
+    var deposees = [];
+    var faites = 0;
+
     bouton.disabled = true;
-    document.getElementById("etat-publication").textContent = "Publication en cours…";
-    window.GapreePublication.publie(changements).then(function () {
-      surcouche = { modifies: {}, nouveaux: { actualites: [], talents: [], elus: [] }, supprimes: [], reglages: {} };
+    etat.textContent = "Publication en cours…";
+
+    unParUn(paquets, function (n) {
+      /* Le compte annoncé est celui atteint à la fin du paquet en cours : c'est
+         ce que la jauge montre avancer. */
+      return "Envoi des photos… " + Math.min(faites + paquets[n - 1].length, aEnvoyer.length)
+        + " sur " + aEnvoyer.length;
+    }, function (paquet) {
+      return reessaieUneFois(function () {
+        return window.GapreePublication.televerse(paquet);
+      }).then(function (recues) {
+        deposees = deposees.concat(recues);
+        faites += paquet.length;
+      });
+    }).then(function () {
+      progression("Mise à jour du site…", 1, 2);
+      return window.GapreePublication.publie({
+        message: changements.message,
+        fichiers: textes.concat(deposees),
+        suppressions: changements.suppressions
+      });
+    }).then(function () {
+      progression(null);
+      surcouche = surcoucheVide();
       ecritSurcouche(surcouche);
-      document.getElementById("etat-publication").textContent =
-        "Publié. Le site en ligne se met à jour dans une minute environ.";
+      etat.textContent = "Publié. Le site en ligne se met à jour dans une minute environ.";
       toast("Publié sur le site");
       setTimeout(function () { window.location.reload(); }, 60000);
     }).catch(function (e) {
-      document.getElementById("etat-publication").textContent = e.message || "La publication a échoué.";
+      progression(null);
+      etat.textContent = e.message || "La publication a échoué.";
       bouton.disabled = false;
       toast("La publication a échoué");
     });
@@ -956,10 +1171,11 @@
 
   function videBrouillon(question) {
     if (!confirm(question)) return;
-    localStorage.removeItem(CLE_DEMO);
-    surcouche = litSurcouche();
-    toast("Modifications effacées");
-    rendre();
+    effaceSurcouche().then(function () {
+      surcouche = surcoucheVide();
+      toast("Modifications effacées");
+      rendre();
+    });
   }
 
   document.getElementById("btn-reinit").addEventListener("click", function () {
@@ -985,10 +1201,14 @@
   });
 
   function chargeContenu() {
-    fetch("contenu.json", { cache: "no-store" })
-      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
-      .then(function (json) {
-        donnees = json;
+    Promise.all([
+      fetch("contenu.json", { cache: "no-store" })
+        .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }),
+      chargeSurcouche()
+    ])
+      .then(function (deux) {
+        donnees = deux[0];
+        surcouche = deux[1];
         rendre();
       })
       .catch(function () {
