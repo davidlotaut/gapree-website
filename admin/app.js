@@ -23,7 +23,8 @@
   }
 
   function surcoucheVide() {
-    return { modifies: {}, nouveaux: { actualites: [], talents: [], elus: [] }, supprimes: [], reglages: {} };
+    return { modifies: {}, nouveaux: { actualites: [], talents: [], elus: [] },
+      supprimes: [], reglages: {}, deposees: {} };
   }
 
   function rangeSurcouche(brut) {
@@ -32,7 +33,8 @@
       modifies: brut.modifies || {},
       nouveaux: brut.nouveaux || { actualites: [], talents: [], elus: [] },
       supprimes: brut.supprimes || [],
-      reglages: brut.reglages || {}
+      reglages: brut.reglages || {},
+      deposees: brut.deposees || {}
     };
   }
 
@@ -819,16 +821,53 @@
 
   var EXTENSIONS = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp", "image/gif": "gif" };
 
+  /* Repère court d'une photo, pour la reconnaître d'une tentative à l'autre.
+     Quelques caractères prélevés de loin en loin suffisent : il s'agit de
+     retrouver une photo, pas de se prémunir contre une falsification. */
+  function repere(dataUrl) {
+    var somme = 0;
+    for (var i = 0; i < dataUrl.length; i += 997) somme = (somme * 31 + dataUrl.charCodeAt(i)) | 0;
+    return dataUrl.length.toString(36) + "-" + (somme >>> 0).toString(36);
+  }
+
+  /* Repère de chaque photo en partance, par chemin : sert à noter, une fois le
+     dépôt confirmé, laquelle n'a plus besoin de repartir. */
+  var reperesEnvoyes = {};
+  /* Deux photos identiques dans un même article (un doublon, cela arrive) ont
+     le même repère : leur rang les distingue, faute de quoi la seconde
+     effacerait la première. */
+  var occurrences = {};
+
+  function repereUnique(valeur) {
+    var base = repere(valeur);
+    occurrences[base] = (occurrences[base] || 0) + 1;
+    return base + "#" + occurrences[base];
+  }
+
   /* Une photo choisie dans l'éditeur arrive en data: ; elle devient un fichier du site. */
   function extraitPhoto(valeur, base, fichiers) {
     if (!valeur || String(valeur).indexOf("data:") !== 0) return valeur || null;
     var m = String(valeur).match(/^data:([^;]+);base64,(.+)$/);
     if (!m) return null;
+
+    /* Photo déjà déposée lors d'une tentative précédente : sa référence est
+       réutilisée au lieu de la renvoyer. C'est ce qui permet à une publication
+       interrompue de reprendre là où elle s'est arrêtée, au lieu de tout
+       recommencer (constaté le 08/09/2026 : trente mégaoctets envoyés pour
+       rien, deux fois de suite). */
+    var marqueur = repereUnique(valeur);
+    var deja = (surcouche.deposees || {})[marqueur];
+    if (deja) {
+      fichiers.push({ chemin: deja.chemin, sha: deja.sha });
+      return "/" + deja.chemin;
+    }
+
     /* L'horodatage seul ne suffit pas : plusieurs photos d'un même article
        partent dans la même milliseconde et s'écraseraient l'une l'autre. */
     var marque = Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 7);
     var chemin = "assets/img/" + slug(base) + "-" + marque + "." + (EXTENSIONS[m[1]] || "jpg");
     fichiers.push({ chemin: chemin, base64: m[2] });
+    reperesEnvoyes[chemin] = marqueur;
     return "/" + chemin;
   }
 
@@ -896,6 +935,8 @@
   /* Traduit tout ce qui attend dans le navigateur en fichiers à écrire. */
   function construitChangements() {
     var fichiers = [];
+    reperesEnvoyes = {};
+    occurrences = {};
     var suppressions = surcouche.supprimes.slice();
     var resume = [];
 
@@ -1022,13 +1063,23 @@
       }).then(function (recues) {
         deposees = deposees.concat(recues);
         faites += paquet.length;
+        /* Chaque paquet confirmé est noté dans le brouillon : si la suite
+           échoue, ces photos ne repartiront pas une seconde fois. */
+        surcouche.deposees = surcouche.deposees || {};
+        recues.forEach(function (f) {
+          var marqueur = reperesEnvoyes[f.chemin];
+          if (marqueur) surcouche.deposees[marqueur] = { chemin: f.chemin, sha: f.sha };
+        });
+        ecritSurcouche(surcouche);
       });
     }).then(function () {
       progression("Mise à jour du site…", 1, 2);
-      return window.GapreePublication.publie({
-        message: changements.message,
-        fichiers: textes.concat(deposees),
-        suppressions: changements.suppressions
+      return reessaieUneFois(function () {
+        return window.GapreePublication.publie({
+          message: changements.message,
+          fichiers: textes.concat(deposees),
+          suppressions: changements.suppressions
+        });
       });
     }).then(function () {
       progression(null);
@@ -1039,7 +1090,11 @@
       setTimeout(function () { window.location.reload(); }, 60000);
     }).catch(function (e) {
       progression(null);
-      etat.textContent = e.message || "La publication a échoué.";
+      /* Les photos déjà déposées sont gardées : reprendre ne recommence pas tout. */
+      var gardees = Object.keys(surcouche.deposees || {}).length;
+      etat.textContent = (e.message || "La publication a échoué.")
+        + (gardees ? " Vos " + gardees + " photos déjà envoyées sont conservées :"
+          + " appuyez à nouveau sur Publier pour reprendre." : "");
       bouton.disabled = false;
       toast("La publication a échoué");
     });

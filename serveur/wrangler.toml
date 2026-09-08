@@ -13,3 +13,8 @@ ORIGINES = "https://davidlotaut.github.io,https://gapree.com,https://www.gapree.
 [[kv_namespaces]]
 binding = "COMPTES"
 id = "f4f34bd179ee47ec920aa02af4d4a46d"
+
+# Journaux conservés : sans eux, un refus de GitHub ne laisse aucune trace
+# lisible et il faut deviner ce qui a bloqué.
+[observability]
+enabled = true
