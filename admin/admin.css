@@ -415,6 +415,43 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 
 /* --- Toast ------------------------------------------------------------------------------------ */
 
+/* Un reportage de cent photos demande une bonne minute : sans jauge, on croit
+   que rien ne se passe et on recharge la page au milieu de l'envoi. */
+.progression {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--blanc);
+  border-top: 2px solid var(--prairie);
+  padding: 0.9rem var(--gouttiere) 1.1rem;
+  z-index: 1100;
+}
+
+.progression-texte {
+  margin: 0 0 0.55rem;
+  font-family: var(--signaletique);
+  font-weight: 600;
+  font-size: 1.12rem;
+  letter-spacing: 0.05em;
+  color: var(--encre);
+}
+
+.progression-piste {
+  height: 12px;
+  border-radius: 6px;
+  background: var(--sauge);
+  overflow: hidden;
+}
+
+.progression-jauge {
+  height: 100%;
+  width: 0;
+  border-radius: 6px;
+  background: var(--prairie);
+  transition: width 0.2s ease-out;
+}
+
 #toast {
   position: fixed;
   bottom: 22px;

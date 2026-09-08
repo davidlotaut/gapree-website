@@ -13,6 +13,14 @@ const DUREE_SESSION = 12 * 3600;        // secondes
 const ESSAIS_MAX = 10;                  // par quart d'heure et par compte
 const FENETRE_ESSAIS = 900;
 
+/* Un reportage peut compter cent photos, et tout envoyer d'un coup dépasse la
+   mémoire dont dispose ce serveur (128 Mo pour lire la requête ET l'objet qui
+   en sort). L'espace d'administration découpe donc l'envoi en paquets ; ce
+   plafond refuse proprement un paquet hors norme au lieu de mourir en silence,
+   comme le 08/09/2026 où deux publications de 55 photos ont été perdues. */
+const LOT_MAX = 24 * 1024 * 1024;
+const BLOBS_EN_PARALLELE = 3;           // au-delà, GitHub commence à freiner
+
 /* ------------------------------------------------------------------ outils */
 
 function base64(octets) {
@@ -118,6 +126,12 @@ function reponse(donnees, statut, requete, env) {
 
 const erreur = (message, statut, requete, env) => reponse({ erreur: message }, statut, requete, env);
 
+/* Refuser un envoi hors norme AVANT de le lire : passé la mémoire disponible,
+   le serveur est arrêté net et la personne ne reçoit aucune explication. */
+function tropLourd(requete) {
+  return parseInt(requete.headers.get("Content-Length") || "0", 10) > LOT_MAX;
+}
+
 /* ------------------------------------------------------------- sessions */
 
 async function sessionDe(requete, env) {
@@ -161,6 +175,22 @@ async function appelGitHub(env, chemin, options) {
   return await r.json();
 }
 
+/* Dépose des photos dans le dépôt sans rien publier. Elles n'apparaissent
+   nulle part tant que l'enregistrement final n'a pas eu lieu : c'est ce qui
+   permet d'envoyer un gros reportage en plusieurs fois, puis de tout publier
+   d'un seul geste, donc en une seule mise à jour du site. */
+async function televerse(env, fichiers) {
+  const deposes = [];
+  for (let i = 0; i < fichiers.length; i += BLOBS_EN_PARALLELE) {
+    const paquet = fichiers.slice(i, i + BLOBS_EN_PARALLELE);
+    const blobs = await Promise.all(paquet.map((f) => appelGitHub(env, "/git/blobs", {
+      method: "POST", corps: { content: f.base64, encoding: "base64" }
+    })));
+    paquet.forEach((f, j) => deposes.push({ chemin: f.chemin, sha: blobs[j].sha }));
+  }
+  return deposes;
+}
+
 /* Écrit tous les changements en un seul enregistrement. */
 async function publie(env, changements) {
   const branche = env.BRANCHE || "main";
@@ -174,7 +204,10 @@ async function publie(env, changements) {
 
   const arbre = [];
   for (const f of fichiers) {
-    if (f.base64) {
+    if (f.sha) {
+      /* Photo déjà déposée par /televerser : il ne reste qu'à lui donner sa place. */
+      arbre.push({ path: f.chemin, mode: "100644", type: "blob", sha: f.sha });
+    } else if (f.base64) {
       const blob = await appelGitHub(env, "/git/blobs", {
         method: "POST", corps: { content: f.base64, encoding: "base64" }
       });
@@ -322,8 +355,22 @@ export default {
         }
       }
 
+      /* --- dépôt des photos, avant publication --------------------------- */
+      if (chemin === "/televerser" && requete.method === "POST") {
+        if (tropLourd(requete)) {
+          return erreur("Ce paquet de photos est trop lourd pour être envoyé en une fois.", 413, requete, env);
+        }
+        const corps = await requete.json();
+        const fichiers = corps.fichiers || [];
+        if (!fichiers.length) return erreur("Aucune photo à déposer.", 400, requete, env);
+        return reponse({ fichiers: await televerse(env, fichiers) }, 200, requete, env);
+      }
+
       /* --- publication --------------------------------------------------- */
       if (chemin === "/publier" && requete.method === "POST") {
+        if (tropLourd(requete)) {
+          return erreur("Cet envoi est trop lourd pour être publié en une fois.", 413, requete, env);
+        }
         const changements = await requete.json();
         const sha = await publie(env, {
           message: (changements.message || "Mise à jour du site") + "\n\nPublié par " + session.compte.email + "\n",

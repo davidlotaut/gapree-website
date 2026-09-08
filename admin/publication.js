@@ -108,6 +108,13 @@
     return appel("/utilisateurs?email=" + encodeURIComponent(email), { method: "DELETE" });
   }
 
+  /* Dépose un paquet de photos sans rien publier. Rend, pour chacune, la
+     référence que la publication finale réutilisera. */
+  function televerse(fichiers) {
+    return appel("/televerser", { method: "POST", corps: { fichiers: fichiers } })
+      .then(function (r) { return r.fichiers || []; });
+  }
+
   function publie(changements) {
     return appel("/publier", {
       method: "POST",
@@ -132,6 +139,7 @@
     reinitialiseUtilisateur: reinitialiseUtilisateur,
     changeDroits: changeDroits,
     retireUtilisateur: retireUtilisateur,
+    televerse: televerse,
     publie: publie
   };
 })();
