@@ -915,9 +915,7 @@ button:focus-visible {
 /* --- Plusieurs photos dans un article ----------------------------------------- */
 
 .galerie {
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: min(86%, 620px);
+  display: flex;
   gap: 14px;
   margin: 1.4rem 0 0.6rem;
   padding-bottom: 0.6rem;
@@ -929,13 +927,19 @@ button:focus-visible {
 
 .galerie-photo {
   margin: 0;
+  flex: 0 0 auto;
+  max-width: 86vw;
   scroll-snap-align: start;
 }
 
+/* Chaque photo garde ses proportions : une hauteur commune, une largeur qui
+   suit le cadrage. Un recadrage de force coupait les photos verticales et
+   rognait le haut des autres, ce qui n'est pas acceptable pour un reportage. */
 .galerie-photo img {
-  width: 100%;
   height: clamp(230px, 34vw, 420px);
-  object-fit: cover;
+  width: auto;
+  max-width: 86vw;
+  object-fit: contain;
   border-radius: var(--radius);
   background: var(--sauge-pale);
 }
