@@ -205,7 +205,15 @@ async function televerse(env, fichiers) {
     const blobs = await Promise.all(paquet.map((f) => appelGitHub(env, "/git/blobs", {
       method: "POST", corps: { content: f.base64, encoding: "base64" }
     })));
-    paquet.forEach((f, j) => deposes.push({ chemin: f.chemin, sha: blobs[j].sha }));
+    paquet.forEach((f, j) => {
+      /* Une référence vide passerait inaperçue ici et ferait échouer la
+         publication entière plus tard, sans rien désigner. */
+      if (!blobs[j] || !blobs[j].sha) {
+        console.log("dépôt sans référence pour " + f.chemin);
+        throw new Error("Une photo n'a pas pu être déposée. Réessayez dans un instant.");
+      }
+      deposes.push({ chemin: f.chemin, sha: blobs[j].sha });
+    });
     const reste = PAUSE_ENTRE_GROUPES - (Date.now() - debut);
     if (i + BLOBS_EN_PARALLELE < fichiers.length && reste > 0) await patiente(reste);
   }
@@ -224,7 +232,16 @@ async function publie(env, changements) {
   const commit = await appelGitHub(env, "/git/commits/" + shaCommit);
 
   const arbre = [];
+  const dejaVus = new Set();
   for (const f of fichiers) {
+    /* Un même fichier cité deux fois fait rejeter l'enregistrement entier :
+       le premier fait foi. */
+    if (dejaVus.has(f.chemin)) {
+      console.log("chemin en double, ignoré : " + f.chemin);
+      continue;
+    }
+    dejaVus.add(f.chemin);
+
     if (f.sha) {
       /* Photo déjà déposée par /televerser : il ne reste qu'à lui donner sa place. */
       arbre.push({ path: f.chemin, mode: "100644", type: "blob", sha: f.sha });
@@ -233,8 +250,15 @@ async function publie(env, changements) {
         method: "POST", corps: { content: f.base64, encoding: "base64" }
       });
       arbre.push({ path: f.chemin, mode: "100644", type: "blob", sha: blob.sha });
-    } else {
+    } else if (typeof f.texte === "string") {
       arbre.push({ path: f.chemin, mode: "100644", type: "blob", content: f.texte });
+    } else {
+      /* Ni référence, ni photo, ni texte. Envoyée telle quelle, cette entrée
+         fait refuser TOUT l'enregistrement par GitHub, sans dire laquelle est
+         en cause (erreur GitRPC::BadObjectState, rencontrée le 08/09/2026). */
+      console.log("entrée inutilisable : " + JSON.stringify(f).slice(0, 200));
+      throw new Error("Une photo n'est pas arrivée entière. Appuyez à nouveau sur Publier : "
+        + "seules les photos manquantes repartiront.");
     }
   }
   for (const chemin of suppressions) {

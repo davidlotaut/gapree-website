@@ -857,7 +857,7 @@
        rien, deux fois de suite). */
     var marqueur = repereUnique(valeur);
     var deja = (surcouche.deposees || {})[marqueur];
-    if (deja) {
+    if (deja && deja.sha) {
       fichiers.push({ chemin: deja.chemin, sha: deja.sha });
       return "/" + deja.chemin;
     }
@@ -1068,7 +1068,9 @@
         surcouche.deposees = surcouche.deposees || {};
         recues.forEach(function (f) {
           var marqueur = reperesEnvoyes[f.chemin];
-          if (marqueur) surcouche.deposees[marqueur] = { chemin: f.chemin, sha: f.sha };
+          /* Sans référence complète, mieux vaut renvoyer la photo à la prochaine
+             tentative que garder une trace inutilisable. */
+          if (marqueur && f.sha) surcouche.deposees[marqueur] = { chemin: f.chemin, sha: f.sha };
         });
         ecritSurcouche(surcouche);
       });
