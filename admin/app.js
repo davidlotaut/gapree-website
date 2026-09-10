@@ -1035,12 +1035,12 @@
     });
   }
 
-  function publieMaintenant() {
+  function publieMaintenant(deuxiemeChance) {
     var bouton = document.getElementById("btn-publier");
     var etat = document.getElementById("etat-publication");
     var changements = construitChangements();
     if (!changements.fichiers.length && !changements.suppressions.length) return;
-    if (!confirm("Publier " + changements.resume.length + " modification(s) sur le site en ligne ?\n\n"
+    if (!deuxiemeChance && !confirm("Publier " + changements.resume.length + " modification(s) sur le site en ligne ?\n\n"
       + changements.resume.join("\n"))) return;
 
     var aEnvoyer = changements.fichiers.filter(function (f) { return f.base64; });
@@ -1048,6 +1048,7 @@
     var paquets = decoupeEnPaquets(aEnvoyer);
     var deposees = [];
     var faites = 0;
+    var etapeFinale = false;
 
     bouton.disabled = true;
     etat.textContent = "Publication en cours…";
@@ -1076,6 +1077,7 @@
       });
     }).then(function () {
       progression("Mise à jour du site…", 1, 2);
+      etapeFinale = true;
       return reessaieUneFois(function () {
         return window.GapreePublication.publie({
           message: changements.message,
@@ -1092,11 +1094,28 @@
       setTimeout(function () { window.location.reload(); }, 60000);
     }).catch(function (e) {
       progression(null);
-      /* Les photos déjà déposées sont gardées : reprendre ne recommence pas tout. */
       var gardees = Object.keys(surcouche.deposees || {}).length;
-      etat.textContent = (e.message || "La publication a échoué.")
-        + (gardees ? " Vos " + gardees + " photos déjà envoyées sont conservées :"
-          + " appuyez à nouveau sur Publier pour reprendre." : "");
+      var suite;
+      if (etapeFinale && gardees && !deuxiemeChance) {
+        /* L'envoi s'est bien passé et c'est la mise à jour qui a échoué : une des
+           références gardées n'est donc pas exploitable. On les oublie et on
+           renvoie les photos tout de suite, sans rien demander : sinon chaque
+           appui rejoue le même échec, et l'on n'en sort jamais (Camille s'est
+           retrouvée bloquée ainsi du 08 au 10/09/2026). */
+        surcouche.deposees = {};
+        ecritSurcouche(surcouche);
+        etat.textContent = "Nouvel essai, les photos sont renvoyées…";
+        publieMaintenant(true);
+        return;
+      }
+      if (gardees) {
+        /* L'envoi a été interrompu : ce qui est arrivé reste acquis. */
+        suite = " Vos " + gardees + " photos déjà envoyées sont conservées :"
+          + " appuyez à nouveau sur Publier pour reprendre.";
+      } else {
+        suite = "";
+      }
+      etat.textContent = (e.message || "La publication a échoué.") + suite;
       bouton.disabled = false;
       toast("La publication a échoué");
     });
