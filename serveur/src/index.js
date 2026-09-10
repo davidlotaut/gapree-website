@@ -400,6 +400,17 @@ export default {
         }
       }
 
+      /* --- compte rendu d'un échec vécu par la mairie --------------------- */
+      if (chemin === "/journal" && requete.method === "POST") {
+        /* Quand une publication échoue sur le poste de quelqu'un d'autre, c'est
+           la seule façon de savoir ce qui s'est réellement passé : le détail
+           technique arrive ici et va dans les journaux, sans jamais afficher
+           quoi que ce soit à la personne. */
+        const corps = await requete.json().catch(() => ({}));
+        console.log("ÉCHEC CHEZ " + session.compte.email + " : " + JSON.stringify(corps).slice(0, 4000));
+        return reponse({ ok: true }, 200, requete, env);
+      }
+
       /* --- dépôt des photos, avant publication --------------------------- */
       if (chemin === "/televerser" && requete.method === "POST") {
         if (tropLourd(requete)) {

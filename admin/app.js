@@ -7,6 +7,7 @@
 (function () {
   "use strict";
 
+  var VERSION = "2026-09-10-c";
   var DEPOT_RAW = "https://raw.githubusercontent.com/davidlotaut/gapree-website/main/";
   var CLE_DEMO = "gapree-demo-admin";
 
@@ -1035,10 +1036,44 @@
     });
   }
 
+  /* Décrit un échec assez précisément pour être compris à distance, sans jamais
+     transporter le contenu des photos. */
+  function compteRendu(etape, erreur, fichiers, suppressions) {
+    var sansRien = fichiers.filter(function (f) { return !f.sha && !f.base64 && typeof f.texte !== "string"; });
+    var chemins = {};
+    var doublons = [];
+    fichiers.forEach(function (f) {
+      if (chemins[f.chemin]) doublons.push(f.chemin);
+      chemins[f.chemin] = true;
+    });
+    try {
+      window.GapreePublication.journal({
+        version: VERSION,
+        etape: etape,
+        erreur: String(erreur && erreur.message || erreur).slice(0, 300),
+        navigateur: navigator.userAgent.slice(0, 160),
+        fichiers: fichiers.length,
+        avecReference: fichiers.filter(function (f) { return f.sha; }).length,
+        avecPhoto: fichiers.filter(function (f) { return f.base64; }).length,
+        avecTexte: fichiers.filter(function (f) { return typeof f.texte === "string"; }).length,
+        sansRien: sansRien.length,
+        cheminsSansRien: sansRien.slice(0, 5).map(function (f) { return f.chemin; }),
+        cheminsEnDouble: doublons.slice(0, 5),
+        suppressions: (suppressions || []).length,
+        referencesGardees: Object.keys(surcouche.deposees || {}).length,
+        articlesEnAttente: (surcouche.nouveaux.actualites || []).length,
+        modifiesEnAttente: Object.keys(surcouche.modifies || {}).length
+      });
+    } catch (e) { /* un compte rendu ne doit jamais gêner */ }
+  }
+
   function publieMaintenant(deuxiemeChance) {
     var bouton = document.getElementById("btn-publier");
     var etat = document.getElementById("etat-publication");
     var changements = construitChangements();
+    /* Trace du départ : sans elle, un appui qui ne produit rien reste invisible. */
+    compteRendu(deuxiemeChance ? "reprise après échec" : "départ", null,
+      changements.fichiers, changements.suppressions);
     if (!changements.fichiers.length && !changements.suppressions.length) return;
     if (!deuxiemeChance && !confirm("Publier " + changements.resume.length + " modification(s) sur le site en ligne ?\n\n"
       + changements.resume.join("\n"))) return;
@@ -1094,6 +1129,8 @@
       setTimeout(function () { window.location.reload(); }, 60000);
     }).catch(function (e) {
       progression(null);
+      compteRendu(etapeFinale ? "publication" : "envoi des photos", e,
+        textes.concat(deposees), changements.suppressions);
       var gardees = Object.keys(surcouche.deposees || {}).length;
       var suite;
       if (etapeFinale && gardees && !deuxiemeChance) {
