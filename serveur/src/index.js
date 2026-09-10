@@ -261,9 +261,23 @@ async function publie(env, changements) {
         + "seules les photos manquantes repartiront.");
     }
   }
-  for (const chemin of suppressions) {
-    arbre.push({ path: chemin, mode: "100644", type: "blob", sha: null });
+  if (suppressions.length) {
+    /* Demander la suppression d'un fichier qui n'est plus là fait rejeter
+       l'enregistrement ENTIER (GitRPC::BadObjectState), sans dire lequel est en
+       cause. C'est ce qui a bloqué la mairie du 08 au 10/09/2026 : un article
+       déjà retiré traînait dans les modifications en attente, et plus rien ne
+       pouvait être publié. Un fichier déjà absent, c'est le résultat voulu. */
+    const arbreBase = await appelGitHub(env, "/git/trees/" + commit.tree.sha + "?recursive=1");
+    const presents = new Set((arbreBase.tree || []).map((e) => e.path));
+    for (const chemin of suppressions) {
+      if (!presents.has(chemin)) {
+        console.log("suppression sans objet, ignorée : " + chemin);
+        continue;
+      }
+      arbre.push({ path: chemin, mode: "100644", type: "blob", sha: null });
+    }
   }
+  if (!arbre.length) throw new Error("Il n'y a rien de nouveau à publier.");
 
   const nouvelArbre = await appelGitHub(env, "/git/trees", {
     method: "POST", corps: { base_tree: commit.tree.sha, tree: arbre }

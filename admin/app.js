@@ -7,7 +7,7 @@
 (function () {
   "use strict";
 
-  var VERSION = "2026-09-10-c";
+  var VERSION = "2026-09-10-d";
   var DEPOT_RAW = "https://raw.githubusercontent.com/davidlotaut/gapree-website/main/";
   var CLE_DEMO = "gapree-demo-admin";
 
@@ -1067,16 +1067,23 @@
     } catch (e) { /* un compte rendu ne doit jamais gêner */ }
   }
 
+  /* Deux appuis rapprochés lançaient deux publications de front, qui se
+     marchaient dessus (observé chez Camille le 10/09/2026 : tout partait en
+     double). */
+  var publicationEnCours = false;
+
   function publieMaintenant(deuxiemeChance) {
+    if (publicationEnCours && !deuxiemeChance) return;
+    publicationEnCours = true;
     var bouton = document.getElementById("btn-publier");
     var etat = document.getElementById("etat-publication");
     var changements = construitChangements();
     /* Trace du départ : sans elle, un appui qui ne produit rien reste invisible. */
     compteRendu(deuxiemeChance ? "reprise après échec" : "départ", null,
       changements.fichiers, changements.suppressions);
-    if (!changements.fichiers.length && !changements.suppressions.length) return;
+    if (!changements.fichiers.length && !changements.suppressions.length) { publicationEnCours = false; return; }
     if (!deuxiemeChance && !confirm("Publier " + changements.resume.length + " modification(s) sur le site en ligne ?\n\n"
-      + changements.resume.join("\n"))) return;
+      + changements.resume.join("\n"))) { publicationEnCours = false; return; }
 
     var aEnvoyer = changements.fichiers.filter(function (f) { return f.base64; });
     var textes = changements.fichiers.filter(function (f) { return !f.base64; });
@@ -1122,6 +1129,7 @@
       });
     }).then(function () {
       progression(null);
+      publicationEnCours = false;
       surcouche = surcoucheVide();
       ecritSurcouche(surcouche);
       etat.textContent = "Publié. Le site en ligne se met à jour dans une minute environ.";
@@ -1129,6 +1137,7 @@
       setTimeout(function () { window.location.reload(); }, 60000);
     }).catch(function (e) {
       progression(null);
+      publicationEnCours = false;
       compteRendu(etapeFinale ? "publication" : "envoi des photos", e,
         textes.concat(deposees), changements.suppressions);
       var gardees = Object.keys(surcouche.deposees || {}).length;
