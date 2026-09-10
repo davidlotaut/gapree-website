@@ -1262,7 +1262,10 @@
     videBrouillon("Effacer les modifications qui n'ont pas encore été publiées ?");
   });
 
-  document.getElementById("btn-publier").addEventListener("click", publieMaintenant);
+  /* Sans cette enveloppe, l'événement du clic arriverait dans le premier
+     paramètre et serait pris pour une seconde tentative : la demande de
+     confirmation sauterait et le rattrapage ne se déclencherait jamais. */
+  document.getElementById("btn-publier").addEventListener("click", function () { publieMaintenant(); });
 
   document.getElementById("btn-deconnexion").addEventListener("click", function () {
     if (nombreEnAttente() > 0 && !confirm("Des modifications ne sont pas publiées. Se déconnecter quand même ?")) return;
