@@ -108,6 +108,13 @@
     return appel("/utilisateurs?email=" + encodeURIComponent(email), { method: "DELETE" });
   }
 
+  /* Fait remonter le détail d'un échec, pour qu'il soit lisible ailleurs que
+     sur l'écran de la personne. Silencieux par construction. */
+  function journal(quoi) {
+    return appel("/journal", { method: "POST", corps: quoi })
+      .catch(function () { /* un compte rendu perdu ne doit rien casser */ });
+  }
+
   /* Dépose un paquet de photos sans rien publier. Rend, pour chacune, la
      référence que la publication finale réutilisera. */
   function televerse(fichiers) {
@@ -140,6 +147,7 @@
     changeDroits: changeDroits,
     retireUtilisateur: retireUtilisateur,
     televerse: televerse,
+    journal: journal,
     publie: publie
   };
 })();
