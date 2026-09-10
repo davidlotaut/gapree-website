@@ -1,3 +1,5 @@
+---
+---
 <!doctype html>
 <html lang="fr">
   <head>
@@ -6,7 +8,7 @@
     <meta name="robots" content="noindex">
     <title>Administration · Gâprée</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='4' y='4' width='56' height='56' rx='10' fill='%23fff' stroke='%23bf2a1a' stroke-width='6'/%3E%3Ctext x='32' y='45' font-family='Arial' font-size='34' font-weight='bold' text-anchor='middle' fill='%231f2b22'%3EG%3C/text%3E%3C/svg%3E">
-    <link rel="stylesheet" href="admin.css">
+    <link rel="stylesheet" href="admin.css?v={{ site.time | date: '%s' }}">
   </head>
   <body>
     <header class="entete">
@@ -83,8 +85,8 @@
       <p class="progression-texte" id="progression-texte"></p>
       <div class="progression-piste"><div class="progression-jauge" id="progression-jauge"></div></div>
     </div>
-    <script src="config.js"></script>
-    <script src="publication.js"></script>
-    <script src="app.js"></script>
+    <script src="config.js?v={{ site.time | date: '%s' }}"></script>
+    <script src="publication.js?v={{ site.time | date: '%s' }}"></script>
+    <script src="app.js?v={{ site.time | date: '%s' }}"></script>
   </body>
 </html>
