@@ -18,6 +18,8 @@
   --sauge: #DCE6D8;
   --sauge-pale: #EDF3EA;
   --rouge: #BF2A1A;
+  --ambre: #B4761E;
+  --ambre-pale: #FBF0DC;
   --radius: 10px;
   --gouttiere: clamp(16px, 3vw, 40px);
   --signaletique: "Barlow Condensed", "Arial Narrow", Arial, sans-serif;
@@ -521,6 +523,11 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 /* --- Barre de publication ------------------------------------------------------ */
 
 .barre-publication {
+  /* Collante : tant que des modifications attendent, le bouton Publier reste
+     sous les yeux, même au bas d'une longue liste d'articles. */
+  position: sticky;
+  top: 0;
+  z-index: 30;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -529,6 +536,17 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
   padding: 0.8rem var(--gouttiere);
   background: var(--sauge-pale);
   border-bottom: 1px solid var(--sauge);
+}
+
+/* Des modifications ne sont pas encore en ligne : la barre le dit franchement. */
+.barre-publication--attente {
+  background: var(--ambre-pale);
+  border-bottom: 2px solid var(--ambre);
+}
+
+.barre-publication--attente .etat-publication {
+  font-weight: 700;
+  color: #7A4E0D;
 }
 
 .etat-publication { margin: 0; font-size: 1rem; }
@@ -548,6 +566,25 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 }
 
 .barre-publication .lien-reinit { color: var(--ardoise); margin-left: 0; }
+
+/* Sur téléphone, la barre reste collée en haut : elle doit tenir en peu de place. */
+@media (max-width: 620px) {
+  .barre-publication {
+    gap: 0.45rem 0.8rem;
+    padding: 0.55rem var(--gouttiere) 0.6rem;
+  }
+
+  .etat-publication { font-size: 0.95rem; line-height: 1.3; }
+
+  .barre-publication-actions {
+    width: 100%;
+    justify-content: space-between;
+    gap: 0.8rem;
+  }
+
+  .barre-publication .lien-reinit { font-size: 0.88rem; }
+  .barre-publication .btn { font-size: 0.92rem; padding: 0.45rem 0.8rem; }
+}
 
 .apercu-legende {
   margin: 0.5rem 0 1rem;
