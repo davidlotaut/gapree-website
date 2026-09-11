@@ -1,0 +1,27 @@
+{%- comment -%}
+  Une photo vue en grand, au centre de l'écran. Elle s'ouvre par son ancre, donc
+  sans JavaScript : le lien de la vignette suffit, et les flèches sont de vrais
+  liens vers la photo voisine. Paramètres : src, alt, rang, total.
+{%- endcomment -%}
+{%- assign precedent = include.rang | minus: 1 -%}
+{%- if precedent < 1 -%}{%- assign precedent = include.total -%}{%- endif -%}
+{%- assign suivant = include.rang | plus: 1 -%}
+{%- if suivant > include.total -%}{%- assign suivant = 1 -%}{%- endif -%}
+<div class="visionneuse" id="photo-{{ include.rang }}" role="dialog" aria-modal="true"
+     aria-label="Photo {{ include.rang }} sur {{ include.total }}">
+  <a class="visionneuse-fond" href="#les-photos" aria-label="Fermer les photos" tabindex="-1"></a>
+  <a class="visionneuse-fermer" href="#les-photos" aria-label="Fermer les photos">Fermer</a>
+  {%- if include.total > 1 %}
+  <a class="visionneuse-fleche visionneuse-fleche--avant" href="#photo-{{ precedent }}"
+     aria-label="Photo précédente" rel="prev"><span aria-hidden="true">&#8249;</span></a>
+  <a class="visionneuse-fleche visionneuse-fleche--apres" href="#photo-{{ suivant }}"
+     aria-label="Photo suivante" rel="next"><span aria-hidden="true">&#8250;</span></a>
+  {%- endif %}
+  <figure class="visionneuse-cadre">
+    <img src="{{ include.src | relative_url }}" alt="{{ include.alt }}" loading="lazy">
+    {%- if include.alt and include.alt != "" %}
+    <figcaption class="visionneuse-legende">{{ include.alt }}</figcaption>
+    {%- endif %}
+    <p class="visionneuse-compte">{{ include.rang }} / {{ include.total }}</p>
+  </figure>
+</div>
