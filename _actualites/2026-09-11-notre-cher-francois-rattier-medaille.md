@@ -30,3 +30,5 @@ maison « dite en ruine » est enfin achetée, par la commune, en Septembre 2
 
 Laëtitia Raimbourg 
 Rédigé pour le 06.09.2026
+
+Retrouvez l'article de Ouest France ici : https://www.ouest-france.fr/normandie/gapree-61390/gapree-lancien-maire-francois-rattier-medaille-3321c0cb-664e-4723-8710-06a59883895e
