@@ -552,13 +552,13 @@
         surcouche.modifies[item.chemin] = valeurs;
       }
       ecritSurcouche(surcouche);
-      toast("Enregistré");
+      toast("Enregistré. À publier pour que le site change.");
       retourListe();
     });
 
     var btnSupprimer = document.getElementById("btn-supprimer");
     if (btnSupprimer) btnSupprimer.addEventListener("click", function () {
-      if (!confirm("Supprimer « " + item.titre + " » ?")) return;
+      if (!confirm("Supprimer « " + item.titre + " » ?\n\nIl disparaîtra du site en ligne une fois que vous aurez appuyé sur « Publier sur le site ».")) return;
       if (item.chemin.indexOf("nouveau:") === 0) {
         surcouche.nouveaux[rubrique] = surcouche.nouveaux[rubrique].filter(function (x) { return x.chemin !== item.chemin; });
       } else {
@@ -566,7 +566,7 @@
         delete surcouche.modifies[item.chemin];
       }
       ecritSurcouche(surcouche);
-      toast("Supprimé");
+      toast("Supprimé. À publier pour que le site change.");
       retourListe();
     });
 
@@ -681,13 +681,13 @@
         surcouche.modifies[item.chemin] = valeurs;
       }
       ecritSurcouche(surcouche);
-      toast("Enregistré");
+      toast("Enregistré. À publier pour que le site change.");
       retour();
     });
 
     var btnSupprimer = document.getElementById("btn-supprimer");
     if (btnSupprimer) btnSupprimer.addEventListener("click", function () {
-      if (!confirm("Retirer « " + item.nom + " » du trombinoscope ?")) return;
+      if (!confirm("Retirer « " + item.nom + " » du trombinoscope ?\n\nIl disparaîtra du site en ligne une fois que vous aurez appuyé sur « Publier sur le site ».")) return;
       if (item.chemin.indexOf("nouveau:") === 0) {
         surcouche.nouveaux.elus = surcouche.nouveaux.elus.filter(function (x) { return x.chemin !== item.chemin; });
       } else {
@@ -695,7 +695,7 @@
         delete surcouche.modifies[item.chemin];
       }
       ecritSurcouche(surcouche);
-      toast("Supprimé");
+      toast("Supprimé. À publier pour que le site change.");
       retour();
     });
   }
@@ -778,7 +778,7 @@
         texte: document.getElementById("ch-texte-accueil").value.trim()
       });
       ecritSurcouche(surcouche);
-      toast("Enregistré");
+      toast("Enregistré. À publier pour que le site change.");
     });
 
     document.getElementById("btn-enregistre-mairie").addEventListener("click", function () {
@@ -789,7 +789,7 @@
         horaires: horaires.filter(function (h) { return (h.jours || h.heures || "").trim() !== ""; })
       });
       ecritSurcouche(surcouche);
-      toast("Enregistré");
+      toast("Enregistré. À publier pour que le site change.");
     });
   }
 
@@ -1004,9 +1004,12 @@
     var bouton = document.getElementById("btn-publier");
     barre.hidden = false;
     bouton.disabled = n === 0;
+    barre.classList.toggle("barre-publication--attente", n > 0);
     etat.textContent = n === 0
       ? "Le site en ligne est à jour."
-      : n + (n > 1 ? " modifications en attente de publication." : " modification en attente de publication.");
+      : (n > 1
+        ? n + " modifications ne sont pas encore en ligne."
+        : "1 modification n'est pas encore en ligne.");
   }
 
   /* Le serveur ne peut pas recevoir un reportage entier d'un coup : les photos
