@@ -19,7 +19,20 @@
 <article class="card{% unless item.image %} card--avis{% endunless %}">
   {%- if item.image %}
   <div class="card-img">
+    {%- comment -%}
+      Plusieurs photos : elles se passent sur place, sans avoir à ouvrir
+      l'article. Une seule : rien ne change.
+    {%- endcomment -%}
+    {%- if item.photos and item.photos.size > 0 %}
+    <div class="carte-photos" role="group" aria-label="Photos de « {{ item.title }} »">
+      <img src="{{ item.image | relative_url }}" alt="{{ item.alt }}" loading="lazy">
+      {%- for photo in item.photos %}
+      <img src="{{ photo.src | relative_url }}" alt="{{ photo.alt }}" loading="lazy">
+      {%- endfor %}
+    </div>
+    {%- else %}
     <img src="{{ item.image | relative_url }}" alt="{{ item.alt }}" loading="lazy">
+    {%- endif %}
     {%- if include.type == "actualite" %}
     <p class="card-chip">
       <span class="visually-hidden">Publié le {% include date_fr.html date=item.date %}. </span>

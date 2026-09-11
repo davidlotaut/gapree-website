@@ -366,6 +366,34 @@ button:focus-visible {
 
 .card:hover .card-img img { transform: scale(1.035); }
 
+/* Les photos d'un article se passent depuis la liste, sans l'ouvrir. */
+.carte-photos {
+  display: flex;
+  height: 100%;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+
+.carte-photos::-webkit-scrollbar { display: none; }
+
+.carte-photos img {
+  flex: 0 0 100%;
+  scroll-snap-align: center;
+}
+
+/* Le léger zoom au survol gênerait la lecture pendant qu'on fait défiler. */
+.card:hover .carte-photos img { transform: none; }
+
+.card-img .bande { height: 100%; }
+
+.card-img .bande-fleche {
+  width: 46px;
+  height: 46px;
+  font-size: 1.9rem;
+}
+
 /* Pastille de date posée sur la photo, écho de la plaque d'entrée */
 .card-chip {
   position: absolute;
@@ -954,6 +982,191 @@ button:focus-visible {
 .galerie:focus-visible {
   outline: 3px solid var(--prairie);
   outline-offset: 4px;
+}
+
+/* La vignette se signale comme cliquable : le mot est écrit, l'icône seule ne
+   parle pas à tout le monde. */
+.galerie-lien {
+  display: block;
+  position: relative;
+  line-height: 0;
+  border-radius: var(--radius);
+}
+
+.galerie-loupe {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  background: rgba(31, 43, 34, 0.86);
+  color: var(--blanc);
+  font-family: var(--signaletique);
+  font-weight: 600;
+  font-size: 1rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.35rem 0.8rem;
+  border-radius: 20px;
+  line-height: 1.4;
+}
+
+.galerie-lien:hover .galerie-loupe,
+.galerie-lien:focus-visible .galerie-loupe {
+  background: var(--prairie);
+}
+
+/* ------------------------------------------------ voir une photo en grand */
+
+/* Chaque photo a sa vue, appelée par son adresse : tout marche sans script,
+   et les flèches sont de vrais liens vers la photo voisine. */
+.visionneuse {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(12px, 3vw, 40px);
+}
+
+.visionneuse:target { display: flex; }
+
+/* La page ne défile plus derrière la photo ouverte. */
+body:has(.visionneuse:target) { overflow: hidden; }
+
+.visionneuse-fond {
+  position: absolute;
+  inset: 0;
+  background: rgba(16, 22, 18, 0.985);
+}
+
+.visionneuse-cadre {
+  position: relative;
+  margin: 0;
+  max-width: min(100%, 1500px);
+  text-align: center;
+}
+
+.visionneuse-cadre img {
+  max-width: 100%;
+  max-height: 74vh;
+  width: auto;
+  border-radius: var(--radius);
+  background: var(--encre);
+}
+
+.visionneuse-legende {
+  margin: 0.9rem auto 0;
+  max-width: min(100%, 80ch);
+  color: var(--blanc);
+  font-size: 1.15rem;
+  font-style: italic;
+}
+
+.visionneuse-compte {
+  margin: 0.7rem 0 0;
+  color: var(--blanc);
+  font-family: var(--signaletique);
+  font-weight: 600;
+  font-size: 1.35rem;
+  letter-spacing: 0.1em;
+}
+
+/* Des cibles larges : elles doivent s'attraper sans viser. */
+.visionneuse-fleche {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: clamp(62px, 9vw, 86px);
+  height: clamp(62px, 9vw, 86px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--blanc);
+  color: var(--encre);
+  border-radius: 50%;
+  font-size: clamp(2.8rem, 5vw, 3.6rem);
+  line-height: 1;
+  text-decoration: none;
+  padding-bottom: 0.14em;
+}
+
+.visionneuse-fleche:hover,
+.visionneuse-fleche:focus-visible {
+  background: var(--prairie);
+  color: var(--blanc);
+}
+
+.visionneuse-fleche--avant { left: clamp(8px, 2vw, 28px); }
+.visionneuse-fleche--apres { right: clamp(8px, 2vw, 28px); }
+
+.visionneuse-fermer {
+  position: absolute;
+  top: clamp(8px, 2vw, 24px);
+  right: clamp(8px, 2vw, 24px);
+  background: var(--blanc);
+  color: var(--encre);
+  font-family: var(--signaletique);
+  font-weight: 600;
+  font-size: 1.15rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+  padding: 0.7rem 1.4rem;
+  border-radius: 26px;
+}
+
+.visionneuse-fermer:hover,
+.visionneuse-fermer:focus-visible {
+  background: var(--rouge);
+  color: var(--blanc);
+}
+
+/* --------------------------------------- flèches de défilement des bandes */
+
+.bande {
+  position: relative;
+}
+
+.bande-fleche {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 58px;
+  height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--encre);
+  background: var(--blanc);
+  color: var(--encre);
+  border-radius: 50%;
+  font-size: 2.4rem;
+  line-height: 1;
+  padding-bottom: 0.12em;
+  cursor: pointer;
+  z-index: 5;
+}
+
+.bande-fleche:hover,
+.bande-fleche:focus-visible {
+  background: var(--prairie);
+  border-color: var(--prairie);
+  color: var(--blanc);
+}
+
+.bande-fleche[disabled] {
+  opacity: 0.28;
+  cursor: default;
+}
+
+/* `display: flex` l'emporterait sur la valeur par défaut de [hidden]. */
+.bande-fleche[hidden] { display: none; }
+
+.bande-fleche--avant { left: 6px; }
+.bande-fleche--apres { right: 6px; }
+
+@media print {
+  .visionneuse, .bande-fleche, .galerie-loupe { display: none !important; }
 }
 
 .galerie-compte {

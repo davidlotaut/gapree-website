@@ -1,0 +1,44 @@
+{%- comment -%}
+  Les photos d'un article : une bande qui défile, puis la vue en grand de
+  chacune. L'image de tête compte comme la première photo, les suivantes
+  viennent de `photos`, d'où le décalage des rangs.
+{%- endcomment -%}
+{%- assign nb_suite = page.photos | size -%}
+{%- if page.image -%}
+  {%- assign total = nb_suite | plus: 1 -%}
+{%- else -%}
+  {%- assign total = nb_suite -%}
+{%- endif -%}
+
+<div class="galerie" id="les-photos" role="group" aria-label="Photos de l'article" tabindex="0">
+  {%- if page.image %}
+  <figure class="galerie-photo">
+    <a class="galerie-lien" href="#photo-1" aria-label="Voir la photo 1 en grand">
+      <img src="{{ page.image | relative_url }}" alt="{{ page.alt }}">
+      <span class="galerie-loupe" aria-hidden="true">Agrandir</span>
+    </a>
+    {%- if page.alt and page.alt != "" %}<figcaption>{{ page.alt }}</figcaption>{% endif %}
+  </figure>
+  {%- endif %}
+  {%- for photo in page.photos %}
+  {%- if page.image %}{% assign rang = forloop.index | plus: 1 %}{% else %}{% assign rang = forloop.index %}{% endif %}
+  <figure class="galerie-photo">
+    <a class="galerie-lien" href="#photo-{{ rang }}" aria-label="Voir la photo {{ rang }} en grand">
+      <img src="{{ photo.src | relative_url }}" alt="{{ photo.alt }}" loading="lazy">
+      <span class="galerie-loupe" aria-hidden="true">Agrandir</span>
+    </a>
+    {%- if photo.alt and photo.alt != "" %}<figcaption>{{ photo.alt }}</figcaption>{% endif %}
+  </figure>
+  {%- endfor %}
+</div>
+
+<p class="galerie-compte">{{ total }} photos. Cliquez sur une photo pour la voir en grand.</p>
+
+{%- comment -%} Les vues en grand, une par photo, cachées tant qu'on ne les appelle pas. {%- endcomment -%}
+{%- if page.image %}
+{% include photo-vue.html src=page.image alt=page.alt rang=1 total=total %}
+{%- endif %}
+{%- for photo in page.photos %}
+{%- if page.image %}{% assign rang = forloop.index | plus: 1 %}{% else %}{% assign rang = forloop.index %}{% endif %}
+{% include photo-vue.html src=photo.src alt=photo.alt rang=rang total=total %}
+{%- endfor %}
