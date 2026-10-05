@@ -1332,6 +1332,24 @@
       entrees["s:" + chemin] = true;
     });
 
+    /* Les photos et pièces jointes que plus rien ne cite partent avec leur
+       élément : retirer une photo ou supprimer un article les laissait en
+       ligne à leur adresse, alors que la mairie croyait avoir satisfait une
+       demande de retrait (84 images oubliées ainsi le 05/10/2026). On ne part
+       que des anciennes valeurs des éléments touchés, aux noms uniques. */
+    var cites = mediasCites();
+    var anciennes = [];
+    Object.keys(surcouche.modifies).forEach(function (c) {
+      if (!bloquees["m:" + c] && !estSupprime(c)) anciennes = anciennes.concat(mediasDe(enLigne(c)));
+    });
+    retires.forEach(function (c) { anciennes = anciennes.concat(mediasDe(enLigne(c))); });
+    if (reglages.accueil) anciennes = anciennes.concat(mediasDe(reglagesPublies("accueil")));
+    anciennes.forEach(function (src) {
+      var chemin = src.slice(1);
+      if (cites[src] || MEDIAS_DU_SITE.indexOf(src) !== -1 || !MEDIA_RETIRABLE.test(chemin)) return;
+      if (suppressions.indexOf(chemin) === -1) suppressions.push(chemin);
+    });
+
     return {
       fichiers: fichiers,
       suppressions: suppressions,
@@ -1342,6 +1360,40 @@
       reglages: reglages,
       message: "Mise à jour du site depuis l'espace d'administration\n\n" + resume.join("\n") + "\n"
     };
+  }
+
+  /* Image que le site utilise lui-même (photo d'accueil par défaut, aperçu de
+     partage) : jamais retirée. Et seuls les noms que le serveur accepte de
+     retirer (contrat 1) partent. */
+  var MEDIAS_DU_SITE = ["/assets/img/hero-gapree.jpg"];
+  var MEDIA_RETIRABLE = /^assets\/img\/[a-z0-9][a-z0-9-]*\.(jpg|jpeg|png|webp|gif)$|^assets\/docs\/[a-z0-9][a-z0-9-]*\.pdf$/;
+
+  /* Les photos et pièces jointes du site citées par une valeur, à toute profondeur. */
+  function mediasDe(v, liste) {
+    liste = liste || [];
+    if (typeof v === "string") { if (/^\/assets\/(img|docs)\//.test(v)) liste.push(v); }
+    else if (Array.isArray(v)) v.forEach(function (x) { mediasDe(x, liste); });
+    else if (v && typeof v === "object") Object.keys(v).forEach(function (k) { mediasDe(v[k], liste); });
+    return liste;
+  }
+
+  /* Un élément tel qu'il est publié, avant le brouillon. */
+  function enLigne(chemin) {
+    var r = rubriqueDe(chemin);
+    return r ? elementsPublies(r).filter(function (x) { return x.chemin === chemin; })[0] || null : null;
+  }
+
+  /* Tout ce qui sera encore cité une fois la publication faite : le site, les
+     publications pas encore en ligne et le brouillon, y compris ses entrées
+     qui ne partent pas. */
+  function mediasCites() {
+    var liste = [];
+    RUBRIQUES.forEach(function (r) { mediasDe(listeFusionnee(r), liste); });
+    mediasDe(Object.assign({}, reglagesPublies("accueil"), surcouche.reglages.accueil || {}), liste);
+    mediasDe(surcouche.modifies, liste);
+    var cites = {};
+    liste.forEach(function (src) { cites[src] = true; });
+    return cites;
   }
 
   /* Tous les chemins de contenu déjà pris : ceux du site, ceux qu'il aura une

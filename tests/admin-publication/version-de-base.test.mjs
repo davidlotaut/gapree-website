@@ -137,7 +137,8 @@ test("contrat 2 : sans révision dans contenu.json, aucune base n'est envoyée",
 test("contrat 2 : un brouillon d'avant la règle, sans base, n'en reçoit pas après coup", async () => {
   const m = creeMonde(siteDeDepart());
   const b = vide();
-  b.modifies[H] = { titre: "Halloween", date: "2026-10-01", image: null, alt: null, photos: [], video: null, texte: "Ancien brouillon." };
+  b.modifies[H] = { titre: "Halloween", date: "2026-10-01", image: "/assets/img/halloween-a1b2c3d4-aaaaa.jpg", alt: null,
+    photos: [], video: null, texte: "Ancien brouillon." };
   b.supprimes.push(A);
   m.poseBrouillon(b);
   const p = ouvrePage(m);
