@@ -20,6 +20,9 @@ export function taille(chemin) {
   return statSync(join(RACINE, chemin)).size;
 }
 
+/* Texte provisoire qui ne doit jamais paraître sur une page publiée. */
+export const PROVISOIRE = /à compléter|à préciser|à définir|à confirmer|TODO|XXX|\[\.\.\.\]|\[nom|\[date|\[JJ/i;
+
 /* Le bloc YAML entre les deux premières lignes « --- », en texte brut. */
 export function frontMatter(source) {
   const m = /^---\n([\s\S]*?)\n---\n/.exec(source);
