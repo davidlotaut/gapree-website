@@ -9,6 +9,9 @@ import { creeMonde, ouvrePage, siteDeDepart } from "./banc.mjs";
 const H = "_actualites/2026-10-01-halloween.md";
 const PB = "_elus/pierre-breton.md";
 const QUESTION = /pas enregistré/;
+/* Seules comptent les questions sur une saisie non enregistrée : d'autres
+   confirmations (photo sans description, suppression…) relèvent d'autres lots. */
+const questionsSaisie = (p) => p.questions.filter((q) => QUESTION.test(q));
 
 async function nouvelleActualiteTapee(p) {
   p.clic("btn-nouveau");
@@ -25,8 +28,8 @@ test("défaut 42 : un onglet touché pendant une saisie non enregistrée demande
   p.reponses.push(false);
   p.onglet("elus");
   await p.attends();
-  assert.equal(p.questions.length, 1);
-  assert.match(p.questions[0], QUESTION);
+  assert.equal(questionsSaisie(p).length, 1);
+  assert.match(questionsSaisie(p)[0], QUESTION);
   assert.equal(p.el("ch-titre").value, "Coupure d'eau", "l'éditeur est toujours là");
   p.reponses.push(true);
   p.onglet("elus");
@@ -34,7 +37,7 @@ test("défaut 42 : un onglet touché pendant une saisie non enregistrée demande
   assert.ok(p.app().includes("Équipe municipale"));
   p.onglet("actualites");
   await p.attends();
-  assert.equal(p.questions.length, 2, "la liste quittée sans saisie ne demande rien");
+  assert.equal(questionsSaisie(p).length, 2, "la liste quittée sans saisie ne demande rien");
 });
 
 test("défaut 42 : « ← » pendant une saisie non enregistrée demande confirmation ; « Annuler » reste direct", async () => {
@@ -45,11 +48,11 @@ test("défaut 42 : « ← » pendant une saisie non enregistrée demande confirm
   p.reponses.push(false);
   p.clic("btn-retour");
   await p.attends();
-  assert.equal(p.questions.length, 1);
+  assert.equal(questionsSaisie(p).length, 1);
   assert.equal(p.el("ch-texte").value, "Coupure d'eau jeudi matin.");
   p.clic("btn-annuler");
   await p.attends();
-  assert.equal(p.questions.length, 1, "Annuler efface sans question, comme son nom le dit");
+  assert.equal(questionsSaisie(p).length, 1, "Annuler efface sans question, comme son nom le dit");
   assert.equal(p.el("ch-titre"), null);
 });
 
@@ -73,7 +76,7 @@ test("défaut 42 : après « Enregistrer », plus de question ; ouvrir puis quit
   await p.attends();
   p.onglet("talents");
   await p.attends();
-  assert.equal(p.questions.length, 0, "rien n'a été saisi");
+  assert.equal(questionsSaisie(p).length, 0, "rien n'a été saisi");
   p.onglet("actualites");
   await p.attends();
   p.ouvre(H);
@@ -83,7 +86,7 @@ test("défaut 42 : après « Enregistrer », plus de question ; ouvrir puis quit
   await p.attends();
   p.onglet("talents");
   await p.attends();
-  assert.equal(p.questions.length, 0);
+  assert.equal(questionsSaisie(p).length, 0);
 });
 
 test("défaut 42 : dans les Réglages, chaque panneau compte à part", async () => {
@@ -97,7 +100,7 @@ test("défaut 42 : dans les Réglages, chaque panneau compte à part", async () 
   await p.attends();
   p.onglet("actualites");
   await p.attends();
-  assert.equal(p.questions.length, 0, "le panneau d'accueil a été enregistré");
+  assert.equal(questionsSaisie(p).length, 0, "le panneau d'accueil a été enregistré");
 
   p.onglet("reglages");
   await p.attends();
@@ -108,7 +111,7 @@ test("défaut 42 : dans les Réglages, chaque panneau compte à part", async () 
   p.reponses.push(false);
   p.onglet("actualites");
   await p.attends();
-  assert.equal(p.questions.length, 1, "le téléphone tapé n'est pas enregistré");
+  assert.equal(questionsSaisie(p).length, 1, "le téléphone tapé n'est pas enregistré");
   assert.equal(p.el("ch-telephone").value, "02 33 99 99 99");
 });
 
@@ -124,7 +127,7 @@ test("défaut 42 : retirer un portrait compte comme une saisie", async () => {
   p.reponses.push(false);
   p.onglet("actualites");
   await p.attends();
-  assert.equal(p.questions.length, 1);
+  assert.equal(questionsSaisie(p).length, 1);
 });
 
 test("défaut 42 : l'onglet Accès ne compte pas comme un éditeur", async () => {
@@ -136,7 +139,7 @@ test("défaut 42 : l'onglet Accès ne compte pas comme un éditeur", async () =>
   p.saisit("ch-nouvel-email", "quelqu-un@exemple.fr");
   p.onglet("actualites");
   await p.attends();
-  assert.equal(p.questions.length, 0);
+  assert.equal(questionsSaisie(p).length, 0);
 });
 
 test("défaut 42 : se déconnecter avec une saisie non enregistrée demande confirmation", async () => {
@@ -147,6 +150,6 @@ test("défaut 42 : se déconnecter avec une saisie non enregistrée demande conf
   p.reponses.push(false);
   p.clic("btn-deconnexion");
   await p.attends();
-  assert.equal(p.questions.length, 1);
+  assert.equal(questionsSaisie(p).length, 1);
   assert.equal(m.connecte, true);
 });
