@@ -125,11 +125,7 @@ test("défaut 73 : le mot de passe ne reste pas dans la page après une connexio
   await seReconnecte(p);
   assert.equal(p.el("ch-mdp").value, "", "vidé dès l'entrée");
   etat.valides.clear();
-  const b = vide();
-  b.modifies[H] = { titre: "Halloween", date: "2026-10-01", image: "/assets/img/halloween-a1b2c3d4-aaaaa.jpg", alt: null,
-    photos: [], video: null, texte: "x" };
-  m.poseBrouillon(b);
-  p.onglet("talents");
+  p.onglet("actualites");
   await p.attends();
   p.ouvre(H);
   await p.attends();
