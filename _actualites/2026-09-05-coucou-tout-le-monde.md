@@ -1,7 +1,7 @@
 ---
 title: "Souvenir en vidéo - le repas communal 2022"
 date: 2026-09-05
-image: "/assets/img/souvenir-le-repas-communal-2022-mto4g9lh.png"
+image: "/assets/img/souvenir-le-repas-communal-2022-mto4g9lh.jpg"
 video: "https://youtu.be/aDfqIAsaLO0"
 ---
 Bienvenue à tous sur ce site web de Gâprée !
