@@ -122,9 +122,54 @@
     return d.getFullYear() + "-" + deuxChiffres(d.getMonth() + 1) + "-" + deuxChiffres(d.getDate());
   }
 
+  /* L'instant local complet, au format de contenu.json : 2026-10-05T12:06:58+02:00.
+     Sans heure, les actualités d'un même jour se classaient sur le site par nom
+     de fichier, et la dernière publiée pouvait manquer à l'accueil (05/10/2026). */
+  function instantLocal(d) {
+    d = d || new Date();
+    var ecart = -d.getTimezoneOffset();
+    var signe = ecart < 0 ? "-" : "+";
+    ecart = Math.abs(ecart);
+    return dateLocale(d) + "T" + deuxChiffres(d.getHours()) + ":" + deuxChiffres(d.getMinutes()) + ":" +
+      deuxChiffres(d.getSeconds()) + signe + deuxChiffres(Math.floor(ecart / 60)) + ":" + deuxChiffres(ecart % 60);
+  }
+
+  /* Découpe une date d'article, sous ses trois formes : « 2026-10-05 »,
+     « 2026-10-05T12:06:58+02:00 » (contenu.json, brouillon) et
+     « 2026-10-05 12:06:58 +0200 » (fichier). */
+  function litDate(v) {
+    var m = String(v == null ? "" : v)
+      .match(/^(\d{4}-\d{2}-\d{2})(?:[T ](\d{2}:\d{2}:\d{2})(?:\.\d+)? ?(Z|[+-]\d{2}:?\d{2})?)?/);
+    if (!m) return { jour: "", heure: "", decalage: "" };
+    return { jour: m[1], heure: m[2] || "", decalage: m[3] === "Z" ? "+0000" : (m[3] || "").replace(":", "") };
+  }
+
+  /* Date d'un article à l'enregistrement (contrat de la revue du 05/10/2026) :
+     le jour choisi dans le champ, avec l'heure de l'article quand elle est
+     connue. Sans heure connue, l'article garde son jour seul tant que ce jour
+     ne change pas ; s'il change, il prend l'heure du moment. Minuit pile vaut
+     « sans heure » : c'est ainsi que contenu.json rend une date sans heure. */
+  function dateAEnregistrer(jour, avant) {
+    var a = litDate(avant);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(jour || "")) jour = a.jour || dateLocale();
+    var connue = a.heure !== "" && a.heure !== "00:00:00";
+    if (jour === a.jour) return connue ? avant : jour;
+    var j = jour.split("-");
+    var h = (connue ? a.heure : instantLocal().slice(11, 19)).split(":");
+    return instantLocal(new Date(+j[0], +j[1] - 1, +j[2], +h[0], +h[1], +h[2]));
+  }
+
+  /* Date telle qu'écrite dans un article : « 2026-10-05 12:06:58 +0200 », ou le
+     jour seul quand l'heure n'est pas connue. */
+  function dateEcrite(v) {
+    var d = litDate(v);
+    if (!d.jour) return String(v == null ? "" : v);
+    return d.heure ? d.jour + " " + d.heure + (d.decalage ? " " + d.decalage : "") : d.jour;
+  }
+
   function dateFr(iso) {
     if (!iso) return "";
-    var p = iso.split("-");
+    var p = String(iso).slice(0, 10).split("-");
     if (p.length !== 3) return iso;
     var j = parseInt(p[2], 10);
     return (j === 1 ? "1er" : j) + " " + (MOIS[parseInt(p[1], 10) - 1] || "") + " " + p[0];
@@ -464,7 +509,7 @@
     var lib = LIBELLES[rubrique];
     var creation = !chemin;
     var item = creation
-      ? { chemin: "nouveau:" + rubrique + ":" + Date.now(), titre: "", date: dateLocale(), image: null, alt: null, photos: [], video: null, texte: "" }
+      ? { chemin: "nouveau:" + rubrique + ":" + Date.now(), titre: "", date: instantLocal(), image: null, alt: null, photos: [], video: null, texte: "" }
       : trouve(rubrique, chemin);
     if (!item) { vue = { type: "liste", rubrique: rubrique }; return rendre(); }
 
@@ -484,7 +529,7 @@
     app.innerHTML = '<button type="button" class="retour-liste" id="btn-retour">&larr; ' + lib.titre + "</button>" +
       '<div class="editeur"><div class="editeur-form">' +
       '<div class="champ"><label for="ch-titre">Titre</label><input type="text" id="ch-titre" value="' + echap(item.titre) + '"></div>' +
-      '<div class="champ"><label for="ch-date">Date</label><input type="date" id="ch-date" value="' + echap(item.date) + '"></div>' +
+      '<div class="champ"><label for="ch-date">Date</label><input type="date" id="ch-date" value="' + echap(litDate(item.date).jour) + '"></div>' +
       (rubrique === "talents" ? '<div class="champ"><label for="ch-soustitre">Sous-titre</label><input type="text" id="ch-soustitre" value="' + echap(item.sous_titre || "") + '"><p class="aide">Le métier ou l\'activité. Exemple : Apicultrice au bourg.</p></div>' : "") +
       '<div class="champ"><label for="ch-images">Photos</label>' +
       '<div id="liste-photos"></div>' +
@@ -656,7 +701,7 @@
       if (!texteCharge) { toast("Le texte de l'article n'est pas encore chargé : enregistrement impossible pour l'instant"); return; }
       var valeurs = {
         titre: refs.titre.value.trim(),
-        date: refs.date.value || item.date,
+        date: dateAEnregistrer(refs.date.value, item.date),
         image: photos.length ? photos[0].src : null,
         alt: photos.length ? (photos[0].alt || "").trim() || null : null,
         photos: photos.slice(1).map(function (ph) { return { src: ph.src, alt: (ph.alt || "").trim() }; }),
@@ -1100,7 +1145,7 @@
 
   function fichierArticle(rubrique, valeurs, chemin, fichiers) {
     var image = extraitPhoto(valeurs.image, valeurs.titre, fichiers);
-    var lignes = ["---", "title: " + yTexte(valeurs.titre), "date: " + (valeurs.date || "")];
+    var lignes = ["---", "title: " + yTexte(valeurs.titre), "date: " + dateEcrite(valeurs.date)];
     if (rubrique === "talents" && valeurs.sous_titre) lignes.push("sous_titre: " + yTexte(valeurs.sous_titre));
     if (image) lignes.push("image: " + yTexte(image));
     if (image && valeurs.alt) lignes.push("alt: " + yTexte(valeurs.alt));
@@ -1170,7 +1215,7 @@
     ["actualites", "talents"].forEach(function (rubrique) {
       (surcouche.nouveaux[rubrique] || []).forEach(function (v) {
         var nom = rubrique === "actualites"
-          ? (v.date || dateLocale()) + "-" + slug(v.titre)
+          ? (litDate(v.date).jour || dateLocale()) + "-" + slug(v.titre)
           : slug(v.titre);
         fichiers.push(fichierArticle(rubrique, v, "_" + rubrique + "/" + nom + ".md", fichiers));
         resume.push("ajout : " + v.titre);
