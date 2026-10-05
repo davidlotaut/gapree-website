@@ -1940,9 +1940,12 @@
     if (publicationBloque("La publication en cours ne peut plus être arrêtée : attendez qu'elle se termine.")) return;
     if (!confirm(question)) return;
     /* N'efface que ce que cette page connaît : ce qu'un autre onglet vient
-       d'enregistrer reste, et s'affiche aussitôt. */
+       d'enregistrer reste, et s'affiche aussitôt. Le suivi des publications
+       déjà faites reste aussi : elles ne sont pas « non publiées ». */
     conflitsSignales = [];
-    appliqueIci(Object.keys(aplatit(surcouche)).map(function (cle) { return { cle: cle, retire: true }; }))
+    appliqueIci(Object.keys(aplatit(surcouche))
+      .filter(function (cle) { return cle.indexOf("p:") !== 0; })
+      .map(function (cle) { return { cle: cle, retire: true }; }))
       .then(function () {
         toast("Modifications effacées");
         rendre();

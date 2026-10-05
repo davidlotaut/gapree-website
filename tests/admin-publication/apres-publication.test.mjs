@@ -286,3 +286,25 @@ test("contrat 4 : contenu.json exporte la révision construite, la date avec l'h
   assert.match(gabarit, /"documents": \{\{ a\.documents \| jsonify \}\}/);
   assert.doesNotMatch(gabarit, /date: "%Y-%m-%d"/);
 });
+
+test("défauts 10 et 45 : « Annuler les modifications non publiées » ne fait pas oublier une publication pas encore en ligne", async () => {
+  const m = creeMonde(siteDeDepart());
+  const p = ouvrePage(m);
+  await p.attends();
+  await corrigeHalloween(p);
+  await publie(p);
+  p.onglet("actualites");
+  await p.attends();
+  p.ouvre("_actualites/2026-09-11-archives.md");
+  await p.attends();
+  p.saisit("ch-texte", "Brouillon à abandonner.");
+  p.clic("btn-enregistrer");
+  await p.attends();
+  p.clic("btn-annule-brouillon");
+  await p.attends();
+  assert.deepEqual(m.brouillon().modifies, {});
+  assert.equal(p.etat(), MISE_EN_LIGNE);
+  p.ouvre(H);
+  await p.attends();
+  assert.equal(p.el("ch-titre").value, "Halloween 2026", "toujours la version publiée");
+});
