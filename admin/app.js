@@ -713,10 +713,16 @@
 
   /* ----------------------------------------------------------------- réglages */
 
+  function copieCreneau(h) { return Object.assign({}, h); }
+
   function rendReglages() {
     var accueil = reglagesFusionnes("accueil");
     var mairie = reglagesFusionnes("mairie");
-    var horaires = (mairie.horaires || []).slice();
+    /* Des copies des créneaux, ici et à l'enregistrement : l'écran modifie ses
+       créneaux à chaque frappe, et partager les mêmes objets avec les données
+       ou le brouillon faisait publier une saisie abandonnée sans « Enregistrer »
+       (revue du 05/10/2026). */
+    var horaires = (mairie.horaires || []).map(copieCreneau);
 
     app.innerHTML = '<div class="barre-liste"><h2>Réglages du site</h2></div>' +
       '<div class="panneaux">' +
@@ -801,7 +807,7 @@
         adresse: document.getElementById("ch-adresse").value.trim(),
         telephone: document.getElementById("ch-telephone").value.trim(),
         email: document.getElementById("ch-mairie-email").value.trim(),
-        horaires: horaires.filter(function (h) { return (h.jours || h.heures || "").trim() !== ""; })
+        horaires: horaires.filter(function (h) { return (h.jours || h.heures || "").trim() !== ""; }).map(copieCreneau)
       });
       ecritSurcouche(surcouche);
       majBarrePublication();
