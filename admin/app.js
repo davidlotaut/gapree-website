@@ -644,7 +644,7 @@
       chargeTexte(item).then(function (texte) {
         /* L'éditeur a pu être fermé entre-temps : il n'y a plus rien à remplir. */
         if (!refs.texte.isConnected) return;
-        refs.texte.value = texte;
+        refs.texte.value = corpsSaisi(texte);
         texteCharge = true;
         etatTexte.hidden = true;
         majBoutons();
@@ -945,6 +945,26 @@
     }).join("\n");
   }
 
+  /* Corps d'un article tel qu'il part dans le fichier (contrat d'écriture de la
+     revue du 05/10/2026). « { » suivi de « { » ou de « % » s'écrit &#123; :
+     sinon Liquid y lit une balise, et une balise inachevée fait échouer la
+     construction du site, qui reste figé alors que l'écran dit « Publié ». Le
+     lecteur voit toujours « { ». */
+  function corpsEcrit(texte) {
+    return String(texte == null ? "" : texte).replace(/\r/g, "")
+      .replace(/\{(?=[{%])/g, "&#123;")
+      .trim();
+  }
+
+  /* Le même corps relu dans l'éditeur : la personne retrouve le texte tel
+     qu'elle l'a tapé. Seulement si cela redonne exactement le même fichier,
+     pour ne jamais rien perdre. */
+  function corpsSaisi(ecrit) {
+    var saisi = String(ecrit == null ? "" : ecrit)
+      .replace(/&#123;(?=[{%]|&#123;)/g, "{");
+    return corpsEcrit(saisi) === corpsEcrit(ecrit) ? saisi : ecrit;
+  }
+
   var EXTENSIONS = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp", "image/gif": "gif" };
 
   /* Repère court d'une photo, pour la reconnaître d'une tentative à l'autre.
@@ -1016,7 +1036,7 @@
     }
     if (valeurs.video) lignes.push("video: " + yTexte(valeurs.video));
     lignes.push("---");
-    var corps = String(valeurs.texte || "").replace(/\r/g, "").trim();
+    var corps = corpsEcrit(valeurs.texte);
     return { chemin: chemin, texte: lignes.join("\n") + "\n" + corps + "\n" };
   }
 
