@@ -17,6 +17,20 @@ function vignette(page, rang) {
   return page.querySelector('.galerie-lien[href="#photo-' + rang + '"]');
 }
 
+/* Un élément décrit en une ligne : les messages d'échec restent lisibles. */
+function decrit(el) {
+  if (!el) return String(el);
+  const parent = el.closest && el.closest(".visionneuse");
+  return (parent ? parent.id + " > " : "") + el.tagName.toLowerCase() + (el.id ? "#" + el.id : "") +
+    (el.className ? "." + el.className.split(/\s+/).join(".") : "") +
+    (el.getAttribute && el.getAttribute("href") ? '[href="' + el.getAttribute("href") + '"]' : "");
+}
+
+function focusSur(page, attendu, message) {
+  assert.equal(decrit(page.activeElement), decrit(attendu), message);
+  assert.ok(page.activeElement === attendu, message);
+}
+
 /* --- Défaut 56 : le bouton Retour ---------------------------------------------- */
 
 test("sans script, les liens de la vue restent de vraies ancres", () => {
@@ -127,4 +141,99 @@ test("56 : fermée par le bouton Retour, puis rouverte par Suivant du navigateur
   p.vide();
   assert.equal(p.location.hash, "#les-photos", "Fermer remplace l'adresse au lieu de reculer d'une page");
   assert.equal(p.index, 1);
+});
+
+/* --- Défaut 75 : le clavier dans la vue -------------------------------------------- */
+
+function ouvreAuClavier(p, rang) {
+  vignette(p, rang).focus();
+  p.touche("Enter");
+  p.vide();
+  assert.equal(p.location.hash, "#photo-" + rang);
+  return vueOuverte(p);
+}
+
+test("75 : à l'ouverture, le focus va sur Fermer", () => {
+  const p = chargeScript(article(4, ADRESSE));
+  const vue = ouvreAuClavier(p, 2);
+  focusSur(p, vue.querySelector(".visionneuse-fermer"));
+});
+
+test("75 : Tab et Maj+Tab tournent sur les trois liens de la vue, jamais sous le voile", () => {
+  const p = chargeScript(article(4, ADRESSE));
+  const vue = ouvreAuClavier(p, 2);
+  const fermer = vue.querySelector(".visionneuse-fermer");
+  const avant = vue.querySelector(".visionneuse-fleche--avant");
+  const apres = vue.querySelector(".visionneuse-fleche--apres");
+  const suite = [];
+  for (let i = 0; i < 4; i++) {
+    p.touche("Tab");
+    suite.push(decrit(p.activeElement));
+  }
+  assert.deepEqual(suite, [avant, apres, fermer, avant].map(decrit), "Tab : flèche avant, flèche après, Fermer, puis on recommence");
+  p.touche("Tab", { shiftKey: true });
+  focusSur(p, fermer);
+  p.touche("Tab", { shiftKey: true });
+  focusSur(p, apres, "Maj+Tab depuis Fermer reste dans la vue");
+});
+
+test("75 : d'une photo à l'autre, le focus reste sur la même flèche", () => {
+  const p = chargeScript(article(4, ADRESSE));
+  ouvreAuClavier(p, 1);
+  p.touche("Tab");
+  p.touche("Tab");
+  focusSur(p, vueOuverte(p).querySelector(".visionneuse-fleche--apres"));
+  p.touche("Enter");
+  p.vide();
+  assert.equal(p.location.hash, "#photo-2");
+  focusSur(p, vueOuverte(p).querySelector(".visionneuse-fleche--apres"));
+  p.touche("Enter");
+  p.vide();
+  assert.equal(p.location.hash, "#photo-3", "un second Entrée avance encore au lieu de fermer");
+});
+
+test("75 : les flèches du clavier gardent le focus sur Fermer", () => {
+  const p = chargeScript(article(4, ADRESSE));
+  ouvreAuClavier(p, 1);
+  p.touche("ArrowRight");
+  p.vide();
+  focusSur(p, vueOuverte(p).querySelector(".visionneuse-fermer"));
+});
+
+test("75 : à la fermeture, le focus revient sur la vignette de la dernière photo vue", () => {
+  const p = chargeScript(article(4, ADRESSE));
+  ouvreAuClavier(p, 1);
+  p.touche("ArrowRight");
+  p.vide();
+  p.touche("ArrowRight");
+  p.vide();
+  p.touche("Escape");
+  p.vide();
+  assert.equal(vueOuverte(p), null);
+  focusSur(p, vignette(p, 3));
+});
+
+test("75 : arrivé par un lien partagé, le focus est déjà dans la vue", () => {
+  const p = chargeScript(article(4, ADRESSE + "#photo-3"));
+  focusSur(p, vueOuverte(p).querySelector(".visionneuse-fermer"));
+  p.touche("Tab", { shiftKey: true });
+  assert.ok(vueOuverte(p).contains(p.activeElement));
+});
+
+test("75 : une vue d'une seule photo garde le focus sur Fermer", () => {
+  const p = chargeScript(article(1, ADRESSE));
+  const vue = ouvreAuClavier(p, 1);
+  const fermer = vue.querySelector(".visionneuse-fermer");
+  p.touche("Tab");
+  focusSur(p, fermer);
+  p.touche("Tab", { shiftKey: true });
+  focusSur(p, fermer);
+});
+
+test("75 : Alt, Ctrl ou Cmd avec une flèche restent au navigateur (Retour au clavier)", () => {
+  const p = chargeScript(article(4, ADRESSE));
+  ouvreAuClavier(p, 2);
+  const evt = p.touche("ArrowLeft", { altKey: true });
+  assert.equal(evt.defaultPrevented, false);
+  assert.equal(p.location.hash, "#photo-2");
 });

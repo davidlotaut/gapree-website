@@ -71,12 +71,6 @@
     for (var i = 0; i < bandes.length; i++) equipe(bandes[i]);
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", equipeTout);
-  } else {
-    equipeTout();
-  }
-
   /* La vue en grand et le bouton Retour du téléphone. Sans script, flèches et
      « Fermer » sont des ancres : chacune ajoute une page à l'historique, et
      Retour rouvrait les photos une à une. Ici, les flèches remplacent la photo
@@ -85,6 +79,10 @@
      quitte ensuite l'article. Arrivé directement sur une photo (lien partagé,
      page rechargée), « Fermer » ramène à la bande sans quitter le site. */
   var ouverteParClic = false;
+  /* La flèche qui avait le focus, à retrouver dans la photo suivante. */
+  var flecheGardee = null;
+  /* La vue affichée avant le dernier changement d'adresse. */
+  var vuePrecedente = null;
 
   function vueOuverte() {
     var id = location.hash.slice(1);
@@ -104,6 +102,9 @@
     if (!lien.closest(".visionneuse")) return;
     e.preventDefault();
     if (lien.classList.contains("visionneuse-fleche")) {
+      flecheGardee = document.activeElement === lien
+        ? (lien.classList.contains("visionneuse-fleche--avant") ? ".visionneuse-fleche--avant" : ".visionneuse-fleche--apres")
+        : null;
       location.replace(lien.href);
     } else if (ouverteParClic) {
       history.back();
@@ -112,14 +113,55 @@
     }
   });
 
-  window.addEventListener("hashchange", function () {
-    if (!vueOuverte()) ouverteParClic = false;
-  });
+  /* Le clavier dans la vue en grand : le focus va sur « Fermer » à
+     l'ouverture, Tab et Maj+Tab tournent sur les liens de la vue (le reste de
+     la page est sous le voile), et à la fermeture le focus revient sur la
+     vignette de la dernière photo vue. D'une photo à l'autre, il reste sur la
+     flèche qui l'avait : un second appui sur Entrée avance encore au lieu de
+     fermer la vue. */
+  function liensDe(vue) {
+    var tous = vue.querySelectorAll("a[href]");
+    var liens = [];
+    for (var i = 0; i < tous.length; i++) {
+      if (tous[i].getAttribute("tabindex") !== "-1") liens.push(tous[i]);
+    }
+    return liens;
+  }
 
-  /* Dans la vue en grand : les flèches du clavier changent de photo, Échap ferme. */
+  function suitLaVue() {
+    var vue = vueOuverte();
+    if (vue) {
+      var cible = (flecheGardee && vue.querySelector(flecheGardee)) || vue.querySelector(".visionneuse-fermer");
+      if (cible) cible.focus();
+    } else {
+      ouverteParClic = false;
+      if (vuePrecedente) {
+        var vignette = document.querySelector('.galerie-lien[href="#' + vuePrecedente.id + '"]');
+        if (vignette) vignette.focus();
+      }
+    }
+    flecheGardee = null;
+    vuePrecedente = vue;
+  }
+
+  window.addEventListener("hashchange", suitLaVue);
+
+  /* Dans la vue en grand : Tab reste dans la vue, les flèches du clavier
+     changent de photo, Échap ferme. Avec Alt, Ctrl ou Cmd, la touche reste au
+     navigateur (Alt + flèche gauche, c'est son Retour). */
   document.addEventListener("keydown", function (e) {
-    var ouverte = document.querySelector(".visionneuse:target");
-    if (!ouverte) return;
+    var ouverte = vueOuverte();
+    if (!ouverte || e.altKey || e.ctrlKey || e.metaKey) return;
+    if (e.key === "Tab") {
+      var liens = liensDe(ouverte);
+      if (!liens.length) return;
+      var i = liens.indexOf(document.activeElement);
+      var dernier = liens.length - 1;
+      var suivant = e.shiftKey ? (i <= 0 ? dernier : i - 1) : (i === -1 || i === dernier ? 0 : i + 1);
+      e.preventDefault();
+      liens[suivant].focus();
+      return;
+    }
     var lien = null;
     if (e.key === "ArrowLeft") lien = ouverte.querySelector('[rel="prev"]');
     else if (e.key === "ArrowRight") lien = ouverte.querySelector('[rel="next"]');
@@ -129,4 +171,15 @@
       lien.click();
     }
   });
+
+  function demarre() {
+    equipeTout();
+    suitLaVue();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", demarre);
+  } else {
+    demarre();
+  }
 })();
