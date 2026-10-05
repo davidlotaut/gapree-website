@@ -72,41 +72,178 @@
     try { return JSON.parse(localStorage.getItem(CLE_DEMO) || "null"); } catch (e) { return null; }
   }
 
+  /* Un seul brouillon par navigateur, que plusieurs onglets peuvent écrire.
+     Chaque écriture relit donc le brouillon gardé et n'y applique que les
+     gestes faits dans cette page depuis sa dernière lecture : réécrit en
+     entier, il effaçait ce qu'un autre onglet venait d'enregistrer (revue du
+     05/10/2026). Pour comparer, le brouillon est vu « à plat », une clé par
+     entrée : m:chemin (modification), n:rubrique:repère (nouveau),
+     s:chemin (suppression), r:nom (réglages), d:repère (photo déposée).      */
+  var RUBRIQUES = ["actualites", "talents", "elus"];
+
+  function aplatit(s) {
+    var plat = {};
+    Object.keys(s.modifies || {}).forEach(function (c) { plat["m:" + c] = s.modifies[c]; });
+    RUBRIQUES.forEach(function (r) {
+      ((s.nouveaux || {})[r] || []).forEach(function (x) { plat["n:" + r + ":" + x.chemin] = x; });
+    });
+    (s.supprimes || []).forEach(function (c) { plat["s:" + c] = true; });
+    Object.keys(s.reglages || {}).forEach(function (n) { plat["r:" + n] = s.reglages[n]; });
+    Object.keys(s.deposees || {}).forEach(function (k) { plat["d:" + k] = s.deposees[k]; });
+    return plat;
+  }
+
+  function reconstruit(plat) {
+    var s = surcoucheVide();
+    Object.keys(plat).forEach(function (cle) {
+      var i = cle.indexOf(":"), type = cle.slice(0, i), reste = cle.slice(i + 1), v = plat[cle];
+      if (type === "m") s.modifies[reste] = v;
+      else if (type === "s") s.supprimes.push(reste);
+      else if (type === "r") s.reglages[reste] = v;
+      else if (type === "d") s.deposees[reste] = v;
+      else if (type === "n") {
+        var r = reste.slice(0, reste.indexOf(":"));
+        if (s.nouveaux[r]) s.nouveaux[r].push(v);
+      }
+    });
+    return s;
+  }
+
+  /* Copie de la structure ; les textes, et les photos qu'ils portent, ne sont
+     pas dupliqués. */
+  function copie(v) {
+    if (Array.isArray(v)) return v.map(copie);
+    if (v && typeof v === "object") {
+      var c = {};
+      Object.keys(v).forEach(function (k) { c[k] = copie(v[k]); });
+      return c;
+    }
+    return v;
+  }
+
+  function pareil(a, b) {
+    if (a === b) return true;
+    if (!a || !b || typeof a !== "object" || typeof b !== "object") return false;
+    if (Array.isArray(a) !== Array.isArray(b)) return false;
+    var ka = Object.keys(a), kb = Object.keys(b);
+    if (ka.length !== kb.length) return false;
+    return ka.every(function (k) { return Object.prototype.hasOwnProperty.call(b, k) && pareil(a[k], b[k]); });
+  }
+
+  /* Les gestes qui mènent de « avant » à « apres », en opérations sur les clés. */
+  function differences(avant, apres) {
+    var a = aplatit(avant), b = aplatit(apres), operations = [];
+    Object.keys(b).forEach(function (cle) {
+      if (!Object.prototype.hasOwnProperty.call(a, cle) || !pareil(a[cle], b[cle])) operations.push({ cle: cle, valeur: b[cle] });
+    });
+    Object.keys(a).forEach(function (cle) {
+      if (!Object.prototype.hasOwnProperty.call(b, cle)) operations.push({ cle: cle, retire: true });
+    });
+    return operations;
+  }
+
+  /* Une opération qui porte « si » ne s'applique que si l'entrée gardée vaut
+     encore cette valeur : c'est ce qui laisse en place une entrée changée
+     entre-temps par un autre onglet. */
+  function applique(plat, operations) {
+    operations.forEach(function (op) {
+      if (Object.prototype.hasOwnProperty.call(op, "si") && !pareil(plat[op.cle], op.si)) return;
+      if (op.retire) delete plat[op.cle];
+      else plat[op.cle] = op.valeur;
+    });
+    return plat;
+  }
+
   function chargeSurcouche() {
     return dansLaBase("readonly", function (magasin) { return magasin.get("etat"); })
       .then(function (enregistre) {
         /* Un brouillon commencé avant ce changement est repris, puis la réserve
-           est libérée : il n'y a aucune raison de le perdre. */
+           est libérée : il n'y a aucune raison de le perdre. La base est encore
+           vide : la première écriture y reportera tout. */
         var ancien = litReserve();
         if (!enregistre && ancien) {
           try { localStorage.removeItem(CLE_DEMO); } catch (e) { /* tant pis */ }
+          surcoucheLue = surcoucheVide();
           return rangeSurcouche(ancien);
         }
-        return rangeSurcouche(enregistre);
+        var s = rangeSurcouche(enregistre);
+        surcoucheLue = copie(s);
+        return s;
       })
-      .catch(function () { return rangeSurcouche(litReserve()); });
-  }
-
-  function ecritSurcouche(s) {
-    dansLaBase("readwrite", function (magasin) { return magasin.put(s, "etat"); })
       .catch(function () {
-        /* Sans base, on retombe sur la réserve : elle suffit au texte, pas aux
-           photos, donc on le dit au lieu d'échouer sans un mot. */
-        try {
-          localStorage.setItem(CLE_DEMO, JSON.stringify(s));
-        } catch (e) {
-          toast("Ce navigateur ne peut pas garder un brouillon aussi lourd : publiez sans fermer la page");
-        }
+        var s = rangeSurcouche(litReserve());
+        surcoucheLue = copie(s);
+        return s;
       });
   }
 
-  function effaceSurcouche() {
-    try { localStorage.removeItem(CLE_DEMO); } catch (e) { /* rien à faire */ }
-    return dansLaBase("readwrite", function (magasin) { return magasin.delete("etat"); })
-      .catch(function () { /* déjà propre */ });
+  /* Relit le brouillon gardé et lui applique les opérations, en une seule
+     transaction : un autre onglet ne peut pas écrire entre la lecture et
+     l'écriture. Rend le brouillon tel qu'il est désormais gardé. */
+  function relitEtApplique(operations) {
+    var garde = null;
+    return dansLaBase("readwrite", function (magasin) {
+      var lecture = magasin.get("etat");
+      lecture.onsuccess = function () {
+        garde = reconstruit(applique(aplatit(rangeSurcouche(lecture.result)), operations));
+        magasin.put(garde, "etat");
+      };
+      return lecture;
+    }).then(function () { return garde; }, function () {
+      /* Sans base, on retombe sur la réserve : elle suffit au texte, pas aux
+         photos, donc on le dit au lieu d'échouer sans un mot. */
+      try {
+        garde = reconstruit(applique(aplatit(rangeSurcouche(litReserve())), operations));
+        localStorage.setItem(CLE_DEMO, JSON.stringify(garde));
+        return garde;
+      } catch (e) {
+        toast("Ce navigateur ne peut pas garder un brouillon aussi lourd : publiez sans fermer la page");
+        return null;
+      }
+    });
   }
 
   var surcouche = surcoucheVide();
+  var surcoucheLue = surcoucheVide();   // le brouillon tel que cette page l'a lu ou écrit en dernier
+  var fileEcritures = Promise.resolve();
+  var ecrituresEnCours = 0;
+
+  /* Les écritures d'une page partent l'une après l'autre. Quand la dernière
+     est faite, la page reprend le brouillon gardé, avec ce que les autres
+     onglets y ont ajouté. */
+  function enregistre(operations) {
+    if (!operations.length) return fileEcritures;
+    ecrituresEnCours++;
+    fileEcritures = fileEcritures.then(function () {
+      return relitEtApplique(operations);
+    }).then(function (garde) {
+      ecrituresEnCours--;
+      if (!ecrituresEnCours && garde) adopte(garde);
+    });
+    return fileEcritures;
+  }
+
+  function adopte(garde) {
+    var avant = nombreEnAttente();
+    surcouche = garde;
+    surcoucheLue = copie(garde);
+    if (nombreEnAttente() !== avant) majBarrePublication();
+  }
+
+  /* Écrit les gestes faits sur le brouillon de la page depuis sa dernière écriture. */
+  function ecritSurcouche(s) {
+    var operations = differences(surcoucheLue, s);
+    surcoucheLue = copie(s);
+    return enregistre(operations);
+  }
+
+  /* Applique des opérations ici (brouillon de la page et dernière lecture),
+     puis au brouillon gardé. */
+  function appliqueIci(operations) {
+    surcouche = reconstruit(applique(aplatit(surcouche), operations));
+    surcoucheLue = reconstruit(applique(aplatit(surcoucheLue), operations));
+    return enregistre(operations);
+  }
 
   var MOIS = ["janvier", "février", "mars", "avril", "mai", "juin",
     "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
@@ -960,6 +1097,9 @@
     occurrences = {};
     var suppressions = surcouche.supprimes.slice();
     var resume = [];
+    /* Les entrées du brouillon que cette publication emporte, telles qu'elles
+       sont au départ : seules celles-là en sortiront au succès. */
+    var entrees = {};
 
     ["actualites", "talents"].forEach(function (rubrique) {
       (surcouche.nouveaux[rubrique] || []).forEach(function (v) {
@@ -968,15 +1108,19 @@
           : slug(v.titre);
         fichiers.push(fichierArticle(rubrique, v, "_" + rubrique + "/" + nom + ".md", fichiers));
         resume.push("ajout : " + v.titre);
+        entrees["n:" + rubrique + ":" + v.chemin] = copie(v);
       });
     });
 
     (surcouche.nouveaux.elus || []).forEach(function (v) {
       fichiers.push(fichierElu(v, "_elus/" + slug(v.nom) + ".md", fichiers));
       resume.push("ajout : " + v.nom);
+      entrees["n:elus:" + v.chemin] = copie(v);
     });
 
     Object.keys(surcouche.modifies).forEach(function (chemin) {
+      /* Une modification d'un élément retiré dans la même publication n'a plus d'objet. */
+      entrees["m:" + chemin] = copie(surcouche.modifies[chemin]);
       if (estSupprime(chemin)) return;
       var v = surcouche.modifies[chemin];
       if (chemin.indexOf("_elus/") === 0) {
@@ -992,20 +1136,35 @@
     if (surcouche.reglages.accueil) {
       fichiers.push(fichierAccueil(reglagesFusionnes("accueil"), fichiers));
       resume.push("page d'accueil");
+      entrees["r:accueil"] = copie(surcouche.reglages.accueil);
     }
     if (surcouche.reglages.mairie) {
       fichiers.push(fichierMairie(reglagesFusionnes("mairie")));
       resume.push("coordonnées de la mairie");
+      entrees["r:mairie"] = copie(surcouche.reglages.mairie);
     }
 
-    suppressions.forEach(function (chemin) { resume.push("suppression : " + chemin.split("/").pop()); });
+    suppressions.forEach(function (chemin) {
+      resume.push("suppression : " + chemin.split("/").pop());
+      entrees["s:" + chemin] = true;
+    });
 
     return {
       fichiers: fichiers,
       suppressions: suppressions,
       resume: resume,
+      entrees: entrees,
       message: "Mise à jour du site depuis l'espace d'administration\n\n" + resume.join("\n") + "\n"
     };
+  }
+
+  /* Ce qu'une publication réussie retire du brouillon : ce qu'elle a emporté
+     et qui n'a pas changé depuis (un autre onglet a pu y toucher), plus les
+     références des photos déposées, devenues inutiles. */
+  function retraitsApresPublication(entrees) {
+    var operations = Object.keys(entrees).map(function (cle) { return { cle: cle, retire: true, si: entrees[cle] }; });
+    Object.keys(surcouche.deposees || {}).forEach(function (k) { operations.push({ cle: "d:" + k, retire: true }); });
+    return operations;
   }
 
   function nombreEnAttente() {
@@ -1171,8 +1330,7 @@
     }).then(function () {
       progression(null);
       publicationEnCours = false;
-      surcouche = surcoucheVide();
-      ecritSurcouche(surcouche);
+      appliqueIci(retraitsApresPublication(changements.entrees));
       etat.textContent = "Publié. Le site en ligne se met à jour dans une minute environ.";
       toast("Publié sur le site");
       setTimeout(function () { window.location.reload(); }, 60000);
@@ -1335,11 +1493,13 @@
   function videBrouillon(question) {
     if (publicationBloque("La publication en cours ne peut plus être arrêtée : attendez qu'elle se termine.")) return;
     if (!confirm(question)) return;
-    effaceSurcouche().then(function () {
-      surcouche = surcoucheVide();
-      toast("Modifications effacées");
-      rendre();
-    });
+    /* N'efface que ce que cette page connaît : ce qu'un autre onglet vient
+       d'enregistrer reste, et s'affiche aussitôt. */
+    appliqueIci(Object.keys(aplatit(surcouche)).map(function (cle) { return { cle: cle, retire: true }; }))
+      .then(function () {
+        toast("Modifications effacées");
+        rendre();
+      });
   }
 
   document.getElementById("btn-reinit").addEventListener("click", function () {
