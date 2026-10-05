@@ -6,11 +6,12 @@
    - une clé d'écriture qui ne quitte jamais ce serveur.
 
    Rien de personnel n'y est stocké : les comptes de la mairie, leurs sessions,
-   et une clé qui ne sait faire qu'une chose, écrire dans le dépôt du site.   */
+   30 jours de comptes rendus d'échec (sans adresse), et une clé qui ne sait
+   faire qu'une chose, écrire dans le dépôt du site.                          */
 
 const ITERATIONS = 100000;   // maximum accepté par le runtime Cloudflare
 const DUREE_SESSION = 12 * 3600;        // secondes
-const ESSAIS_MAX = 10;                  // par quart d'heure et par compte
+const ESSAIS_MAX = 10;                  // par quart d'heure, par compte et par connexion d'origine
 const FENETRE_ESSAIS = 900;
 
 /* Un reportage peut compter cent photos, et tout envoyer d'un coup dépasse la
@@ -83,11 +84,24 @@ function normaliseEmail(e) {
   return String(e || "").trim().toLowerCase();
 }
 
+/* Désigne un compte sans le nommer : « compte » suivi des 8 premiers
+   caractères de l'empreinte SHA-256 de son adresse. Les enregistrements du
+   dépôt sont publics : l'adresse de la personne qui publie n'y figure plus,
+   elle reste dans le journal du serveur. */
+async function libelleCompte(email) {
+  const h = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(email)));
+  return "compte " + Array.from(h.slice(0, 4), (o) => o.toString(16).padStart(2, "0")).join("");
+}
+
 /* --------------------------------------------------------------------- KV */
 
 const cleCompte = (email) => "compte:" + email;
 const cleSession = (jeton) => "session:" + jeton;
-const cleEssais = (email) => "essais:" + email;
+/* Les essais faux se comptent par adresse ET par connexion d'origine : les
+   identifiants sont publics, et un compteur par adresse seule laissait
+   n'importe qui bloquer un compte pour tout le monde. Un seul compteur, donc
+   pas plus d'écritures qu'avant. */
+const cleEssais = (email, ip) => "essais:" + email + ":" + ip;
 
 async function litCompte(env, email) {
   return await env.COMPTES.get(cleCompte(email), "json");
@@ -96,6 +110,14 @@ async function litCompte(env, email) {
 async function ecritCompte(env, compte) {
   await env.COMPTES.put(cleCompte(compte.email), JSON.stringify(compte));
 }
+
+/* Numéro de version des sessions d'un compte, copié dans chaque session à la
+   connexion. Il change avec le mot de passe, à la réinitialisation et à la
+   création (au hasard : un compte retiré puis recréé ne ranime aucune
+   ancienne session) ; une session qui porte un autre numéro est refusée.
+   Les comptes et sessions d'avant cette règle n'en ont pas, et restent
+   valables entre eux jusqu'au premier changement. */
+const nouvelleVersion = () => base64(alea(9));
 
 async function creeCompte(env, email, admin) {
   const motDePasse = motDePasseGenere();
@@ -106,7 +128,8 @@ async function creeCompte(env, email, admin) {
     empreinte: await empreinte(motDePasse, sel),
     admin: !!admin,
     cree: new Date().toISOString(),
-    aChange: false
+    aChange: false,
+    version: nouvelleVersion()
   };
   await ecritCompte(env, compte);
   return motDePasse;
@@ -142,6 +165,50 @@ function tropLourd(requete) {
   return parseInt(requete.headers.get("Content-Length") || "0", 10) > LOT_MAX;
 }
 
+/* Erreur dont le statut et les détails partent tels quels vers l'espace. */
+function refus(message, statut, details) {
+  const e = new Error(message);
+  e.statut = statut;
+  if (details) Object.assign(e, details);
+  return e;
+}
+
+/* ---------------------------------------------------------- emplacements */
+
+/* Ce que l'espace d'administration a le droit d'écrire ou de retirer : les
+   contenus, les deux réglages, les photos et les documents PDF. Le jeton du
+   serveur peut écrire PARTOUT dans le dépôt, code de l'administration et nom
+   de domaine compris : sans ce filtre, n'importe quelle session (même volée)
+   pouvait réécrire admin/config.js et capter les mots de passe des autres. */
+const CONTENUS = /^_(actualites|talents|elus)\/[a-z0-9][a-z0-9-]*\.md$/;
+const REGLAGES = /^_data\/(accueil|mairie)\.yml$/;
+const PHOTOS = /^assets\/img\/[a-z0-9][a-z0-9-]*\.(jpg|jpeg|png|webp|gif)$/;
+const DOCUMENTS = /^assets\/docs\/[a-z0-9][a-z0-9-]*\.pdf$/;
+const ECRITURES_PERMISES = [CONTENUS, REGLAGES, PHOTOS, DOCUMENTS];
+const RETRAITS_PERMIS = [CONTENUS, PHOTOS, DOCUMENTS];
+
+const permis = (chemin, liste) => typeof chemin === "string" && liste.some((r) => r.test(chemin));
+
+/* Refuse tout l'envoi, avant le moindre appel à GitHub, dès qu'un seul
+   emplacement sort de la liste. */
+function verifieEmplacements(fichiers, retraits) {
+  for (const f of fichiers) {
+    const chemin = f && f.chemin;
+    if (!permis(chemin, ECRITURES_PERMISES)) {
+      throw refus("Emplacement refusé : " + String(chemin).slice(0, 200) + ". Le site n'accepte que des "
+        + "actualités, des talents, des élus, les réglages de l'accueil et de la mairie, des photos "
+        + "et des documents PDF.", 403);
+    }
+  }
+  for (const s of retraits) {
+    const chemin = s && s.chemin;
+    if (!permis(chemin, RETRAITS_PERMIS)) {
+      throw refus("Suppression refusée : " + String(chemin).slice(0, 200) + ". Seuls des actualités, des "
+        + "talents, des élus, des photos et des documents PDF peuvent être retirés du site.", 403);
+    }
+  }
+}
+
 /* ------------------------------------------------------------- sessions */
 
 async function sessionDe(requete, env) {
@@ -151,11 +218,18 @@ async function sessionDe(requete, env) {
   const session = await env.COMPTES.get(cleSession(jeton), "json");
   if (!session) return null;
   const compte = await litCompte(env, session.email);
-  if (!compte) return null;
-  return { jeton, compte };
+  if (!compte || compte.version !== session.version) return null;
+  return { jeton, compte, fin: session.fin };
 }
 
 /* --------------------------------------------------------------- GitHub */
+
+/* Version de l'API GitHub demandée à chaque appel. GitHub garde une version
+   24 mois après la sortie de la suivante, puis répond 410 à tout appel qui la
+   demande : 2022-11-28 cesse le 10/03/2028 (docs.github.com, lu le
+   05/10/2026). La prochaine version se vérifie sur la page « Breaking
+   changes » pour les seuls appels /git/ utilisés ici. */
+const VERSION_API = "2026-03-10";
 
 async function appelGitHub(env, chemin, options, secondEssai) {
   const o = options || {};
@@ -164,7 +238,7 @@ async function appelGitHub(env, chemin, options, secondEssai) {
     headers: {
       Authorization: "Bearer " + env.JETON_GITHUB,
       Accept: "application/vnd.github+json",
-      "X-GitHub-Api-Version": "2022-11-28",
+      "X-GitHub-Api-Version": VERSION_API,
       "Content-Type": "application/json",
       "User-Agent": "gapree-admin"
     },
@@ -174,21 +248,32 @@ async function appelGitHub(env, chemin, options, secondEssai) {
     const detail = await r.text();
     /* Messages compréhensibles par la mairie ; le détail technique reste dans les journaux. */
     console.log("GitHub " + r.status + " : " + detail.slice(0, 300));
+    /* Chaque erreur emporte le statut et le détail de GitHub : le contrôle de
+       version les lit, et le compte rendu d'échec les garde. */
+    const echec = (message) => Object.assign(new Error(message), {
+      github: { statut: r.status, detail: detail.slice(0, 300) }
+    });
     /* Freinage passager : GitHub demande d'attendre, la clé n'est pas en cause. */
     const attenteDemandee = r.headers.get("retry-after");
     if ((r.status === 403 || r.status === 429)
       && (attenteDemandee || /secondary rate limit|abuse detection/i.test(detail))) {
-      if (secondEssai) throw new Error("Le site reçoit trop de photos à la fois. Réessayez dans une minute.");
+      if (secondEssai) throw echec("Le site reçoit trop de photos à la fois. Réessayez dans une minute.");
       await patiente(Math.min(parseInt(attenteDemandee || "60", 10), 90) * 1000);
       return await appelGitHub(env, chemin, options, true);
     }
     if (r.status === 401 || r.status === 403) {
-      throw new Error("La clé d'écriture du site n'est plus valable. Prévenez la personne qui a installé le site.");
+      throw echec("La clé d'écriture du site n'est plus valable. Prévenez la personne qui a installé le site.");
+    }
+    /* Version d'API arrêtée (410) ou demande que GitHub ne comprend plus
+       (400) : réessayer n'y changera rien, seul le serveur peut être corrigé. */
+    if (r.status === 400 || r.status === 410) {
+      throw echec("Le site doit être mis à jour par la personne qui l'a installé (erreur "
+        + r.status + " de GitHub). Prévenez-la.");
     }
     if (r.status === 409 || r.status === 422) {
-      throw new Error("Le site a été modifié entre-temps. Rechargez la page, puis publiez à nouveau.");
+      throw echec("Le site a été modifié entre-temps. Rechargez la page, puis publiez à nouveau.");
     }
-    throw new Error("Le site n'a pas pu être mis à jour (erreur " + r.status + "). Réessayez dans un instant.");
+    throw echec("Le site n'a pas pu être mis à jour (erreur " + r.status + "). Réessayez dans un instant.");
   }
   return await r.json();
 }
@@ -198,6 +283,7 @@ async function appelGitHub(env, chemin, options, secondEssai) {
    permet d'envoyer un gros reportage en plusieurs fois, puis de tout publier
    d'un seul geste, donc en une seule mise à jour du site. */
 async function televerse(env, fichiers) {
+  verifieEmplacements(fichiers, []);
   const deposes = [];
   for (let i = 0; i < fichiers.length; i += BLOBS_EN_PARALLELE) {
     const paquet = fichiers.slice(i, i + BLOBS_EN_PARALLELE);
@@ -220,28 +306,154 @@ async function televerse(env, fichiers) {
   return deposes;
 }
 
+/* ------------------------------------------------- contrôle de version */
+
+/* Chaque entrée peut porter la révision du site (un commit de main) sur
+   laquelle l'élément a été ouvert : « base ». Elle part dans une adresse de
+   l'API GitHub, d'où un format strict, vérifié avant tout appel. */
+const REVISION = /^[0-9a-f]{40}$/;
+
+function verifieBases(entrees) {
+  for (const e of entrees) {
+    const base = e.base;
+    if (base === undefined || base === null || base === "") continue;
+    if (typeof base !== "string" || !REVISION.test(base)) {
+      throw refus("Version de base illisible pour " + String(e.chemin).slice(0, 200)
+        + ". Rechargez la page, puis refaites la modification.", 400);
+    }
+  }
+}
+
+/* Empreinte que Git donne à un contenu (SHA-1 de « blob <taille>\0 » suivi
+   des octets) : celle que GitHub calculera en l'écrivant. */
+async function empreinteBlob(contenu) {
+  const entete = new TextEncoder().encode("blob " + contenu.length + "\0");
+  const tout = new Uint8Array(entete.length + contenu.length);
+  tout.set(entete);
+  tout.set(contenu, entete.length);
+  const h = new Uint8Array(await crypto.subtle.digest("SHA-1", tout));
+  return Array.from(h, (o) => o.toString(16).padStart(2, "0")).join("");
+}
+
+async function empreinteEnvoyee(f) {
+  try {
+    if (f.sha) return String(f.sha);
+    if (f.base64) return await empreinteBlob(octets(f.base64));
+    if (typeof f.texte === "string") return await empreinteBlob(new TextEncoder().encode(f.texte));
+  } catch (e) { /* contenu illisible : il sera refusé plus loin */ }
+  return null;
+}
+
+/* Chemin -> empreinte de chaque fichier d'un arbre. */
+async function empreintesArbre(env, shaArbre) {
+  const arbre = await appelGitHub(env, "/git/trees/" + shaArbre + "?recursive=1");
+  return new Map((arbre.tree || []).filter((e) => e.type === "blob").map((e) => [e.path, e.sha]));
+}
+
+/* Rend les chemins qui ont changé sur main depuis que la personne les a
+   ouverts : écrire ou retirer par-dessus effacerait sans le dire le travail
+   de quelqu'un d'autre (texte perdu le 05/09/2026). Une entrée sans base ni
+   « nouveau » vient d'une page ouverte avant cette règle : aucun contrôle. */
+async function chercheConflits(env, ecrits, retraits, shaCommit, surMain) {
+  const versions = new Map([[shaCommit, surMain]]);
+  async function contenuA(revision) {
+    if (!versions.has(revision)) {
+      let contenu = null;
+      try {
+        const c = await appelGitHub(env, "/git/commits/" + revision);
+        contenu = await empreintesArbre(env, c.tree.sha);
+      } catch (e) {
+        /* Révision inconnue de GitHub : rien ne permet de vérifier, l'entrée
+           est refusée comme un conflit plutôt qu'écrite à l'aveugle. */
+        if (!e.github || (e.github.statut !== 404 && e.github.statut !== 422)) throw e;
+        console.log("révision de base introuvable : " + revision);
+      }
+      versions.set(revision, contenu);
+    }
+    return versions.get(revision);
+  }
+
+  const conflits = [];
+  for (const f of ecrits) {
+    if (!f.base && f.nouveau !== true) continue;
+    const actuel = surMain.get(f.chemin);
+    /* main porte déjà exactement ce contenu : réessai d'une publication
+       réussie dont la réponse s'est perdue. */
+    if (actuel !== undefined && actuel === await empreinteEnvoyee(f)) continue;
+    if (f.nouveau === true && actuel !== undefined) {
+      conflits.push(f.chemin);
+      continue;
+    }
+    if (f.base) {
+      const aLaBase = await contenuA(f.base);
+      if (!aLaBase || aLaBase.get(f.chemin) !== actuel) conflits.push(f.chemin);
+    }
+  }
+  for (const s of retraits) {
+    if (!s.base) continue;
+    const actuel = surMain.get(s.chemin);
+    if (actuel === undefined) continue;     // déjà retiré : le résultat voulu
+    const aLaBase = await contenuA(s.base);
+    if (!aLaBase || aLaBase.get(s.chemin) !== actuel) conflits.push(s.chemin);
+  }
+  return conflits;
+}
+
 /* Écrit tous les changements en un seul enregistrement. */
 async function publie(env, changements) {
   const branche = env.BRANCHE || "main";
-  const fichiers = changements.fichiers || [];
-  const suppressions = changements.suppressions || [];
-  if (!fichiers.length && !suppressions.length) throw new Error("Rien à publier.");
+  const fichiers = Array.isArray(changements.fichiers) ? changements.fichiers : [];
+  /* Un retrait s'écrit « chemin » ou { chemin, base }. */
+  const retraits = (Array.isArray(changements.suppressions) ? changements.suppressions : [])
+    .map((s) => (typeof s === "string" ? { chemin: s } : s));
+  if (!fichiers.length && !retraits.length) throw new Error("Rien à publier.");
+  verifieEmplacements(fichiers, retraits);
+  verifieBases(fichiers.concat(retraits));
 
-  const ref = await appelGitHub(env, "/git/ref/heads/" + branche);
-  const shaCommit = ref.object.sha;
-  const commit = await appelGitHub(env, "/git/commits/" + shaCommit);
-
-  const arbre = [];
+  /* Un même fichier cité deux fois fait rejeter l'enregistrement entier :
+     le premier fait foi. */
+  const ecrits = [];
   const dejaVus = new Set();
   for (const f of fichiers) {
-    /* Un même fichier cité deux fois fait rejeter l'enregistrement entier :
-       le premier fait foi. */
     if (dejaVus.has(f.chemin)) {
       console.log("chemin en double, ignoré : " + f.chemin);
       continue;
     }
     dejaVus.add(f.chemin);
+    ecrits.push(f);
+  }
+  /* Même rejet pour un chemin à la fois écrit et retiré (un élément retiré
+     puis recréé sous le même nom) : l'écriture l'emporte, le retrait est
+     ignoré. Un retrait cité deux fois ne compte qu'une fois. */
+  const retires = [];
+  for (const s of retraits) {
+    if (dejaVus.has(s.chemin)) {
+      if (ecrits.some((f) => f.chemin === s.chemin)) {
+        console.log("chemin écrit et retiré dans le même envoi, retrait ignoré : " + s.chemin);
+      }
+      continue;
+    }
+    dejaVus.add(s.chemin);
+    retires.push(s);
+  }
 
+  const ref = await appelGitHub(env, "/git/ref/heads/" + branche);
+  const shaCommit = ref.object.sha;
+  const commit = await appelGitHub(env, "/git/commits/" + shaCommit);
+
+  /* Ce que porte main, fichier par fichier : sert aux retraits et au contrôle
+     de version, lu seulement s'il y en a besoin. */
+  const aControler = retires.length || ecrits.some((f) => f.base || f.nouveau === true);
+  const surMain = aControler ? await empreintesArbre(env, commit.tree.sha) : null;
+
+  const conflits = await chercheConflits(env, ecrits, retires, shaCommit, surMain);
+  if (conflits.length) {
+    throw refus("Rien n'a été publié : entre-temps, quelqu'un d'autre a changé " + conflits.join(", ")
+      + ". Reprenez ces modifications à partir de la version en ligne.", 409, { conflits });
+  }
+
+  const arbre = [];
+  for (const f of ecrits) {
     if (f.sha) {
       /* Photo déjà déposée par /televerser : il ne reste qu'à lui donner sa place. */
       arbre.push({ path: f.chemin, mode: "100644", type: "blob", sha: f.sha });
@@ -261,27 +473,28 @@ async function publie(env, changements) {
         + "seules les photos manquantes repartiront.");
     }
   }
-  if (suppressions.length) {
-    /* Demander la suppression d'un fichier qui n'est plus là fait rejeter
-       l'enregistrement ENTIER (GitRPC::BadObjectState), sans dire lequel est en
-       cause. C'est ce qui a bloqué la mairie du 08 au 10/09/2026 : un article
-       déjà retiré traînait dans les modifications en attente, et plus rien ne
-       pouvait être publié. Un fichier déjà absent, c'est le résultat voulu. */
-    const arbreBase = await appelGitHub(env, "/git/trees/" + commit.tree.sha + "?recursive=1");
-    const presents = new Set((arbreBase.tree || []).map((e) => e.path));
-    for (const chemin of suppressions) {
-      if (!presents.has(chemin)) {
-        console.log("suppression sans objet, ignorée : " + chemin);
-        continue;
-      }
-      arbre.push({ path: chemin, mode: "100644", type: "blob", sha: null });
+  /* Demander la suppression d'un fichier qui n'est plus là fait rejeter
+     l'enregistrement ENTIER (GitRPC::BadObjectState), sans dire lequel est en
+     cause. C'est ce qui a bloqué la mairie du 08 au 10/09/2026 : un article
+     déjà retiré traînait dans les modifications en attente, et plus rien ne
+     pouvait être publié. Un fichier déjà absent, c'est le résultat voulu. */
+  for (const { chemin } of retires) {
+    if (!surMain.has(chemin)) {
+      console.log("suppression sans objet, ignorée : " + chemin);
+      continue;
     }
+    arbre.push({ path: chemin, mode: "100644", type: "blob", sha: null });
   }
-  if (!arbre.length) throw new Error("Il n'y a rien de nouveau à publier.");
+  /* Rien ne change réellement (retraits déjà faits, ou fichiers identiques à
+     ceux en ligne) : le résultat voulu est atteint. Un refus bloquait la
+     mairie à chaque appui ; un enregistrement vide relançait la construction
+     du site, quitte à annuler celle de la publication précédente. */
+  if (!arbre.length) return { inchange: true };
 
   const nouvelArbre = await appelGitHub(env, "/git/trees", {
     method: "POST", corps: { base_tree: commit.tree.sha, tree: arbre }
   });
+  if (nouvelArbre.sha === commit.tree.sha) return { inchange: true };
   const nouveauCommit = await appelGitHub(env, "/git/commits", {
     method: "POST",
     corps: { message: changements.message || "Mise à jour du site", tree: nouvelArbre.sha, parents: [shaCommit] }
@@ -289,7 +502,45 @@ async function publie(env, changements) {
   await appelGitHub(env, "/git/refs/heads/" + branche, {
     method: "PATCH", corps: { sha: nouveauCommit.sha }
   });
-  return nouveauCommit.sha;
+  return { commit: nouveauCommit.sha };
+}
+
+/* ------------------------------------------------- comptes rendus d'échec */
+
+/* Les journaux de Cloudflare ne gardent que 3 jours sur l'offre gratuite :
+   un échec signalé après un week-end ne laissait plus de trace. Chaque échec
+   de /publier et de /televerser, et chaque compte rendu d'erreur reçu par
+   /journal, est donc aussi gardé 30 jours dans COMPTES (clés « journal:… »,
+   lisibles dans le tableau de bord de Cloudflare). Le compte y est désigné
+   par son libellé, jamais par son adresse ; le contenu des photos n'y entre
+   jamais. Quelques écritures par mois. */
+const DUREE_JOURNAL = 30 * 24 * 3600;
+
+async function garde(env, session, quoi) {
+  try {
+    const quand = new Date().toISOString();
+    const entree = Object.assign({ quand, compte: await libelleCompte(session.compte.email) }, quoi);
+    await env.COMPTES.put("journal:" + quand + ":" + base64(alea(6)).replace(/[^A-Za-z0-9]/g, ""),
+      JSON.stringify(entree), { expirationTtl: DUREE_JOURNAL });
+  } catch (e) {
+    console.log("compte rendu non gardé : " + String(e && e.message || e));
+  }
+}
+
+/* Ce qu'un envoi contenait, sans aucun contenu : nombres et emplacements. */
+function resumeEnvoi(corps) {
+  const liste = (x) => (Array.isArray(x) ? x : []);
+  const fichiers = liste(corps && corps.fichiers);
+  const retraits = liste(corps && corps.suppressions);
+  const nom = (e) => String(e && typeof e === "object" ? e.chemin : e).slice(0, 200);
+  return {
+    fichiers: fichiers.length,
+    avecTexte: fichiers.filter((f) => f && typeof f.texte === "string").length,
+    avecReference: fichiers.filter((f) => f && f.sha).length,
+    avecPhoto: fichiers.filter((f) => f && f.base64).length,
+    chemins: fichiers.slice(0, 30).map(nom),
+    retraits: retraits.slice(0, 30).map(nom)
+  };
 }
 
 /* ----------------------------------------------------------------- routes */
@@ -301,6 +552,8 @@ export default {
 
     if (requete.method === "OPTIONS") return reponse(null, 204, requete, env);
 
+    let session = null;
+    let envoi = null;
     try {
       /* --- connexion ---------------------------------------------------- */
       if (chemin === "/connexion" && requete.method === "POST") {
@@ -309,7 +562,8 @@ export default {
         const motDePasse = String(corps.motDePasse || "");
         if (!email || !motDePasse) return erreur("Adresse et mot de passe requis.", 400, requete, env);
 
-        const essais = parseInt(await env.COMPTES.get(cleEssais(email)) || "0", 10);
+        const ip = requete.headers.get("CF-Connecting-IP") || "";
+        const essais = parseInt(await env.COMPTES.get(cleEssais(email, ip)) || "0", 10);
         if (essais >= ESSAIS_MAX) {
           return erreur("Trop de tentatives. Réessayez dans un quart d'heure.", 429, requete, env);
         }
@@ -319,20 +573,22 @@ export default {
         const calculee = await empreinte(motDePasse, compte ? octets(compte.sel) : alea(16));
 
         if (!compte || !memeChaine(attendue, calculee)) {
-          await env.COMPTES.put(cleEssais(email), String(essais + 1), { expirationTtl: FENETRE_ESSAIS });
+          await env.COMPTES.put(cleEssais(email, ip), String(essais + 1), { expirationTtl: FENETRE_ESSAIS });
           return erreur("Adresse ou mot de passe incorrect.", 401, requete, env);
         }
 
-        await env.COMPTES.delete(cleEssais(email));
+        await env.COMPTES.delete(cleEssais(email, ip));
         const jeton = base64(alea(32)).replace(/[^A-Za-z0-9]/g, "").slice(0, 40);
-        await env.COMPTES.put(cleSession(jeton), JSON.stringify({ email }), { expirationTtl: DUREE_SESSION });
+        const fin = Math.floor(Date.now() / 1000) + DUREE_SESSION;
+        await env.COMPTES.put(cleSession(jeton), JSON.stringify({ email, version: compte.version, fin }),
+          { expirationTtl: DUREE_SESSION });
         return reponse({
           jeton, email, admin: compte.admin, doitChangerMotDePasse: !compte.aChange
         }, 200, requete, env);
       }
 
       /* --- tout ce qui suit demande une session ------------------------- */
-      const session = await sessionDe(requete, env);
+      session = await sessionDe(requete, env);
 
       if (chemin === "/moi" && requete.method === "GET") {
         if (!session) return erreur("Session expirée.", 401, requete, env);
@@ -359,7 +615,15 @@ export default {
         compte.sel = base64(sel);
         compte.empreinte = await empreinte(nouveau, sel);
         compte.aChange = true;
+        compte.version = nouvelleVersion();
         await ecritCompte(env, compte);
+        /* Toutes les autres sessions du compte tombent ; celle-ci reste
+           ouverte, jusqu'à son échéance d'origine. */
+        const maintenant = Math.floor(Date.now() / 1000);
+        const fin = session.fin || maintenant + DUREE_SESSION;
+        await env.COMPTES.put(cleSession(session.jeton),
+          JSON.stringify({ email: compte.email, version: compte.version, fin }),
+          { expirationTtl: Math.max(60, fin - maintenant) });
         return reponse({ ok: true }, 200, requete, env);
       }
 
@@ -422,37 +686,57 @@ export default {
            quoi que ce soit à la personne. */
         const corps = await requete.json().catch(() => ({}));
         console.log("ÉCHEC CHEZ " + session.compte.email + " : " + JSON.stringify(corps).slice(0, 4000));
+        /* Le compte rendu de départ, envoyé à chaque publication, porte une
+           erreur « null » : seuls les échecs sont gardés. */
+        const erreurRecue = corps && typeof corps.erreur === "string" ? corps.erreur : "";
+        if (erreurRecue && erreurRecue !== "null" && erreurRecue !== "undefined") {
+          await garde(env, session, { route: "/journal", compteRendu: JSON.stringify(corps).slice(0, 4000) });
+        }
         return reponse({ ok: true }, 200, requete, env);
       }
 
       /* --- dépôt des photos, avant publication --------------------------- */
       if (chemin === "/televerser" && requete.method === "POST") {
         if (tropLourd(requete)) {
-          return erreur("Ce paquet de photos est trop lourd pour être envoyé en une fois.", 413, requete, env);
+          throw refus("Ce paquet de photos est trop lourd pour être envoyé en une fois.", 413);
         }
         const corps = await requete.json();
+        envoi = resumeEnvoi(corps);
         const fichiers = corps.fichiers || [];
-        if (!fichiers.length) return erreur("Aucune photo à déposer.", 400, requete, env);
+        if (!fichiers.length) throw refus("Aucune photo à déposer.", 400);
         return reponse({ fichiers: await televerse(env, fichiers) }, 200, requete, env);
       }
 
       /* --- publication --------------------------------------------------- */
       if (chemin === "/publier" && requete.method === "POST") {
         if (tropLourd(requete)) {
-          return erreur("Cet envoi est trop lourd pour être publié en une fois.", 413, requete, env);
+          throw refus("Cet envoi est trop lourd pour être publié en une fois.", 413);
         }
         const changements = await requete.json();
-        const sha = await publie(env, {
-          message: (changements.message || "Mise à jour du site") + "\n\nPublié par " + session.compte.email + "\n",
+        envoi = resumeEnvoi(changements);
+        const qui = await libelleCompte(session.compte.email);
+        console.log("publication demandée par " + session.compte.email + " (" + qui + ")");
+        const resultat = await publie(env, {
+          message: (changements.message || "Mise à jour du site") + "\n\nPublié par " + qui + "\n",
           fichiers: changements.fichiers,
           suppressions: changements.suppressions
         });
-        return reponse({ ok: true, commit: sha }, 200, requete, env);
+        return reponse(resultat.inchange ? { ok: true, inchange: true } : { ok: true, commit: resultat.commit },
+          200, requete, env);
       }
 
       return erreur("Adresse inconnue.", 404, requete, env);
     } catch (e) {
-      return erreur(String(e && e.message || e), 500, requete, env);
+      const statut = (e && e.statut) || 500;
+      const donnees = { erreur: String(e && e.message || e) };
+      if (e && Array.isArray(e.conflits)) donnees.conflits = e.conflits;
+      if (session && (chemin === "/publier" || chemin === "/televerser")) {
+        await garde(env, session, {
+          route: chemin, statut, erreur: donnees.erreur, conflits: donnees.conflits,
+          github: (e && e.github) || null, envoi
+        });
+      }
+      return reponse(donnees, statut, requete, env);
     }
   }
 };
