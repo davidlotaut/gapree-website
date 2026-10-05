@@ -1,9 +1,12 @@
 /* Confort de lecture des photos, rien de plus : les flèches qui font défiler
-   les bandes, et le clavier dans la vue en grand.
+   les bandes, et la vue en grand au clavier et avec le bouton Retour.
 
    Tout le reste du site fonctionne sans ce fichier. La vue en grand s'ouvre par
-   l'adresse de la photo, et les bandes se font glisser au doigt : si ce script
-   ne se charge pas, on perd le confort, jamais l'accès aux photos. */
+   l'adresse de la photo, et la bande de photos d'un article se fait glisser au
+   doigt. Sur les cartes des listes, le lien de la carte couvre ses photos :
+   elles s'y passent avec les flèches de ce script, et sans lui elles restent
+   toutes dans l'article. Si ce script ne se charge pas, on perd le confort,
+   jamais l'accès aux photos. */
 (function () {
   "use strict";
 

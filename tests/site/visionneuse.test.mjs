@@ -237,3 +237,16 @@ test("75 : Alt, Ctrl ou Cmd avec une flèche restent au navigateur (Retour au cl
   assert.equal(evt.defaultPrevented, false);
   assert.equal(p.location.hash, "#photo-2");
 });
+
+/* --- Défaut 74 : la promesse du commentaire --------------------------------------- */
+
+test("74 : site.js ne promet plus le glissement au doigt des photos d'une carte", () => {
+  const entete = /^\/\*[\s\S]*?\*\//.exec(lit("assets/js/site.js"))[0];
+  assert.doesNotMatch(entete, /les bandes se font glisser au doigt/);
+  /* Le lien étiré de la carte (.card-title a::after) couvre ses photos : sur
+     les cartes, elles se passent avec les flèches du script. */
+  assert.match(lit("assets/css/style.css"), /\.card-title a::after \{\n  content: "";\n  position: absolute;\n  inset: 0;/);
+  assert.match(entete, /cartes/);
+  assert.match(entete, /flèches/);
+  assert.match(entete, /article/);
+});
