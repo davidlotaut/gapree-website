@@ -115,3 +115,29 @@ test("défaut 73 : la connexion du démarrage fonctionne toujours, une seule foi
   assert.equal(p.el("espace").hidden, false);
   assert.equal(p.etat(), "Le site en ligne est à jour.");
 });
+
+test("défaut 73 : le mot de passe ne reste pas dans la page après une connexion réussie", async () => {
+  const m = creeMonde(siteDeDepart());
+  const etat = serveur(m);
+  m.stock.delete("gapree-session");
+  const p = ouvrePage(m, { vraiePublication: true });
+  await p.attends();
+  await seReconnecte(p);
+  assert.equal(p.el("ch-mdp").value, "", "vidé dès l'entrée");
+  etat.valides.clear();
+  const b = vide();
+  b.modifies[H] = { titre: "Halloween", date: "2026-10-01", image: "/assets/img/halloween-a1b2c3d4-aaaaa.jpg", alt: null,
+    photos: [], video: null, texte: "x" };
+  m.poseBrouillon(b);
+  p.onglet("talents");
+  await p.attends();
+  p.ouvre(H);
+  await p.attends();
+  p.saisit("ch-texte", "Rendez-vous le 24 octobre.");
+  p.clic("btn-enregistrer");
+  await p.attends();
+  p.clic("btn-publier");
+  await p.attends();
+  assert.equal(p.el("connexion").hidden, false);
+  assert.equal(p.el("ch-mdp").value, "", "l'écran de reconnexion ne montre aucun mot de passe");
+});

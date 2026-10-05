@@ -2061,7 +2061,12 @@
       bouton.disabled = true;
       bouton.textContent = "Vérification…";
       pub.connecte(email, champMdp.value)
-        .then(function () { return suiteConnexion(); })
+        .then(function () {
+          /* Le mot de passe ne reste pas dans la page : l'écran de reconnexion,
+             des heures plus tard, le montrerait encore rempli. */
+          champMdp.value = "";
+          return suiteConnexion();
+        })
         .catch(function (err) {
           erreur.textContent = err.message;
           erreur.hidden = false;
