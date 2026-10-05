@@ -8,7 +8,7 @@
   "use strict";
 
   var VERSION = "2026-10-05-a";
-  var DEPOT_RAW = "https://raw.githubusercontent.com/davidlotaut/gapree-website/main/";
+  var DEPOT_RAW = "https://raw.githubusercontent.com/davidlotaut/gapree-website/";
   var CLE_DEMO = "gapree-demo-admin";
 
   var app = document.getElementById("app");
@@ -25,7 +25,7 @@
 
   function surcoucheVide() {
     return { modifies: {}, nouveaux: { actualites: [], talents: [], elus: [] },
-      supprimes: [], reglages: {}, deposees: {} };
+      supprimes: [], reglages: {}, deposees: {}, publiees: {} };
   }
 
   function rangeSurcouche(brut) {
@@ -35,7 +35,8 @@
       nouveaux: brut.nouveaux || { actualites: [], talents: [], elus: [] },
       supprimes: brut.supprimes || [],
       reglages: brut.reglages || {},
-      deposees: brut.deposees || {}
+      deposees: brut.deposees || {},
+      publiees: brut.publiees || {}
     };
   }
 
@@ -78,7 +79,8 @@
      entier, il effaçait ce qu'un autre onglet venait d'enregistrer (revue du
      05/10/2026). Pour comparer, le brouillon est vu « à plat », une clé par
      entrée : m:chemin (modification), n:rubrique:repère (nouveau),
-     s:chemin (suppression), r:nom (réglages), d:repère (photo déposée).      */
+     s:chemin (suppression), r:nom (réglages), d:repère (photo déposée),
+     p:commit (publication pas encore en ligne).                              */
   var RUBRIQUES = ["actualites", "talents", "elus"];
 
   function aplatit(s) {
@@ -90,6 +92,7 @@
     (s.supprimes || []).forEach(function (c) { plat["s:" + c] = true; });
     Object.keys(s.reglages || {}).forEach(function (n) { plat["r:" + n] = s.reglages[n]; });
     Object.keys(s.deposees || {}).forEach(function (k) { plat["d:" + k] = s.deposees[k]; });
+    Object.keys(s.publiees || {}).forEach(function (k) { plat["p:" + k] = s.publiees[k]; });
     return plat;
   }
 
@@ -101,6 +104,7 @@
       else if (type === "s") s.supprimes.push(reste);
       else if (type === "r") s.reglages[reste] = v;
       else if (type === "d") s.deposees[reste] = v;
+      else if (type === "p") s.publiees[reste] = v;
       else if (type === "n") {
         var r = reste.slice(0, reste.indexOf(":"));
         if (s.nouveaux[r]) s.nouveaux[r].push(v);
@@ -228,6 +232,7 @@
     surcouche = garde;
     surcoucheLue = copie(garde);
     if (nombreEnAttente() !== avant) majBarrePublication();
+    suisLaMiseEnLigne();
   }
 
   /* Écrit les gestes faits sur le brouillon de la page depuis sa dernière écriture. */
@@ -412,15 +417,20 @@
     return (m ? brut.slice(m[0].length) : brut).trim();
   }
 
+  /* Le texte se lit à la révision exacte qu'a construite contenu.json : cette
+     adresse ne change jamais, alors que lu sur main, il pouvait être resservi
+     périmé par un cache, et la retouche suivante remettait l'ancien texte en
+     ligne (constaté le 05/09/2026). Sur main seulement si la révision manque. */
   var cacheTextes = {};
   function chargeTexte(item) {
     if (typeof item.texte === "string") return Promise.resolve(item.texte);
-    if (cacheTextes[item.chemin] !== undefined) return Promise.resolve(cacheTextes[item.chemin]);
-    return fetch(DEPOT_RAW + item.chemin)
+    var adresse = DEPOT_RAW + ((donnees && donnees.revision) || "main") + "/" + item.chemin;
+    if (cacheTextes[adresse] !== undefined) return Promise.resolve(cacheTextes[adresse]);
+    return fetch(adresse)
       .then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); })
       .then(function (brut) {
         var texte = separeFrontMatter(brut);
-        cacheTextes[item.chemin] = texte;
+        cacheTextes[adresse] = texte;
         return texte;
       });
   }
@@ -429,8 +439,47 @@
 
   function estSupprime(chemin) { return surcouche.supprimes.indexOf(chemin) !== -1; }
 
+  /* Les publications faites depuis ce navigateur et pas encore en ligne, de
+     la plus ancienne à la plus récente. */
+  function publicationsEnAttente() {
+    var p = surcouche.publiees || {};
+    return Object.keys(p).map(function (c) { return p[c]; })
+      .sort(function (a, b) { return (a.quand || 0) - (b.quand || 0); });
+  }
+
+  function rubriqueDe(chemin) {
+    var m = /^_(actualites|talents|elus)\//.exec(chemin);
+    return m ? m[1] : null;
+  }
+
+  /* Le contenu tel qu'il est publié : contenu.json, et par-dessus ce que ce
+     navigateur a publié et que le site ne montre pas encore. Sans cela,
+     l'éditeur rouvrait l'état d'avant la publication, et la retouche suivante
+     le remettait en ligne (revue du 05/10/2026). */
+  function elementsPublies(rubrique) {
+    var liste = (donnees[rubrique] || []).slice();
+    publicationsEnAttente().forEach(function (p) {
+      var elements = p.elements || {};
+      liste = liste.filter(function (x) {
+        return !elements[x.chemin] && (p.supprimes || []).indexOf(x.chemin) === -1;
+      });
+      Object.keys(elements).forEach(function (chemin) {
+        if (rubriqueDe(chemin) === rubrique) liste.push(Object.assign({}, elements[chemin], { chemin: chemin }));
+      });
+    });
+    return liste;
+  }
+
+  function reglagesPublies(nom) {
+    var r = Object.assign({}, donnees.reglages[nom] || {});
+    publicationsEnAttente().forEach(function (p) {
+      if (p.reglages && p.reglages[nom]) Object.assign(r, p.reglages[nom]);
+    });
+    return r;
+  }
+
   function listeFusionnee(rubrique) {
-    var base = (donnees[rubrique] || []).filter(function (x) { return !estSupprime(x.chemin); })
+    var base = elementsPublies(rubrique).filter(function (x) { return !estSupprime(x.chemin); })
       .map(function (x) {
         var modif = surcouche.modifies[x.chemin];
         return modif ? Object.assign({}, x, modif) : Object.assign({}, x);
@@ -451,7 +500,7 @@
   }
 
   function reglagesFusionnes(nom) {
-    return Object.assign({}, donnees.reglages[nom] || {}, surcouche.reglages[nom] || {});
+    return Object.assign({}, reglagesPublies(nom), surcouche.reglages[nom] || {});
   }
 
   function etatItem(chemin) {
@@ -1100,22 +1149,35 @@
     /* Les entrées du brouillon que cette publication emporte, telles qu'elles
        sont au départ : seules celles-là en sortiront au succès. */
     var entrees = {};
+    /* Ce que le site montrera une fois la publication en ligne : éléments
+       écrits (à leur chemin définitif) et réglages. */
+    var ecrits = [];
+    var reglages = {};
+    function ecrit(chemin, v) {
+      var publie = Object.assign({}, v);
+      delete publie.chemin;
+      ecrits.push({ chemin: chemin, valeurs: publie });
+    }
 
     ["actualites", "talents"].forEach(function (rubrique) {
       (surcouche.nouveaux[rubrique] || []).forEach(function (v) {
         var nom = rubrique === "actualites"
           ? (v.date || new Date().toISOString().slice(0, 10)) + "-" + slug(v.titre)
           : slug(v.titre);
-        fichiers.push(fichierArticle(rubrique, v, "_" + rubrique + "/" + nom + ".md", fichiers));
+        var chemin = "_" + rubrique + "/" + nom + ".md";
+        fichiers.push(fichierArticle(rubrique, v, chemin, fichiers));
         resume.push("ajout : " + v.titre);
         entrees["n:" + rubrique + ":" + v.chemin] = copie(v);
+        ecrit(chemin, v);
       });
     });
 
     (surcouche.nouveaux.elus || []).forEach(function (v) {
-      fichiers.push(fichierElu(v, "_elus/" + slug(v.nom) + ".md", fichiers));
+      var chemin = "_elus/" + slug(v.nom) + ".md";
+      fichiers.push(fichierElu(v, chemin, fichiers));
       resume.push("ajout : " + v.nom);
       entrees["n:elus:" + v.chemin] = copie(v);
+      ecrit(chemin, v);
     });
 
     Object.keys(surcouche.modifies).forEach(function (chemin) {
@@ -1131,15 +1193,18 @@
         fichiers.push(fichierArticle(rubrique, v, chemin, fichiers));
         resume.push("modification : " + v.titre);
       }
+      ecrit(chemin, v);
     });
 
     if (surcouche.reglages.accueil) {
-      fichiers.push(fichierAccueil(reglagesFusionnes("accueil"), fichiers));
+      reglages.accueil = reglagesFusionnes("accueil");
+      fichiers.push(fichierAccueil(reglages.accueil, fichiers));
       resume.push("page d'accueil");
       entrees["r:accueil"] = copie(surcouche.reglages.accueil);
     }
     if (surcouche.reglages.mairie) {
-      fichiers.push(fichierMairie(reglagesFusionnes("mairie")));
+      reglages.mairie = reglagesFusionnes("mairie");
+      fichiers.push(fichierMairie(reglages.mairie));
       resume.push("coordonnées de la mairie");
       entrees["r:mairie"] = copie(surcouche.reglages.mairie);
     }
@@ -1154,8 +1219,40 @@
       suppressions: suppressions,
       resume: resume,
       entrees: entrees,
+      ecrits: ecrits,
+      retires: surcouche.supprimes.slice(),
+      reglages: reglages,
       message: "Mise à jour du site depuis l'espace d'administration\n\n" + resume.join("\n") + "\n"
     };
+  }
+
+  /* Adresse sur le site d'une photo choisie dans l'éditeur (data:), d'après
+     les références des photos déposées par cette publication : le site la
+     montrera là, et une retouche la réutilisera sans la renvoyer. */
+  function adressesPubliees(v) {
+    if (typeof v === "string") {
+      if (v.indexOf("data:") !== 0) return v;
+      var deposee = (surcouche.deposees || {})[repere(v) + "#1"];
+      return deposee && deposee.chemin ? "/" + deposee.chemin : v;
+    }
+    if (Array.isArray(v)) return v.map(adressesPubliees);
+    if (v && typeof v === "object") {
+      var c = {};
+      Object.keys(v).forEach(function (k) { c[k] = adressesPubliees(v[k]); });
+      return c;
+    }
+    return v;
+  }
+
+  /* Ce qu'une publication réussie laisse à suivre jusqu'à sa mise en ligne :
+     les valeurs publiées, qui servent de base à tout élément rouvert, et les
+     révisions déjà vues avant elle, dont le retour ne prouve rien. */
+  function publicationFaite(changements, commit, connues) {
+    var elements = {}, reglages = {};
+    changements.ecrits.forEach(function (e) { elements[e.chemin] = adressesPubliees(e.valeurs); });
+    Object.keys(changements.reglages).forEach(function (nom) { reglages[nom] = adressesPubliees(changements.reglages[nom]); });
+    return { commit: commit, quand: Date.now(), connues: connues,
+      elements: elements, supprimes: changements.retires, reglages: reglages };
   }
 
   /* Ce qu'une publication réussie retire du brouillon : ce qu'elle a emporté
@@ -1190,12 +1287,67 @@
       return;
     }
     bouton.disabled = n === 0;
-    barre.classList.toggle("barre-publication--attente", n > 0);
+    var miseEnLigne = publicationsEnAttente().length > 0;
+    barre.classList.toggle("barre-publication--attente", n > 0 || miseEnLigne);
     etat.textContent = n === 0
-      ? "Le site en ligne est à jour."
+      ? (miseEnLigne ? TEXTE_MISE_EN_LIGNE : "Le site en ligne est à jour.")
       : (n > 1
         ? n + " modifications ne sont pas encore en ligne."
         : "1 modification n'est pas encore en ligne.");
+  }
+
+  /* ------------------------------------------------------- mise en ligne
+
+     Après une publication, contenu.json est relu toutes les 15 secondes
+     jusqu'à ce qu'il porte le commit publié, ou un commit postérieur. Cela
+     remplace le rechargement de la page au bout de 60 secondes, qui effaçait
+     la saisie en cours et, quand la construction durait plus (jusqu'à 330 s
+     le 05/10/2026), laissait l'éditeur rouvrir l'état d'avant.              */
+  var TEXTE_MISE_EN_LIGNE = "Mise en ligne en cours : cela prend en général une à trois minutes.";
+  var SUIVI_MISE_EN_LIGNE = 15000;
+  var MISE_EN_LIGNE_SANS_REVISION = 10 * 60 * 1000;
+  var minuterieSuivi = null;
+
+  /* contenu.json tel que le site le sert à l'instant, sans aucun cache. */
+  function litContenuFrais() {
+    return fetch("contenu.json?v=" + Date.now(), { cache: "no-store" })
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); });
+  }
+
+  /* Une publication est en ligne quand contenu.json porte son commit, ou une
+     révision jamais vue avant elle : le site n'en montre jamais de plus
+     ancienne après une nouvelle, une révision inconnue est donc postérieure.
+     Sans révision dans contenu.json (gabarit pas encore construit), on s'en
+     tient au délai que GitHub annonce : dix minutes au plus. */
+  function estEnLigne(p, revision) {
+    if (!revision) return Date.now() - (p.quand || 0) >= MISE_EN_LIGNE_SANS_REVISION;
+    return revision === p.commit || (p.connues || []).indexOf(revision) === -1;
+  }
+
+  /* Oublie les publications désormais en ligne ; rend leur nombre. */
+  function oublieLesPubliees(revision) {
+    var faites = publicationsEnAttente().filter(function (p) { return estEnLigne(p, revision); });
+    if (faites.length) appliqueIci(faites.map(function (p) { return { cle: "p:" + p.commit, retire: true }; }));
+    return faites.length;
+  }
+
+  function suisLaMiseEnLigne() {
+    if (minuterieSuivi || !publicationsEnAttente().length) return;
+    minuterieSuivi = setTimeout(function () {
+      litContenuFrais().then(function (frais) {
+        if (!oublieLesPubliees(frais.revision)) return;
+        /* Le site montre désormais ce qui a été publié : ses données deviennent
+           la base, et le texte se lira à cette révision. */
+        donnees = frais;
+        majBarrePublication();
+        if (!publicationEnCours && !nombreEnAttente() && !publicationsEnAttente().length) {
+          document.getElementById("etat-publication").textContent = "En ligne.";
+        }
+      }, function () { /* coupure passagère : on relira au prochain tour */ }).then(function () {
+        minuterieSuivi = null;
+        suisLaMiseEnLigne();
+      });
+    }, SUIVI_MISE_EN_LIGNE);
   }
 
   /* Le serveur ne peut pas recevoir un reportage entier d'un coup : les photos
@@ -1291,6 +1443,7 @@
     var deposees = [];
     var faites = 0;
     var etapeFinale = false;
+    var connues = [];
 
     bouton.disabled = true;
     etat.textContent = "Publication en cours…";
@@ -1320,6 +1473,12 @@
     }).then(function () {
       progression("Mise à jour du site…", 1, 2);
       etapeFinale = true;
+      /* Les révisions que le site sert juste avant l'enregistrement : aucune
+         d'elles ne pourra passer pour la mise en ligne de cette publication. */
+      return litContenuFrais().then(function (frais) { return frais.revision; }, function () { return ""; });
+    }).then(function (revisionAvant) {
+      connues = [donnees.revision, revisionAvant].concat(publicationsEnAttente().map(function (p) { return p.commit; }))
+        .filter(function (r, i, tout) { return r && tout.indexOf(r) === i; });
       return reessaieUneFois(function () {
         return window.GapreePublication.publie({
           message: changements.message,
@@ -1327,13 +1486,25 @@
           suppressions: changements.suppressions
         });
       });
-    }).then(function () {
+    }).then(function (reponse) {
       progression(null);
       publicationEnCours = false;
-      appliqueIci(retraitsApresPublication(changements.entrees));
-      etat.textContent = "Publié. Le site en ligne se met à jour dans une minute environ.";
+      var operations = retraitsApresPublication(changements.entrees);
+      /* « Inchangé » : le site portait déjà exactement ce contenu, rien à suivre. */
+      if (reponse && reponse.inchange) {
+        appliqueIci(operations);
+        majBarrePublication();
+        etat.textContent = "Le site était déjà à jour.";
+        toast("Le site était déjà à jour");
+        return;
+      }
+      if (reponse && reponse.commit) {
+        operations.push({ cle: "p:" + reponse.commit, valeur: publicationFaite(changements, reponse.commit, connues) });
+      }
+      appliqueIci(operations);
+      majBarrePublication();
       toast("Publié sur le site");
-      setTimeout(function () { window.location.reload(); }, 60000);
+      suisLaMiseEnLigne();
     }).catch(function (e) {
       progression(null);
       publicationEnCours = false;
@@ -1536,7 +1707,9 @@
       .then(function (deux) {
         donnees = deux[0];
         surcouche = deux[1];
+        oublieLesPubliees(donnees.revision);
         rendre();
+        suisLaMiseEnLigne();
       })
       .catch(function () {
         app.innerHTML = '<p class="erreur-chargement">Le contenu du site n\'a pas pu être chargé. Vérifiez la connexion internet, puis rechargez la page.</p>';

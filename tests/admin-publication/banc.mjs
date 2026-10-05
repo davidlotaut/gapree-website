@@ -148,7 +148,10 @@ export function creeMonde(fichiers, options) {
     blobs: {},
     journal: [],
     connecte: true,
-    n: 0
+    n: 0,
+    /* L'heure du monde, partagée par ses pages : elle n'avance qu'avec page.avance. */
+    maintenant: Date.parse("2026-10-05T10:00:00Z"),
+    tic: 0
   };
   monde.commits.c0 = Object.assign({}, monde.depot);
 
@@ -269,6 +272,9 @@ function fauxFetch(monde, url, init) {
     const i = reste.indexOf("/");
     const ref = reste.slice(0, i), chemin = reste.slice(i + 1);
     monde.lectures.push({ ref, chemin });
+    /* Un cache du navigateur peut resservir une lecture ancienne de main
+       (hypothèse retenue pour c268939) ; une révision, elle, ne change jamais. */
+    if (ref === "main" && monde.cacheMain && monde.cacheMain[chemin] !== undefined) return repond(200, monde.cacheMain[chemin]);
     const arbre = ref === "main" ? monde.depot : monde.commits[ref];
     if (!arbre || arbre[chemin] === undefined) return repond(404, "404: Not Found");
     return repond(200, arbre[chemin]);
@@ -297,16 +303,22 @@ export function ouvrePage(monde, options) {
     })
   });
   const fermeture = [];
-  let horloge = 0, compteur = 0;
+  let compteur = 0;
   const minuteries = [];
   const immediats = new Map();
 
   const page = {
     document, toasts, minuteries,
     questions: [], reponses: [], rechargements: 0,
-    el: (id) => document.getElementById(id),
-    get horloge() { return horloge; }
+    el: (id) => document.getElementById(id)
   };
+
+  /* L'heure de la page suit celle du monde ; deux appels de Date.now() ne
+     rendent jamais la même valeur, comme deux gestes réels. */
+  class FauxDate extends Date {
+    constructor(...a) { if (a.length) super(...a); else super(monde.maintenant); }
+    static now() { return monde.maintenant + (++monde.tic); }
+  }
 
   const ctx = {
     document, console,
@@ -322,7 +334,7 @@ export function ouvrePage(monde, options) {
     alert() {},
     setTimeout: (f, ms) => {
       ms = ms || 0;
-      if (ms >= 1000) { const id = ++compteur; minuteries.push({ id, quand: horloge + ms, ms, f }); return id; }
+      if (ms >= 1000) { const id = ++compteur; minuteries.push({ id, quand: monde.maintenant + ms, ms, f }); return id; }
       const id = ++compteur;
       immediats.set(id, setImmediate(() => { immediats.delete(id); f(); }));
       return id;
@@ -335,6 +347,7 @@ export function ouvrePage(monde, options) {
     createImageBitmap: (f) => Promise.resolve({ width: f.largeur || 4000, height: f.hauteur || 3000, close() {} }),
     fetch: (url, init) => fauxFetch(monde, url, init),
     URL: { createObjectURL: () => "blob:banc", revokeObjectURL() {} },
+    Date: FauxDate,
     structuredClone,
     addEventListener(type, f) { if (type === "beforeunload") fermeture.push(f); }
   };
@@ -349,17 +362,17 @@ export function ouvrePage(monde, options) {
   page.attends = async function () { for (let i = 0; i < 400; i++) await tour(); };
   /* Fait passer le temps : les minuteries échues partent dans l'ordre. */
   page.avance = async function (ms) {
-    const fin = horloge + ms;
+    const fin = monde.maintenant + ms;
     for (;;) {
       minuteries.sort((a, b) => a.quand - b.quand);
       const m = minuteries[0];
       if (!m || m.quand > fin) break;
       minuteries.shift();
-      horloge = m.quand;
+      monde.maintenant = Math.max(monde.maintenant, m.quand);
       m.f();
       await page.attends();
     }
-    horloge = fin;
+    monde.maintenant = Math.max(monde.maintenant, fin);
     await page.attends();
   };
   page.minuteriesDe = (ms) => minuteries.filter((m) => m.ms === ms).length;
