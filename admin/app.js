@@ -1206,12 +1206,25 @@
       ecrits.push({ chemin: chemin, valeurs: publie });
     }
 
+    /* Un nouvel élément ne tombe jamais sur un fichier existant, sur celui
+       d'un autre nouveau ni sur un fichier que la même publication retire :
+       il réécrivait l'existant, perdait le second, ou bloquait la publication
+       (revue du 05/10/2026). Suffixe -2, -3… au besoin. */
+    var pris = cheminsPris();
+    function cheminLibre(chemin) {
+      var racine = chemin.replace(/\.md$/, ""), n = 1, essai = chemin;
+      while (pris[essai]) { n++; essai = racine + "-" + n + ".md"; }
+      pris[essai] = true;
+      return essai;
+    }
+
     ["actualites", "talents"].forEach(function (rubrique) {
       (surcouche.nouveaux[rubrique] || []).forEach(function (v) {
+        /* Le jour seul, même si la date porte l'heure. */
         var nom = rubrique === "actualites"
-          ? (v.date || new Date().toISOString().slice(0, 10)) + "-" + slug(v.titre)
+          ? String(v.date || new Date().toISOString()).slice(0, 10) + "-" + slug(v.titre)
           : slug(v.titre);
-        var chemin = "_" + rubrique + "/" + nom + ".md";
+        var chemin = cheminLibre("_" + rubrique + "/" + nom + ".md");
         var fichier = fichierArticle(rubrique, v, chemin, fichiers);
         fichier.nouveau = true;
         fichiers.push(fichier);
@@ -1222,7 +1235,7 @@
     });
 
     (surcouche.nouveaux.elus || []).forEach(function (v) {
-      var chemin = "_elus/" + slug(v.nom) + ".md";
+      var chemin = cheminLibre("_elus/" + slug(v.nom) + ".md");
       var fichier = fichierElu(v, chemin, fichiers);
       fichier.nouveau = true;
       fichiers.push(fichier);
@@ -1281,6 +1294,22 @@
       reglages: reglages,
       message: "Mise à jour du site depuis l'espace d'administration\n\n" + resume.join("\n") + "\n"
     };
+  }
+
+  /* Tous les chemins de contenu déjà pris : ceux du site, ceux qu'il aura une
+     fois en ligne ce que ce navigateur a publié, et ceux qui attendent dans le
+     brouillon (modifiés ou retirés). */
+  function cheminsPris() {
+    var pris = {};
+    RUBRIQUES.forEach(function (r) {
+      (donnees[r] || []).forEach(function (x) { pris[x.chemin] = true; });
+    });
+    publicationsEnAttente().forEach(function (p) {
+      Object.keys(p.elements || {}).forEach(function (c) { pris[c] = true; });
+    });
+    Object.keys(surcouche.modifies).forEach(function (c) { pris[c] = true; });
+    surcouche.supprimes.forEach(function (c) { pris[c] = true; });
+    return pris;
   }
 
   /* Adresse sur le site d'une photo choisie dans l'éditeur (data:), d'après
