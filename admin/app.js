@@ -541,6 +541,7 @@
     document.getElementById("btn-annuler").addEventListener("click", retourListe);
 
     document.getElementById("btn-enregistrer").addEventListener("click", function () {
+      if (publicationBloque()) return;
       if (!refs.titre.value.trim()) { toast("Le titre est obligatoire"); refs.titre.focus(); return; }
       var valeurs = {
         titre: refs.titre.value.trim(),
@@ -569,6 +570,7 @@
 
     var btnSupprimer = document.getElementById("btn-supprimer");
     if (btnSupprimer) btnSupprimer.addEventListener("click", function () {
+      if (publicationBloque()) return;
       if (!confirm("Supprimer « " + item.titre + " » ?\n\nIl disparaîtra du site en ligne une fois que vous aurez appuyé sur « Publier sur le site ».")) return;
       if (item.chemin.indexOf("nouveau:") === 0) {
         surcouche.nouveaux[rubrique] = surcouche.nouveaux[rubrique].filter(function (x) { return x.chemin !== item.chemin; });
@@ -673,6 +675,7 @@
     document.getElementById("btn-annuler").addEventListener("click", retour);
 
     document.getElementById("btn-enregistrer").addEventListener("click", function () {
+      if (publicationBloque()) return;
       var nom = document.getElementById("ch-nom").value.trim();
       if (!nom) { toast("Le nom est obligatoire"); return; }
       var valeurs = {
@@ -698,6 +701,7 @@
 
     var btnSupprimer = document.getElementById("btn-supprimer");
     if (btnSupprimer) btnSupprimer.addEventListener("click", function () {
+      if (publicationBloque()) return;
       if (!confirm("Retirer « " + item.nom + " » du trombinoscope ?\n\nIl disparaîtra du site en ligne une fois que vous aurez appuyé sur « Publier sur le site ».")) return;
       if (item.chemin.indexOf("nouveau:") === 0) {
         surcouche.nouveaux.elus = surcouche.nouveaux.elus.filter(function (x) { return x.chemin !== item.chemin; });
@@ -782,6 +786,7 @@
     });
 
     document.getElementById("btn-enregistre-accueil").addEventListener("click", function () {
+      if (publicationBloque()) return;
       surcouche.reglages.accueil = Object.assign({}, accueil, {
         photo: photoAccueil,
         alt_photo: document.getElementById("ch-alt-accueil").value.trim(),
@@ -794,6 +799,7 @@
     });
 
     document.getElementById("btn-enregistre-mairie").addEventListener("click", function () {
+      if (publicationBloque()) return;
       surcouche.reglages.mairie = Object.assign({}, mairie, {
         adresse: document.getElementById("ch-adresse").value.trim(),
         telephone: document.getElementById("ch-telephone").value.trim(),
@@ -1017,6 +1023,13 @@
     var etat = document.getElementById("etat-publication");
     var bouton = document.getElementById("btn-publier");
     barre.hidden = false;
+    /* Un changement d'onglet pendant l'envoi ne doit ni réactiver Publier ni
+       effacer « Publication en cours… ». */
+    if (publicationEnCours) {
+      bouton.disabled = true;
+      etat.textContent = "Publication en cours…";
+      return;
+    }
     bouton.disabled = n === 0;
     barre.classList.toggle("barre-publication--attente", n > 0);
     etat.textContent = n === 0
@@ -1088,6 +1101,17 @@
      marchaient dessus (observé chez Camille le 10/09/2026 : tout partait en
      double). */
   var publicationEnCours = false;
+
+  /* Pendant l'envoi, la publication travaille sur ce qu'elle a pris au départ :
+     un enregistrement fait entre-temps ne partait pas, puis était effacé à la
+     fin avec le reste, et « Annuler » vidait le brouillon sans arrêter l'envoi
+     (revue du 05/10/2026). Le brouillon ne bouge donc plus tant que la
+     publication n'est pas finie. Appelée en tête de chaque geste qui l'écrit. */
+  function publicationBloque(message) {
+    if (!publicationEnCours) return false;
+    toast(message || "Une publication est en cours : attendez qu'elle se termine.");
+    return true;
+  }
 
   function publieMaintenant(deuxiemeChance) {
     if (publicationEnCours && !deuxiemeChance) return;
@@ -1309,6 +1333,7 @@
   });
 
   function videBrouillon(question) {
+    if (publicationBloque("La publication en cours ne peut plus être arrêtée : attendez qu'elle se termine.")) return;
     if (!confirm(question)) return;
     effaceSurcouche().then(function () {
       surcouche = surcoucheVide();
