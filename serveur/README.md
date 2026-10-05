@@ -24,7 +24,14 @@ rien qui touche aux autres projets du compte Cloudflare qui l'héberge.
 | `POST /utilisateurs` | gestionnaire | Crée un accès (ou en réinitialise un) et rend le mot de passe une seule fois. |
 | `PATCH /utilisateurs` | gestionnaire | Promeut ou rétrograde un compte, sans toucher à son mot de passe. Personne ne peut se rétrograder soi-même. |
 | `DELETE /utilisateurs?email=` | gestionnaire | Retire un accès. Personne ne peut retirer le sien. |
+| `POST /televerser` | connecté | Dépose des photos ou des documents sans rien publier, dans les emplacements permis ci-dessous. |
 | `POST /publier` | connecté | Écrit tous les changements dans le dépôt, en un seul enregistrement. |
+
+Emplacements permis, en écriture : `_actualites/`, `_talents/`, `_elus/` (fichiers `.md`),
+`_data/accueil.yml`, `_data/mairie.yml`, `assets/img/` (photos) et `assets/docs/` (PDF),
+noms en minuscules, chiffres et tirets. En suppression : les mêmes, sauf `_data/`. Tout
+autre chemin (code de l'administration, `_config.yml`, `CNAME`…) fait refuser l'envoi
+entier avant le moindre appel à GitHub.
 
 Mots de passe : PBKDF2-SHA256, 100 000 itérations (le maximum accepté par le runtime Cloudflare), sel de 16 octets propre à
 chaque compte. Comparaison à durée constante. Les mots de passe fabriqués

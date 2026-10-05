@@ -142,6 +142,50 @@ function tropLourd(requete) {
   return parseInt(requete.headers.get("Content-Length") || "0", 10) > LOT_MAX;
 }
 
+/* Erreur dont le statut et les détails partent tels quels vers l'espace. */
+function refus(message, statut, details) {
+  const e = new Error(message);
+  e.statut = statut;
+  if (details) Object.assign(e, details);
+  return e;
+}
+
+/* ---------------------------------------------------------- emplacements */
+
+/* Ce que l'espace d'administration a le droit d'écrire ou de retirer : les
+   contenus, les deux réglages, les photos et les documents PDF. Le jeton du
+   serveur peut écrire PARTOUT dans le dépôt, code de l'administration et nom
+   de domaine compris : sans ce filtre, n'importe quelle session (même volée)
+   pouvait réécrire admin/config.js et capter les mots de passe des autres. */
+const CONTENUS = /^_(actualites|talents|elus)\/[a-z0-9][a-z0-9-]*\.md$/;
+const REGLAGES = /^_data\/(accueil|mairie)\.yml$/;
+const PHOTOS = /^assets\/img\/[a-z0-9][a-z0-9-]*\.(jpg|jpeg|png|webp|gif)$/;
+const DOCUMENTS = /^assets\/docs\/[a-z0-9][a-z0-9-]*\.pdf$/;
+const ECRITURES_PERMISES = [CONTENUS, REGLAGES, PHOTOS, DOCUMENTS];
+const RETRAITS_PERMIS = [CONTENUS, PHOTOS, DOCUMENTS];
+
+const permis = (chemin, liste) => typeof chemin === "string" && liste.some((r) => r.test(chemin));
+
+/* Refuse tout l'envoi, avant le moindre appel à GitHub, dès qu'un seul
+   emplacement sort de la liste. */
+function verifieEmplacements(fichiers, retraits) {
+  for (const f of fichiers) {
+    const chemin = f && f.chemin;
+    if (!permis(chemin, ECRITURES_PERMISES)) {
+      throw refus("Emplacement refusé : " + String(chemin).slice(0, 200) + ". Le site n'accepte que des "
+        + "actualités, des talents, des élus, les réglages de l'accueil et de la mairie, des photos "
+        + "et des documents PDF.", 403);
+    }
+  }
+  for (const s of retraits) {
+    const chemin = s && s.chemin;
+    if (!permis(chemin, RETRAITS_PERMIS)) {
+      throw refus("Suppression refusée : " + String(chemin).slice(0, 200) + ". Seuls des actualités, des "
+        + "talents, des élus, des photos et des documents PDF peuvent être retirés du site.", 403);
+    }
+  }
+}
+
 /* ------------------------------------------------------------- sessions */
 
 async function sessionDe(requete, env) {
@@ -198,6 +242,7 @@ async function appelGitHub(env, chemin, options, secondEssai) {
    permet d'envoyer un gros reportage en plusieurs fois, puis de tout publier
    d'un seul geste, donc en une seule mise à jour du site. */
 async function televerse(env, fichiers) {
+  verifieEmplacements(fichiers, []);
   const deposes = [];
   for (let i = 0; i < fichiers.length; i += BLOBS_EN_PARALLELE) {
     const paquet = fichiers.slice(i, i + BLOBS_EN_PARALLELE);
@@ -223,9 +268,12 @@ async function televerse(env, fichiers) {
 /* Écrit tous les changements en un seul enregistrement. */
 async function publie(env, changements) {
   const branche = env.BRANCHE || "main";
-  const fichiers = changements.fichiers || [];
-  const suppressions = changements.suppressions || [];
-  if (!fichiers.length && !suppressions.length) throw new Error("Rien à publier.");
+  const fichiers = Array.isArray(changements.fichiers) ? changements.fichiers : [];
+  /* Un retrait s'écrit « chemin » ou { chemin, base }. */
+  const retraits = (Array.isArray(changements.suppressions) ? changements.suppressions : [])
+    .map((s) => (typeof s === "string" ? { chemin: s } : s));
+  if (!fichiers.length && !retraits.length) throw new Error("Rien à publier.");
+  verifieEmplacements(fichiers, retraits);
 
   const ref = await appelGitHub(env, "/git/ref/heads/" + branche);
   const shaCommit = ref.object.sha;
@@ -261,7 +309,7 @@ async function publie(env, changements) {
         + "seules les photos manquantes repartiront.");
     }
   }
-  if (suppressions.length) {
+  if (retraits.length) {
     /* Demander la suppression d'un fichier qui n'est plus là fait rejeter
        l'enregistrement ENTIER (GitRPC::BadObjectState), sans dire lequel est en
        cause. C'est ce qui a bloqué la mairie du 08 au 10/09/2026 : un article
@@ -269,7 +317,7 @@ async function publie(env, changements) {
        pouvait être publié. Un fichier déjà absent, c'est le résultat voulu. */
     const arbreBase = await appelGitHub(env, "/git/trees/" + commit.tree.sha + "?recursive=1");
     const presents = new Set((arbreBase.tree || []).map((e) => e.path));
-    for (const chemin of suppressions) {
+    for (const { chemin } of retraits) {
       if (!presents.has(chemin)) {
         console.log("suppression sans objet, ignorée : " + chemin);
         continue;
@@ -452,7 +500,7 @@ export default {
 
       return erreur("Adresse inconnue.", 404, requete, env);
     } catch (e) {
-      return erreur(String(e && e.message || e), 500, requete, env);
+      return erreur(String(e && e.message || e), (e && e.statut) || 500, requete, env);
     }
   }
 };
