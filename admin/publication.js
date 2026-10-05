@@ -34,7 +34,12 @@
       return r.json().catch(function () { return {}; }).then(function (donnees) {
         if (!r.ok) {
           if (r.status === 401 && jeton) oublie();
-          throw new Error(donnees.erreur || "Le serveur n'a pas répondu correctement.");
+          /* Le statut et les chemins en conflit servent à l'écran : reconnexion
+             sur place, entrées refusées signalées une à une. */
+          var e = new Error(donnees.erreur || "Le serveur n'a pas répondu correctement.");
+          e.statut = r.status;
+          if (Array.isArray(donnees.conflits)) e.conflits = donnees.conflits;
+          throw e;
         }
         return donnees;
       });

@@ -8,7 +8,7 @@
   "use strict";
 
   var VERSION = "2026-10-05-a";
-  var DEPOT_RAW = "https://raw.githubusercontent.com/davidlotaut/gapree-website/main/";
+  var DEPOT_RAW = "https://raw.githubusercontent.com/davidlotaut/gapree-website/";
   var CLE_DEMO = "gapree-demo-admin";
 
   var app = document.getElementById("app");
@@ -25,7 +25,7 @@
 
   function surcoucheVide() {
     return { modifies: {}, nouveaux: { actualites: [], talents: [], elus: [] },
-      supprimes: [], reglages: {}, deposees: {} };
+      supprimes: [], reglages: {}, deposees: {}, publiees: {}, bases: {} };
   }
 
   function rangeSurcouche(brut) {
@@ -35,7 +35,9 @@
       nouveaux: brut.nouveaux || { actualites: [], talents: [], elus: [] },
       supprimes: brut.supprimes || [],
       reglages: brut.reglages || {},
-      deposees: brut.deposees || {}
+      deposees: brut.deposees || {},
+      publiees: brut.publiees || {},
+      bases: brut.bases || {}
     };
   }
 
@@ -72,41 +74,211 @@
     try { return JSON.parse(localStorage.getItem(CLE_DEMO) || "null"); } catch (e) { return null; }
   }
 
+  /* Un seul brouillon par navigateur, que plusieurs onglets peuvent écrire.
+     Chaque écriture relit donc le brouillon gardé et n'y applique que les
+     gestes faits dans cette page depuis sa dernière lecture : réécrit en
+     entier, il effaçait ce qu'un autre onglet venait d'enregistrer (revue du
+     05/10/2026). Pour comparer, le brouillon est vu « à plat », une clé par
+     entrée : m:chemin (modification), n:rubrique:repère (nouveau),
+     s:chemin (suppression), r:nom (réglages), d:repère (photo déposée),
+     p:commit (publication pas encore en ligne), b:chemin (révision sur
+     laquelle l'élément a été ouvert, envoyée comme base : contrat 2).        */
+  var RUBRIQUES = ["actualites", "talents", "elus"];
+
+  function aplatit(s) {
+    var plat = {};
+    Object.keys(s.modifies || {}).forEach(function (c) { plat["m:" + c] = s.modifies[c]; });
+    RUBRIQUES.forEach(function (r) {
+      ((s.nouveaux || {})[r] || []).forEach(function (x) { plat["n:" + r + ":" + x.chemin] = x; });
+    });
+    (s.supprimes || []).forEach(function (c) { plat["s:" + c] = true; });
+    Object.keys(s.reglages || {}).forEach(function (n) { plat["r:" + n] = s.reglages[n]; });
+    Object.keys(s.deposees || {}).forEach(function (k) { plat["d:" + k] = s.deposees[k]; });
+    Object.keys(s.publiees || {}).forEach(function (k) { plat["p:" + k] = s.publiees[k]; });
+    Object.keys(s.bases || {}).forEach(function (c) { plat["b:" + c] = s.bases[c]; });
+    return plat;
+  }
+
+  function reconstruit(plat) {
+    var s = surcoucheVide();
+    Object.keys(plat).forEach(function (cle) {
+      var i = cle.indexOf(":"), type = cle.slice(0, i), reste = cle.slice(i + 1), v = plat[cle];
+      if (type === "m") s.modifies[reste] = v;
+      else if (type === "s") s.supprimes.push(reste);
+      else if (type === "r") s.reglages[reste] = v;
+      else if (type === "d") s.deposees[reste] = v;
+      else if (type === "p") s.publiees[reste] = v;
+      else if (type === "b") s.bases[reste] = v;
+      else if (type === "n") {
+        var r = reste.slice(0, reste.indexOf(":"));
+        if (s.nouveaux[r]) s.nouveaux[r].push(v);
+      }
+    });
+    /* Une base n'a de sens qu'avec son entrée : retirée avec elle. */
+    Object.keys(s.bases).forEach(function (c) { if (!aUneEntree(s, c)) delete s.bases[c]; });
+    return s;
+  }
+
+  function cheminReglage(nom) { return "_data/" + nom + ".yml"; }
+
+  function aUneEntree(s, chemin) {
+    if (s.modifies[chemin] || s.supprimes.indexOf(chemin) !== -1) return true;
+    var m = /^_data\/(.+)\.yml$/.exec(chemin);
+    return !!(m && s.reglages[m[1]]);
+  }
+
+  /* Copie de la structure ; les textes, et les photos qu'ils portent, ne sont
+     pas dupliqués. */
+  function copie(v) {
+    if (Array.isArray(v)) return v.map(copie);
+    if (v && typeof v === "object") {
+      var c = {};
+      Object.keys(v).forEach(function (k) { c[k] = copie(v[k]); });
+      return c;
+    }
+    return v;
+  }
+
+  function pareil(a, b) {
+    if (a === b) return true;
+    if (!a || !b || typeof a !== "object" || typeof b !== "object") return false;
+    if (Array.isArray(a) !== Array.isArray(b)) return false;
+    var ka = Object.keys(a), kb = Object.keys(b);
+    if (ka.length !== kb.length) return false;
+    return ka.every(function (k) { return Object.prototype.hasOwnProperty.call(b, k) && pareil(a[k], b[k]); });
+  }
+
+  /* Les gestes qui mènent de « avant » à « apres », en opérations sur les clés. */
+  function differences(avant, apres) {
+    var a = aplatit(avant), b = aplatit(apres), operations = [];
+    Object.keys(b).forEach(function (cle) {
+      if (!Object.prototype.hasOwnProperty.call(a, cle) || !pareil(a[cle], b[cle])) operations.push({ cle: cle, valeur: b[cle] });
+    });
+    Object.keys(a).forEach(function (cle) {
+      if (!Object.prototype.hasOwnProperty.call(b, cle)) operations.push({ cle: cle, retire: true });
+    });
+    return operations;
+  }
+
+  /* Une opération qui porte « si » ne s'applique que si l'entrée gardée vaut
+     encore cette valeur : c'est ce qui laisse en place une entrée changée
+     entre-temps par un autre onglet. */
+  function applique(plat, operations) {
+    operations.forEach(function (op) {
+      if (Object.prototype.hasOwnProperty.call(op, "si") && !pareil(plat[op.cle], op.si)) return;
+      if (op.retire) delete plat[op.cle];
+      else plat[op.cle] = op.valeur;
+    });
+    return plat;
+  }
+
   function chargeSurcouche() {
     return dansLaBase("readonly", function (magasin) { return magasin.get("etat"); })
       .then(function (enregistre) {
         /* Un brouillon commencé avant ce changement est repris, puis la réserve
-           est libérée : il n'y a aucune raison de le perdre. */
+           est libérée : il n'y a aucune raison de le perdre. La base est encore
+           vide : la première écriture y reportera tout. */
         var ancien = litReserve();
         if (!enregistre && ancien) {
           try { localStorage.removeItem(CLE_DEMO); } catch (e) { /* tant pis */ }
+          surcoucheLue = surcoucheVide();
           return rangeSurcouche(ancien);
         }
-        return rangeSurcouche(enregistre);
+        var s = rangeSurcouche(enregistre);
+        surcoucheLue = copie(s);
+        return s;
       })
-      .catch(function () { return rangeSurcouche(litReserve()); });
-  }
-
-  function ecritSurcouche(s) {
-    dansLaBase("readwrite", function (magasin) { return magasin.put(s, "etat"); })
       .catch(function () {
-        /* Sans base, on retombe sur la réserve : elle suffit au texte, pas aux
-           photos, donc on le dit au lieu d'échouer sans un mot. */
-        try {
-          localStorage.setItem(CLE_DEMO, JSON.stringify(s));
-        } catch (e) {
-          toast("Ce navigateur ne peut pas garder un brouillon aussi lourd : publiez sans fermer la page");
-        }
+        var s = rangeSurcouche(litReserve());
+        surcoucheLue = copie(s);
+        return s;
       });
   }
 
-  function effaceSurcouche() {
-    try { localStorage.removeItem(CLE_DEMO); } catch (e) { /* rien à faire */ }
-    return dansLaBase("readwrite", function (magasin) { return magasin.delete("etat"); })
-      .catch(function () { /* déjà propre */ });
+  /* Relit le brouillon gardé et lui applique les opérations, en une seule
+     transaction : un autre onglet ne peut pas écrire entre la lecture et
+     l'écriture. Rend le brouillon tel qu'il est désormais gardé. */
+  function relitEtApplique(operations) {
+    var garde = null;
+    return dansLaBase("readwrite", function (magasin) {
+      var lecture = magasin.get("etat");
+      lecture.onsuccess = function () {
+        garde = reconstruit(applique(aplatit(rangeSurcouche(lecture.result)), operations));
+        magasin.put(garde, "etat");
+      };
+      return lecture;
+    }).then(function () { return garde; }, function () {
+      /* Sans base, on retombe sur la réserve : elle suffit au texte, pas aux
+         photos, donc on le dit au lieu d'échouer sans un mot. */
+      try {
+        garde = reconstruit(applique(aplatit(rangeSurcouche(litReserve())), operations));
+        localStorage.setItem(CLE_DEMO, JSON.stringify(garde));
+        return garde;
+      } catch (e) {
+        toast("Ce navigateur ne peut pas garder un brouillon aussi lourd : publiez sans fermer la page");
+        return null;
+      }
+    });
   }
 
   var surcouche = surcoucheVide();
+  var surcoucheLue = surcoucheVide();   // le brouillon tel que cette page l'a lu ou écrit en dernier
+  var fileEcritures = Promise.resolve();
+  var ecrituresEnCours = 0;
+
+  /* Les écritures d'une page partent l'une après l'autre. Quand la dernière
+     est faite, la page reprend le brouillon gardé, avec ce que les autres
+     onglets y ont ajouté. */
+  function enregistre(operations) {
+    if (!operations.length) return fileEcritures;
+    ecrituresEnCours++;
+    fileEcritures = fileEcritures.then(function () {
+      return relitEtApplique(operations);
+    }).then(function (garde) {
+      ecrituresEnCours--;
+      if (!ecrituresEnCours && garde) adopte(garde);
+    });
+    return fileEcritures;
+  }
+
+  function adopte(garde) {
+    var avant = nombreEnAttente();
+    surcouche = garde;
+    surcoucheLue = copie(garde);
+    if (nombreEnAttente() !== avant) majBarrePublication();
+    suisLaMiseEnLigne();
+  }
+
+  /* Révision sur laquelle chaque élément a été ouvert dans cette page. */
+  var baseOuverte = {};
+
+  /* Chaque modification ou suppression du brouillon garde la révision en
+     vigueur quand l'élément a été ouvert (contrat 2) : le serveur refusera de
+     l'écrire si quelqu'un d'autre a changé le fichier depuis. */
+  function tientLesBases(s) {
+    s.bases = s.bases || {};
+    var vivantes = Object.keys(s.modifies).concat(s.supprimes, Object.keys(s.reglages).map(cheminReglage));
+    vivantes.forEach(function (c) { if (!s.bases[c] && baseOuverte[c]) s.bases[c] = baseOuverte[c]; });
+    Object.keys(s.bases).forEach(function (c) { if (!aUneEntree(s, c)) delete s.bases[c]; });
+  }
+
+  /* Écrit les gestes faits sur le brouillon de la page depuis sa dernière écriture. */
+  function ecritSurcouche(s) {
+    /* Enregistrement fait depuis un éditeur : sa saisie est désormais gardée. */
+    if (zoneDuGeste && zonesModifiees) zonesModifiees = zonesModifiees.filter(function (z) { return z !== zoneDuGeste; });
+    tientLesBases(s);
+    var operations = differences(surcoucheLue, s);
+    surcoucheLue = copie(s);
+    return enregistre(operations);
+  }
+
+  /* Applique des opérations ici (brouillon de la page et dernière lecture),
+     puis au brouillon gardé. */
+  function appliqueIci(operations) {
+    surcouche = reconstruit(applique(aplatit(surcouche), operations));
+    surcoucheLue = reconstruit(applique(aplatit(surcoucheLue), operations));
+    return enregistre(operations);
+  }
 
   var MOIS = ["janvier", "février", "mars", "avril", "mai", "juin",
     "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
@@ -275,15 +447,20 @@
     return (m ? brut.slice(m[0].length) : brut).trim();
   }
 
+  /* Le texte se lit à la révision exacte qu'a construite contenu.json : cette
+     adresse ne change jamais, alors que lu sur main, il pouvait être resservi
+     périmé par un cache, et la retouche suivante remettait l'ancien texte en
+     ligne (constaté le 05/09/2026). Sur main seulement si la révision manque. */
   var cacheTextes = {};
   function chargeTexte(item) {
     if (typeof item.texte === "string") return Promise.resolve(item.texte);
-    if (cacheTextes[item.chemin] !== undefined) return Promise.resolve(cacheTextes[item.chemin]);
-    return fetch(DEPOT_RAW + item.chemin)
+    var adresse = DEPOT_RAW + ((donnees && donnees.revision) || "main") + "/" + item.chemin;
+    if (cacheTextes[adresse] !== undefined) return Promise.resolve(cacheTextes[adresse]);
+    return fetch(adresse)
       .then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); })
       .then(function (brut) {
         var texte = separeFrontMatter(brut);
-        cacheTextes[item.chemin] = texte;
+        cacheTextes[adresse] = texte;
         return texte;
       });
   }
@@ -292,8 +469,94 @@
 
   function estSupprime(chemin) { return surcouche.supprimes.indexOf(chemin) !== -1; }
 
+  /* Les publications faites depuis ce navigateur et pas encore en ligne, de
+     la plus ancienne à la plus récente. */
+  function publicationsEnAttente() {
+    var p = surcouche.publiees || {};
+    return Object.keys(p).map(function (c) { return p[c]; })
+      .sort(function (a, b) { return (a.quand || 0) - (b.quand || 0); });
+  }
+
+  function rubriqueDe(chemin) {
+    var m = /^_(actualites|talents|elus)\//.exec(chemin);
+    return m ? m[1] : null;
+  }
+
+  /* Le contenu tel qu'il est publié : contenu.json, et par-dessus ce que ce
+     navigateur a publié et que le site ne montre pas encore. Sans cela,
+     l'éditeur rouvrait l'état d'avant la publication, et la retouche suivante
+     le remettait en ligne (revue du 05/10/2026). */
+  function elementsPublies(rubrique) {
+    var liste = (donnees[rubrique] || []).slice();
+    publicationsEnAttente().forEach(function (p) {
+      var elements = p.elements || {};
+      liste = liste.filter(function (x) {
+        return !elements[x.chemin] && (p.supprimes || []).indexOf(x.chemin) === -1;
+      });
+      Object.keys(elements).forEach(function (chemin) {
+        if (rubriqueDe(chemin) === rubrique) liste.push(Object.assign({}, elements[chemin], { chemin: chemin }));
+      });
+    });
+    return liste;
+  }
+
+  function existe(chemin) {
+    var r = rubriqueDe(chemin);
+    return !r || elementsPublies(r).some(function (x) { return x.chemin === chemin; });
+  }
+
+  /* Chemins que le serveur a refusé d'écrire à la dernière publication : le
+     fichier avait changé depuis l'ouverture de l'élément (contrat 2). */
+  var conflitsSignales = [];
+
+  /* Entrées du brouillon qui ne peuvent pas partir : elles visent un fichier
+     qui n'est plus sur le site (supprimé par une autre personne), ou que le
+     serveur a refusé d'écrire. Publiées, les premières recréaient l'article
+     supprimé (revue du 05/10/2026), les secondes faisaient refuser toute la
+     publication. Elles sont signalées, ne partent plus, et se retirent une à
+     une. */
+  function entreesBloquees() {
+    if (!donnees) return [];
+    var liste = [];
+    var change = " a été changé par quelqu'un d'autre depuis que vous l'avez ouvert : ";
+    /* La version de l'autre personne n'apparaît ici qu'une fois le site reconstruit. */
+    var refaire = " Retirez-la, puis refaites la modification dans quelques minutes.";
+    Object.keys(surcouche.modifies).forEach(function (c) {
+      if (estSupprime(c)) return;
+      var v = surcouche.modifies[c], nom = "« " + (v.titre || v.nom || c.split("/").pop()) + " »";
+      if (!existe(c)) liste.push({ cle: "m:" + c, chemin: c, texte: nom + " a été supprimé du site entre-temps : votre modification ne sera pas publiée." });
+      else if (conflitsSignales.indexOf(c) !== -1) liste.push({ cle: "m:" + c, chemin: c, texte: nom + change + "votre version ne sera pas publiée." + refaire });
+    });
+    surcouche.supprimes.forEach(function (c) {
+      var nom = "« " + c.split("/").pop() + " »";
+      if (!existe(c)) liste.push({ cle: "s:" + c, chemin: c, texte: nom + " n'est déjà plus sur le site : sa suppression n'a plus d'objet." });
+      else if (conflitsSignales.indexOf(c) !== -1) liste.push({ cle: "s:" + c, chemin: c, texte: nom + change + "sa suppression ne sera pas publiée." + refaire });
+    });
+    Object.keys(surcouche.reglages).forEach(function (n) {
+      var c = cheminReglage(n);
+      if (conflitsSignales.indexOf(c) !== -1) {
+        liste.push({ cle: "r:" + n, chemin: c, texte: "« " + (n === "accueil" ? "Page d'accueil" : "Coordonnées de la mairie") + " »" + change + "votre version ne sera pas publiée." + refaire });
+      }
+    });
+    return liste;
+  }
+
+  function clesBloquees() {
+    var cles = {};
+    entreesBloquees().forEach(function (e) { cles[e.cle] = true; });
+    return cles;
+  }
+
+  function reglagesPublies(nom) {
+    var r = Object.assign({}, donnees.reglages[nom] || {});
+    publicationsEnAttente().forEach(function (p) {
+      if (p.reglages && p.reglages[nom]) Object.assign(r, p.reglages[nom]);
+    });
+    return r;
+  }
+
   function listeFusionnee(rubrique) {
-    var base = (donnees[rubrique] || []).filter(function (x) { return !estSupprime(x.chemin); })
+    var base = elementsPublies(rubrique).filter(function (x) { return !estSupprime(x.chemin); })
       .map(function (x) {
         var modif = surcouche.modifies[x.chemin];
         return modif ? Object.assign({}, x, modif) : Object.assign({}, x);
@@ -309,12 +572,30 @@
     return tout;
   }
 
+  /* La révision de ce qu'on voit d'un élément : celle de sa première
+     ouverture s'il attend déjà dans le brouillon (inconnue pour un brouillon
+     d'avant cette règle), sinon le commit qui l'a publié depuis ce navigateur,
+     sinon la révision de contenu.json. Vide : aucun contrôle. */
+  function revisionDe(chemin) {
+    if (!chemin || chemin.indexOf("nouveau:") === 0) return "";
+    if (aUneEntree(surcouche, chemin)) return surcouche.bases[chemin] || "";
+    var publiee = "", nom = /^_data\/(.+)\.yml$/.exec(chemin);
+    publicationsEnAttente().forEach(function (p) {
+      if ((p.elements || {})[chemin] || (p.supprimes || []).indexOf(chemin) !== -1
+        || (nom && p.reglages && p.reglages[nom[1]])) publiee = p.commit;
+    });
+    return publiee || (donnees && donnees.revision) || "";
+  }
+
   function trouve(rubrique, chemin) {
-    return listeFusionnee(rubrique).filter(function (x) { return x.chemin === chemin; })[0] || null;
+    var item = listeFusionnee(rubrique).filter(function (x) { return x.chemin === chemin; })[0] || null;
+    if (item) baseOuverte[chemin] = revisionDe(chemin);
+    return item;
   }
 
   function reglagesFusionnes(nom) {
-    return Object.assign({}, donnees.reglages[nom] || {}, surcouche.reglages[nom] || {});
+    baseOuverte[cheminReglage(nom)] = revisionDe(cheminReglage(nom));
+    return Object.assign({}, reglagesPublies(nom), surcouche.reglages[nom] || {});
   }
 
   function etatItem(chemin) {
@@ -331,6 +612,7 @@
   };
 
   function rendre() {
+    zonesModifiees = [];
     majBarrePublication();
     document.querySelectorAll(".onglets button").forEach(function (b) {
       b.classList.toggle("actif", b.dataset.rubrique === vue.rubrique);
@@ -541,6 +823,7 @@
     document.getElementById("btn-annuler").addEventListener("click", retourListe);
 
     document.getElementById("btn-enregistrer").addEventListener("click", function () {
+      if (publicationBloque()) return;
       if (!refs.titre.value.trim()) { toast("Le titre est obligatoire"); refs.titre.focus(); return; }
       var valeurs = {
         titre: refs.titre.value.trim(),
@@ -569,6 +852,7 @@
 
     var btnSupprimer = document.getElementById("btn-supprimer");
     if (btnSupprimer) btnSupprimer.addEventListener("click", function () {
+      if (publicationBloque()) return;
       if (!confirm("Supprimer « " + item.titre + " » ?\n\nIl disparaîtra du site en ligne une fois que vous aurez appuyé sur « Publier sur le site ».")) return;
       if (item.chemin.indexOf("nouveau:") === 0) {
         surcouche.nouveaux[rubrique] = surcouche.nouveaux[rubrique].filter(function (x) { return x.chemin !== item.chemin; });
@@ -673,6 +957,7 @@
     document.getElementById("btn-annuler").addEventListener("click", retour);
 
     document.getElementById("btn-enregistrer").addEventListener("click", function () {
+      if (publicationBloque()) return;
       var nom = document.getElementById("ch-nom").value.trim();
       if (!nom) { toast("Le nom est obligatoire"); return; }
       var valeurs = {
@@ -698,6 +983,7 @@
 
     var btnSupprimer = document.getElementById("btn-supprimer");
     if (btnSupprimer) btnSupprimer.addEventListener("click", function () {
+      if (publicationBloque()) return;
       if (!confirm("Retirer « " + item.nom + " » du trombinoscope ?\n\nIl disparaîtra du site en ligne une fois que vous aurez appuyé sur « Publier sur le site ».")) return;
       if (item.chemin.indexOf("nouveau:") === 0) {
         surcouche.nouveaux.elus = surcouche.nouveaux.elus.filter(function (x) { return x.chemin !== item.chemin; });
@@ -782,6 +1068,7 @@
     });
 
     document.getElementById("btn-enregistre-accueil").addEventListener("click", function () {
+      if (publicationBloque()) return;
       surcouche.reglages.accueil = Object.assign({}, accueil, {
         photo: photoAccueil,
         alt_photo: document.getElementById("ch-alt-accueil").value.trim(),
@@ -794,6 +1081,7 @@
     });
 
     document.getElementById("btn-enregistre-mairie").addEventListener("click", function () {
+      if (publicationBloque()) return;
       surcouche.reglages.mairie = Object.assign({}, mairie, {
         adresse: document.getElementById("ch-adresse").value.trim(),
         telephone: document.getElementById("ch-telephone").value.trim(),
@@ -952,54 +1240,220 @@
     var fichiers = [];
     reperesEnvoyes = {};
     occurrences = {};
-    var suppressions = surcouche.supprimes.slice();
+    var bases = surcouche.bases || {};
+    var bloquees = clesBloquees();
+    var retires = surcouche.supprimes.filter(function (c) { return !bloquees["s:" + c]; });
+    var suppressions = retires.map(function (c) { return bases[c] ? { chemin: c, base: bases[c] } : c; });
     var resume = [];
+    /* Les entrées du brouillon que cette publication emporte, telles qu'elles
+       sont au départ : seules celles-là en sortiront au succès. */
+    var entrees = {};
+    /* Ce que le site montrera une fois la publication en ligne : éléments
+       écrits (à leur chemin définitif) et réglages. */
+    var ecrits = [];
+    var reglages = {};
+    function ecrit(chemin, v) {
+      var publie = Object.assign({}, v);
+      delete publie.chemin;
+      ecrits.push({ chemin: chemin, valeurs: publie });
+    }
+
+    /* Un nouvel élément ne tombe jamais sur un fichier existant, sur celui
+       d'un autre nouveau ni sur un fichier que la même publication retire :
+       il réécrivait l'existant, perdait le second, ou bloquait la publication
+       (revue du 05/10/2026). Suffixe -2, -3… au besoin. */
+    var pris = cheminsPris();
+    function cheminLibre(chemin) {
+      var racine = chemin.replace(/\.md$/, ""), n = 1, essai = chemin;
+      while (pris[essai]) { n++; essai = racine + "-" + n + ".md"; }
+      pris[essai] = true;
+      return essai;
+    }
 
     ["actualites", "talents"].forEach(function (rubrique) {
       (surcouche.nouveaux[rubrique] || []).forEach(function (v) {
+        /* Le jour seul, même si la date porte l'heure. */
         var nom = rubrique === "actualites"
-          ? (v.date || new Date().toISOString().slice(0, 10)) + "-" + slug(v.titre)
+          ? String(v.date || new Date().toISOString()).slice(0, 10) + "-" + slug(v.titre)
           : slug(v.titre);
-        fichiers.push(fichierArticle(rubrique, v, "_" + rubrique + "/" + nom + ".md", fichiers));
+        var chemin = cheminLibre("_" + rubrique + "/" + nom + ".md");
+        var fichier = fichierArticle(rubrique, v, chemin, fichiers);
+        fichier.nouveau = true;
+        fichiers.push(fichier);
         resume.push("ajout : " + v.titre);
+        entrees["n:" + rubrique + ":" + v.chemin] = copie(v);
+        ecrit(chemin, v);
       });
     });
 
     (surcouche.nouveaux.elus || []).forEach(function (v) {
-      fichiers.push(fichierElu(v, "_elus/" + slug(v.nom) + ".md", fichiers));
+      var chemin = cheminLibre("_elus/" + slug(v.nom) + ".md");
+      var fichier = fichierElu(v, chemin, fichiers);
+      fichier.nouveau = true;
+      fichiers.push(fichier);
       resume.push("ajout : " + v.nom);
+      entrees["n:elus:" + v.chemin] = copie(v);
+      ecrit(chemin, v);
     });
 
     Object.keys(surcouche.modifies).forEach(function (chemin) {
+      if (bloquees["m:" + chemin]) return;
+      /* Une modification d'un élément retiré dans la même publication n'a plus d'objet. */
+      entrees["m:" + chemin] = copie(surcouche.modifies[chemin]);
       if (estSupprime(chemin)) return;
-      var v = surcouche.modifies[chemin];
+      var v = surcouche.modifies[chemin], fichier;
       if (chemin.indexOf("_elus/") === 0) {
-        fichiers.push(fichierElu(v, chemin, fichiers));
+        fichier = fichierElu(v, chemin, fichiers);
         resume.push("modification : " + v.nom);
       } else {
         var rubrique = chemin.indexOf("_talents/") === 0 ? "talents" : "actualites";
-        fichiers.push(fichierArticle(rubrique, v, chemin, fichiers));
+        fichier = fichierArticle(rubrique, v, chemin, fichiers);
         resume.push("modification : " + v.titre);
       }
+      if (bases[chemin]) fichier.base = bases[chemin];
+      fichiers.push(fichier);
+      ecrit(chemin, v);
     });
 
-    if (surcouche.reglages.accueil) {
-      fichiers.push(fichierAccueil(reglagesFusionnes("accueil"), fichiers));
+    if (surcouche.reglages.accueil && !bloquees["r:accueil"]) {
+      reglages.accueil = reglagesFusionnes("accueil");
+      var accueil = fichierAccueil(reglages.accueil, fichiers);
+      if (bases[accueil.chemin]) accueil.base = bases[accueil.chemin];
+      fichiers.push(accueil);
       resume.push("page d'accueil");
+      entrees["r:accueil"] = copie(surcouche.reglages.accueil);
     }
-    if (surcouche.reglages.mairie) {
-      fichiers.push(fichierMairie(reglagesFusionnes("mairie")));
+    if (surcouche.reglages.mairie && !bloquees["r:mairie"]) {
+      reglages.mairie = reglagesFusionnes("mairie");
+      var mairie = fichierMairie(reglages.mairie);
+      if (bases[mairie.chemin]) mairie.base = bases[mairie.chemin];
+      fichiers.push(mairie);
       resume.push("coordonnées de la mairie");
+      entrees["r:mairie"] = copie(surcouche.reglages.mairie);
     }
 
-    suppressions.forEach(function (chemin) { resume.push("suppression : " + chemin.split("/").pop()); });
+    retires.forEach(function (chemin) {
+      resume.push("suppression : " + chemin.split("/").pop());
+      entrees["s:" + chemin] = true;
+    });
+
+    /* Les photos et pièces jointes que plus rien ne cite partent avec leur
+       élément : retirer une photo ou supprimer un article les laissait en
+       ligne à leur adresse, alors que la mairie croyait avoir satisfait une
+       demande de retrait (84 images oubliées ainsi le 05/10/2026). On ne part
+       que des anciennes valeurs des éléments touchés, aux noms uniques. */
+    var cites = mediasCites();
+    var anciennes = [];
+    Object.keys(surcouche.modifies).forEach(function (c) {
+      if (!bloquees["m:" + c] && !estSupprime(c)) anciennes = anciennes.concat(mediasDe(enLigne(c)));
+    });
+    retires.forEach(function (c) { anciennes = anciennes.concat(mediasDe(enLigne(c))); });
+    if (reglages.accueil) anciennes = anciennes.concat(mediasDe(reglagesPublies("accueil")));
+    anciennes.forEach(function (src) {
+      var chemin = src.slice(1);
+      if (cites[src] || MEDIAS_DU_SITE.indexOf(src) !== -1 || !MEDIA_RETIRABLE.test(chemin)) return;
+      if (suppressions.indexOf(chemin) === -1) suppressions.push(chemin);
+    });
 
     return {
       fichiers: fichiers,
       suppressions: suppressions,
       resume: resume,
+      entrees: entrees,
+      ecrits: ecrits,
+      retires: retires,
+      reglages: reglages,
       message: "Mise à jour du site depuis l'espace d'administration\n\n" + resume.join("\n") + "\n"
     };
+  }
+
+  /* Image que le site utilise lui-même (photo d'accueil par défaut, aperçu de
+     partage) : jamais retirée. Et seuls les noms que le serveur accepte de
+     retirer (contrat 1) partent. */
+  var MEDIAS_DU_SITE = ["/assets/img/hero-gapree.jpg"];
+  var MEDIA_RETIRABLE = /^assets\/img\/[a-z0-9][a-z0-9-]*\.(jpg|jpeg|png|webp|gif)$|^assets\/docs\/[a-z0-9][a-z0-9-]*\.pdf$/;
+
+  /* Les photos et pièces jointes du site citées par une valeur, à toute profondeur. */
+  function mediasDe(v, liste) {
+    liste = liste || [];
+    if (typeof v === "string") { if (/^\/assets\/(img|docs)\//.test(v)) liste.push(v); }
+    else if (Array.isArray(v)) v.forEach(function (x) { mediasDe(x, liste); });
+    else if (v && typeof v === "object") Object.keys(v).forEach(function (k) { mediasDe(v[k], liste); });
+    return liste;
+  }
+
+  /* Un élément tel qu'il est publié, avant le brouillon. */
+  function enLigne(chemin) {
+    var r = rubriqueDe(chemin);
+    return r ? elementsPublies(r).filter(function (x) { return x.chemin === chemin; })[0] || null : null;
+  }
+
+  /* Tout ce qui sera encore cité une fois la publication faite : le site, les
+     publications pas encore en ligne et le brouillon, y compris ses entrées
+     qui ne partent pas. */
+  function mediasCites() {
+    var liste = [];
+    RUBRIQUES.forEach(function (r) { mediasDe(listeFusionnee(r), liste); });
+    mediasDe(Object.assign({}, reglagesPublies("accueil"), surcouche.reglages.accueil || {}), liste);
+    mediasDe(surcouche.modifies, liste);
+    var cites = {};
+    liste.forEach(function (src) { cites[src] = true; });
+    return cites;
+  }
+
+  /* Tous les chemins de contenu déjà pris : ceux du site, ceux qu'il aura une
+     fois en ligne ce que ce navigateur a publié, et ceux qui attendent dans le
+     brouillon (modifiés ou retirés). */
+  function cheminsPris() {
+    var pris = {};
+    RUBRIQUES.forEach(function (r) {
+      (donnees[r] || []).forEach(function (x) { pris[x.chemin] = true; });
+    });
+    publicationsEnAttente().forEach(function (p) {
+      Object.keys(p.elements || {}).forEach(function (c) { pris[c] = true; });
+    });
+    Object.keys(surcouche.modifies).forEach(function (c) { pris[c] = true; });
+    surcouche.supprimes.forEach(function (c) { pris[c] = true; });
+    conflitsSignales.forEach(function (c) { pris[c] = true; });
+    return pris;
+  }
+
+  /* Adresse sur le site d'une photo choisie dans l'éditeur (data:), d'après
+     les références des photos déposées par cette publication : le site la
+     montrera là, et une retouche la réutilisera sans la renvoyer. */
+  function adressesPubliees(v) {
+    if (typeof v === "string") {
+      if (v.indexOf("data:") !== 0) return v;
+      var deposee = (surcouche.deposees || {})[repere(v) + "#1"];
+      return deposee && deposee.chemin ? "/" + deposee.chemin : v;
+    }
+    if (Array.isArray(v)) return v.map(adressesPubliees);
+    if (v && typeof v === "object") {
+      var c = {};
+      Object.keys(v).forEach(function (k) { c[k] = adressesPubliees(v[k]); });
+      return c;
+    }
+    return v;
+  }
+
+  /* Ce qu'une publication réussie laisse à suivre jusqu'à sa mise en ligne :
+     les valeurs publiées, qui servent de base à tout élément rouvert, et les
+     révisions déjà vues avant elle, dont le retour ne prouve rien. */
+  function publicationFaite(changements, commit, connues) {
+    var elements = {}, reglages = {};
+    changements.ecrits.forEach(function (e) { elements[e.chemin] = adressesPubliees(e.valeurs); });
+    Object.keys(changements.reglages).forEach(function (nom) { reglages[nom] = adressesPubliees(changements.reglages[nom]); });
+    return { commit: commit, quand: Date.now(), connues: connues,
+      elements: elements, supprimes: changements.retires, reglages: reglages };
+  }
+
+  /* Ce qu'une publication réussie retire du brouillon : ce qu'elle a emporté
+     et qui n'a pas changé depuis (un autre onglet a pu y toucher), plus les
+     références des photos déposées, devenues inutiles. */
+  function retraitsApresPublication(entrees) {
+    var operations = Object.keys(entrees).map(function (cle) { return { cle: cle, retire: true, si: entrees[cle] }; });
+    Object.keys(surcouche.deposees || {}).forEach(function (k) { operations.push({ cle: "d:" + k, retire: true }); });
+    return operations;
   }
 
   function nombreEnAttente() {
@@ -1007,7 +1461,7 @@
     ["actualites", "talents", "elus"].forEach(function (r) { c += (surcouche.nouveaux[r] || []).length; });
     if (surcouche.reglages.accueil) c++;
     if (surcouche.reglages.mairie) c++;
-    return c;
+    return c - entreesBloquees().length;
   }
 
   function majBarrePublication() {
@@ -1017,13 +1471,99 @@
     var etat = document.getElementById("etat-publication");
     var bouton = document.getElementById("btn-publier");
     barre.hidden = false;
+    /* Un changement d'onglet pendant l'envoi ne doit ni réactiver Publier ni
+       effacer « Publication en cours… ». */
+    if (publicationEnCours) {
+      bouton.disabled = true;
+      etat.textContent = "Publication en cours…";
+      return;
+    }
     bouton.disabled = n === 0;
-    barre.classList.toggle("barre-publication--attente", n > 0);
+    var miseEnLigne = publicationsEnAttente().length > 0;
+    barre.classList.toggle("barre-publication--attente", n > 0 || miseEnLigne);
     etat.textContent = n === 0
-      ? "Le site en ligne est à jour."
+      ? (miseEnLigne ? TEXTE_MISE_EN_LIGNE : "Le site en ligne est à jour.")
       : (n > 1
         ? n + " modifications ne sont pas encore en ligne."
         : "1 modification n'est pas encore en ligne.");
+    afficheEntreesBloquees();
+  }
+
+  /* Les entrées qui ne partiront pas, sous la barre, chacune avec « Retirer ». */
+  function afficheEntreesBloquees() {
+    var zone = document.getElementById("entrees-bloquees");
+    if (!zone) return;
+    var liste = entreesBloquees();
+    zone.hidden = !liste.length;
+    zone.innerHTML = liste.map(function (e, i) {
+      return '<p class="etat-publication">' + echap(e.texte) +
+        ' <button type="button" class="lien-reinit" data-entree="' + i + '">Retirer</button></p>';
+    }).join("");
+    zone.querySelectorAll("[data-entree]").forEach(function (b) {
+      b.addEventListener("click", function () { retireEntree(liste[parseInt(b.dataset.entree, 10)]); });
+    });
+  }
+
+  function retireEntree(e) {
+    if (publicationBloque()) return;
+    conflitsSignales = conflitsSignales.filter(function (c) { return c !== e.chemin; });
+    appliqueIci([{ cle: e.cle, retire: true }]);
+    majBarrePublication();
+    toast("Retiré des modifications à publier");
+  }
+
+  /* ------------------------------------------------------- mise en ligne
+
+     Après une publication, contenu.json est relu toutes les 15 secondes
+     jusqu'à ce qu'il porte le commit publié, ou un commit postérieur. Cela
+     remplace le rechargement de la page au bout de 60 secondes, qui effaçait
+     la saisie en cours et, quand la construction durait plus (jusqu'à 330 s
+     le 05/10/2026), laissait l'éditeur rouvrir l'état d'avant.              */
+  var TEXTE_MISE_EN_LIGNE = "Mise en ligne en cours : cela prend en général une à trois minutes.";
+  var SUIVI_MISE_EN_LIGNE = 15000;
+  var MISE_EN_LIGNE_SANS_REVISION = 10 * 60 * 1000;
+  var minuterieSuivi = null;
+
+  /* contenu.json tel que le site le sert à l'instant, sans aucun cache. */
+  function litContenuFrais() {
+    return fetch("contenu.json?v=" + Date.now(), { cache: "no-store" })
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); });
+  }
+
+  /* Une publication est en ligne quand contenu.json porte son commit, ou une
+     révision jamais vue avant elle : le site n'en montre jamais de plus
+     ancienne après une nouvelle, une révision inconnue est donc postérieure.
+     Sans révision dans contenu.json (gabarit pas encore construit), on s'en
+     tient au délai que GitHub annonce : dix minutes au plus. */
+  function estEnLigne(p, revision) {
+    if (!revision) return Date.now() - (p.quand || 0) >= MISE_EN_LIGNE_SANS_REVISION;
+    return revision === p.commit || (p.connues || []).indexOf(revision) === -1;
+  }
+
+  /* Oublie les publications désormais en ligne ; rend leur nombre. */
+  function oublieLesPubliees(revision) {
+    var faites = publicationsEnAttente().filter(function (p) { return estEnLigne(p, revision); });
+    if (faites.length) appliqueIci(faites.map(function (p) { return { cle: "p:" + p.commit, retire: true }; }));
+    return faites.length;
+  }
+
+  function suisLaMiseEnLigne() {
+    if (minuterieSuivi || !publicationsEnAttente().length) return;
+    minuterieSuivi = setTimeout(function () {
+      litContenuFrais().then(function (frais) {
+        if (!oublieLesPubliees(frais.revision)) return;
+        /* Le site montre désormais ce qui a été publié : ses données deviennent
+           la base, et le texte se lira à cette révision. */
+        donnees = frais;
+        majBarrePublication();
+        if (!publicationEnCours && !nombreEnAttente() && !publicationsEnAttente().length) {
+          document.getElementById("etat-publication").textContent = "En ligne.";
+        }
+      }, function () { /* coupure passagère : on relira au prochain tour */ }).then(function () {
+        minuterieSuivi = null;
+        suisLaMiseEnLigne();
+      });
+    }, SUIVI_MISE_EN_LIGNE);
   }
 
   /* Le serveur ne peut pas recevoir un reportage entier d'un coup : les photos
@@ -1049,9 +1589,13 @@
   /* Une coupure passagère ne doit pas coûter tout le reportage. */
   function reessaieUneFois(action) {
     return action().catch(function (premiere) {
+      /* Un refus du serveur (session expirée, conflit…) ne passera pas mieux au second essai. */
+      if (estUnRefus(premiere)) throw premiere;
       return respire().then(action).catch(function () { throw premiere; });
     });
   }
+
+  function estUnRefus(e) { return !!(e && e.statut >= 400 && e.statut < 500); }
 
   /* Décrit un échec assez précisément pour être compris à distance, sans jamais
      transporter le contenu des photos. */
@@ -1089,6 +1633,17 @@
      double). */
   var publicationEnCours = false;
 
+  /* Pendant l'envoi, la publication travaille sur ce qu'elle a pris au départ :
+     un enregistrement fait entre-temps ne partait pas, puis était effacé à la
+     fin avec le reste, et « Annuler » vidait le brouillon sans arrêter l'envoi
+     (revue du 05/10/2026). Le brouillon ne bouge donc plus tant que la
+     publication n'est pas finie. Appelée en tête de chaque geste qui l'écrit. */
+  function publicationBloque(message) {
+    if (!publicationEnCours) return false;
+    toast(message || "Une publication est en cours : attendez qu'elle se termine.");
+    return true;
+  }
+
   function publieMaintenant(deuxiemeChance) {
     if (publicationEnCours && !deuxiemeChance) return;
     publicationEnCours = true;
@@ -1108,6 +1663,7 @@
     var deposees = [];
     var faites = 0;
     var etapeFinale = false;
+    var connues = [];
 
     bouton.disabled = true;
     etat.textContent = "Publication en cours…";
@@ -1137,6 +1693,12 @@
     }).then(function () {
       progression("Mise à jour du site…", 1, 2);
       etapeFinale = true;
+      /* Les révisions que le site sert juste avant l'enregistrement : aucune
+         d'elles ne pourra passer pour la mise en ligne de cette publication. */
+      return litContenuFrais().then(function (frais) { return frais.revision; }, function () { return ""; });
+    }).then(function (revisionAvant) {
+      connues = [donnees.revision, revisionAvant].concat(publicationsEnAttente().map(function (p) { return p.commit; }))
+        .filter(function (r, i, tout) { return r && tout.indexOf(r) === i; });
       return reessaieUneFois(function () {
         return window.GapreePublication.publie({
           message: changements.message,
@@ -1144,22 +1706,46 @@
           suppressions: changements.suppressions
         });
       });
-    }).then(function () {
+    }).then(function (reponse) {
       progression(null);
       publicationEnCours = false;
-      surcouche = surcoucheVide();
-      ecritSurcouche(surcouche);
-      etat.textContent = "Publié. Le site en ligne se met à jour dans une minute environ.";
+      var operations = retraitsApresPublication(changements.entrees);
+      /* « Inchangé » : le site portait déjà exactement ce contenu, rien à suivre. */
+      if (reponse && reponse.inchange) {
+        appliqueIci(operations);
+        majBarrePublication();
+        etat.textContent = "Le site était déjà à jour.";
+        toast("Le site était déjà à jour");
+        return;
+      }
+      if (reponse && reponse.commit) {
+        operations.push({ cle: "p:" + reponse.commit, valeur: publicationFaite(changements, reponse.commit, connues) });
+        /* Un éditeur resté ouvert montre désormais ce qui vient d'être publié. */
+        changements.ecrits.forEach(function (e) { baseOuverte[e.chemin] = reponse.commit; });
+        Object.keys(changements.reglages).forEach(function (nom) { baseOuverte[cheminReglage(nom)] = reponse.commit; });
+      }
+      appliqueIci(operations);
+      majBarrePublication();
       toast("Publié sur le site");
-      setTimeout(function () { window.location.reload(); }, 60000);
+      suisLaMiseEnLigne();
     }).catch(function (e) {
       progression(null);
       publicationEnCours = false;
       compteRendu(etapeFinale ? "publication" : "envoi des photos", e,
         textes.concat(deposees), changements.suppressions);
+      /* Session expirée (12 h) : se reconnecter sur place, le brouillon et
+         l'éditeur ouvert restent tels quels. Réappuyer sur Publier sans
+         session échouait à nouveau, sans moyen de se reconnecter. */
+      if (e && e.statut === 401) {
+        etat.textContent = "Votre session a expiré : reconnectez-vous, vos modifications sont conservées.";
+        bouton.disabled = false;
+        demandeReconnexion();
+        return;
+      }
       var gardees = Object.keys(surcouche.deposees || {}).length;
       var suite;
-      if (etapeFinale && gardees && !deuxiemeChance) {
+      if (e && e.conflits) conflitsSignales = e.conflits.slice();
+      if (etapeFinale && gardees && !deuxiemeChance && !estUnRefus(e)) {
         /* L'envoi s'est bien passé et c'est la mise à jour qui a échoué : une des
            références gardées n'est donc pas exploitable. On les oublie et on
            renvoie les photos tout de suite, sans rien demander : sinon chaque
@@ -1178,8 +1764,9 @@
       } else {
         suite = "";
       }
+      if (e && e.conflits) majBarrePublication();
       etat.textContent = (e.message || "La publication a échoué.") + suite;
-      bouton.disabled = false;
+      bouton.disabled = nombreEnAttente() === 0;
       toast("La publication a échoué");
     });
   }
@@ -1301,20 +1888,63 @@
 
   var pub = window.GapreePublication;
 
+  /* ------------------------------------------ saisie pas encore enregistrée
+
+     Une saisie n'existe que dans la page tant qu'on n'a pas appuyé sur
+     Enregistrer : un onglet, « ← », la déconnexion ou la fermeture de la page
+     la perdaient sans rien demander (revue du 05/10/2026). Chaque éditeur, et
+     chaque panneau des Réglages, qui reçoit une saisie est noté ; un
+     enregistrement fait depuis lui, ou un changement de vue, l'efface.       */
+  var QUESTION_SAISIE = "Ce que vous avez saisi n'est pas enregistré et sera perdu. Quitter quand même ?";
+  var GESTES_D_EDITION = "[data-retire], [data-monte], [data-descend], [data-retire-document], #btn-retire-photo, #btn-ajout-horaire";
+  var zonesModifiees = [];
+  var zoneDuGeste = null;
+
+  function zoneDe(el) { return (el && el.closest && el.closest(".panneau")) || app; }
+  function saisieEnCours() { return zonesModifiees.length > 0; }
+  function quitteSaisie() { return !saisieEnCours() || confirm(QUESTION_SAISIE); }
+
+  function noteSaisie(e) {
+    if (vue.type === "liste" && vue.rubrique === "acces") return;
+    var zone = zoneDe(e.target);
+    if (zonesModifiees.indexOf(zone) === -1) zonesModifiees.push(zone);
+  }
+
+  app.addEventListener("input", noteSaisie);
+  app.addEventListener("change", noteSaisie);
+  /* En capture, donc avant le gestionnaire du bouton lui-même : « ← » peut
+     encore être retenu, et l'on sait de quel éditeur part un enregistrement. */
+  app.addEventListener("click", function (e) {
+    var cible = e.target;
+    zoneDuGeste = zoneDe(cible);
+    if (!cible.closest) return;
+    if (cible.closest("#btn-retour") && !quitteSaisie()) { e.stopPropagation(); return; }
+    if (cible.closest(GESTES_D_EDITION)) noteSaisie(e);
+  }, true);
+  app.addEventListener("click", function () { zoneDuGeste = null; });
+
   document.querySelectorAll(".onglets button").forEach(function (b) {
     b.addEventListener("click", function () {
+      if (!quitteSaisie()) return;
       vue = { type: "liste", rubrique: b.dataset.rubrique };
       rendre();
     });
   });
 
   function videBrouillon(question) {
+    if (publicationBloque("La publication en cours ne peut plus être arrêtée : attendez qu'elle se termine.")) return;
     if (!confirm(question)) return;
-    effaceSurcouche().then(function () {
-      surcouche = surcoucheVide();
-      toast("Modifications effacées");
-      rendre();
-    });
+    /* N'efface que ce que cette page connaît : ce qu'un autre onglet vient
+       d'enregistrer reste, et s'affiche aussitôt. Le suivi des publications
+       déjà faites reste aussi : elles ne sont pas « non publiées ». */
+    conflitsSignales = [];
+    appliqueIci(Object.keys(aplatit(surcouche))
+      .filter(function (cle) { return cle.indexOf("p:") !== 0; })
+      .map(function (cle) { return { cle: cle, retire: true }; }))
+      .then(function () {
+        toast("Modifications effacées");
+        rendre();
+      });
   }
 
   document.getElementById("btn-reinit").addEventListener("click", function () {
@@ -1331,12 +1961,13 @@
   document.getElementById("btn-publier").addEventListener("click", function () { publieMaintenant(); });
 
   document.getElementById("btn-deconnexion").addEventListener("click", function () {
-    if (nombreEnAttente() > 0 && !confirm("Des modifications ne sont pas publiées. Se déconnecter quand même ?")) return;
+    if (saisieEnCours() && !confirm(QUESTION_SAISIE)) return;
+    if (!saisieEnCours() && nombreEnAttente() > 0 && !confirm("Des modifications ne sont pas publiées. Se déconnecter quand même ?")) return;
     pub.deconnecte().then(function () { window.location.reload(); });
   });
 
   window.addEventListener("beforeunload", function (e) {
-    if (pub.estConnecte() && nombreEnAttente() > 0) {
+    if ((pub.estConnecte() || reconnexionDemandee) && (nombreEnAttente() > 0 || saisieEnCours())) {
       e.preventDefault();
       e.returnValue = "";
     }
@@ -1351,7 +1982,9 @@
       .then(function (deux) {
         donnees = deux[0];
         surcouche = deux[1];
+        oublieLesPubliees(donnees.revision);
         rendre();
+        suisLaMiseEnLigne();
       })
       .catch(function () {
         app.innerHTML = '<p class="erreur-chargement">Le contenu du site n\'a pas pu être chargé. Vérifiez la connexion internet, puis rechargez la page.</p>';
@@ -1405,12 +2038,20 @@
     ouvreEspace();
   }
 
-  function ecranConnexion() {
+  /* Ce qui suit une connexion réussie : l'ouverture de l'espace au démarrage,
+     ou la reprise sur place après une session expirée. */
+  var suiteConnexion = null;
+  var formulaireConnexionPret = false;
+
+  function ecranConnexion(suite) {
     var connexion = document.getElementById("connexion");
     var erreur = document.getElementById("erreur-connexion");
     var bouton = document.getElementById("btn-connexion");
+    suiteConnexion = suite || apresConnexion;
     connexion.hidden = false;
     document.getElementById("ch-email").focus();
+    if (formulaireConnexionPret) return;
+    formulaireConnexionPret = true;
 
     document.getElementById("form-connexion").addEventListener("submit", function (e) {
       e.preventDefault();
@@ -1420,7 +2061,12 @@
       bouton.disabled = true;
       bouton.textContent = "Vérification…";
       pub.connecte(email, champMdp.value)
-        .then(apresConnexion)
+        .then(function () {
+          /* Le mot de passe ne reste pas dans la page : l'écran de reconnexion,
+             des heures plus tard, le montrerait encore rempli. */
+          champMdp.value = "";
+          return suiteConnexion();
+        })
         .catch(function (err) {
           erreur.textContent = err.message;
           erreur.hidden = false;
@@ -1432,6 +2078,36 @@
           bouton.textContent = "Entrer";
         });
     });
+  }
+
+  /* La session a expiré pendant le travail : l'écran de connexion passe
+     devant l'espace, qui reste en l'état derrière lui. */
+  var reconnexionDemandee = false;
+
+  function demandeReconnexion() {
+    reconnexionDemandee = true;
+    var qui = document.getElementById("entete-qui");
+    var champ = document.getElementById("ch-email");
+    if (!champ.value && qui.textContent) champ.value = qui.textContent;
+    document.getElementById("espace").hidden = true;
+    var erreur = document.getElementById("erreur-connexion");
+    erreur.textContent = "Votre session a expiré : reconnectez-vous pour publier. Vos modifications sont conservées.";
+    erreur.hidden = false;
+    ecranConnexion(repriseApresReconnexion);
+  }
+
+  function repriseApresReconnexion() {
+    var moi = pub.utilisateur();
+    if (moi && moi.doitChangerMotDePasse) return demandeNouveauMotDePasse();
+    reconnexionDemandee = false;
+    document.getElementById("connexion").hidden = true;
+    document.getElementById("espace").hidden = false;
+    var qui = document.getElementById("entete-qui");
+    qui.textContent = moi.email;
+    qui.hidden = false;
+    document.getElementById("onglet-acces").hidden = !moi.admin;
+    majBarrePublication();
+    toast("Vous êtes reconnecté : vous pouvez publier");
   }
 
   if (pub.estArme()) {
