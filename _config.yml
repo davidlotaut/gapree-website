@@ -10,9 +10,10 @@ baseurl: ""
 markdown: kramdown
 future: true
 
-# Phase de développement : noindex global (le site reste accessible sans mot de passe ;
-# seul /admin/ est protégé). Passer à false à la mise en ligne définitive.
-mode_dev: true
+# true = noindex sur tout le site (phase de construction). Le site est en service
+# depuis septembre 2026 : il est ouvert aux moteurs de recherche. Le guide
+# d'administration (noindex: true dans son en-tête) et /admin/ restent exclus.
+mode_dev: false
 
 collections:
   actualites:
