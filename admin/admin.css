@@ -656,6 +656,15 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .acces-actions .lien-reinit { margin-left: 0; color: var(--prairie); }
 .lien-reinit--danger { color: var(--rouge); }
 
+/* Sur téléphone, les liens d'une ligne passent sous l'adresse au lieu de
+   sortir de l'écran : ils demandent 441 à 467 points, la ligne ne tenait qu'à
+   partir de 554 de large (revue du 05/10/2026). */
+@media (max-width: 620px) {
+  .ligne--acces { flex-wrap: wrap; }
+  .acces-actions { flex-wrap: wrap; flex-shrink: 1; gap: 0.35rem 1.2rem; }
+  .ligne--acces .ligne-titre { overflow-wrap: break-word; overflow-wrap: anywhere; }
+}
+
 .panneau--acces {
   max-width: 44rem;
   margin-bottom: 2rem;
