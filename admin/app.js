@@ -215,6 +215,9 @@
      tout : il dépasse la mémoire du serveur comme la place réservée aux
      brouillons. */
   var COTE_MAX = 1800;
+  /* Un portrait d'élu ne s'affiche qu'en rond de 92 points, sans vue en grand :
+     600 points suffisent, pour un poids bien moindre (revue du 05/10/2026). */
+  var COTE_PORTRAIT = 600;
   var QUALITE = 0.85;
   var COTE_VIGNETTE = 240;     // aperçu dans l'éditeur, jamais envoyé
   var TAILLE_PHOTO_MAX = 60 * 1024 * 1024;
@@ -258,9 +261,11 @@
     });
   }
 
-  function litPhoto(fichier) {
+  /* Rend { src, vignette }, jamais une chaîne : chaque appel prend .src.
+     coteMax est facultatif (COTE_MAX par défaut). */
+  function litPhoto(fichier, coteMax) {
     return ouvreImage(fichier).then(function (image) {
-      var reduite = { src: dessine(image, COTE_MAX, QUALITE), vignette: dessine(image, COTE_VIGNETTE, 0.7) };
+      var reduite = { src: dessine(image, coteMax || COTE_MAX, QUALITE), vignette: dessine(image, COTE_VIGNETTE, 0.7) };
       if (image.close) image.close();
       if (image.src && image.src.indexOf("blob:") === 0) URL.revokeObjectURL(image.src);
       return reduite;
@@ -776,7 +781,7 @@
       if (!f) return;
       inputImage.value = "";
       attend(true);
-      prepare(litPhoto(f)).then(function (reduite) {
+      prepare(litPhoto(f, COTE_PORTRAIT)).then(function (reduite) {
         attend(false);
         /* La fiche a été fermée entre-temps : rien à y écrire. */
         if (!imagePortrait.isConnected) {
