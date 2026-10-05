@@ -18,7 +18,7 @@ layout: default
   {% include galerie.html %}
   {% elsif page.image %}
   <figure class="article-figure">
-    <img src="{{ page.image | relative_url }}" alt="{{ page.alt }}">
+    <img src="{{ page.image | relative_url }}" alt="{{ page.alt | escape }}">
     {% if page.alt %}<figcaption>{{ page.alt }}</figcaption>{% endif %}
   </figure>
   {% endif %}
@@ -26,4 +26,18 @@ layout: default
   <div class="prose">
 {{ content }}
   </div>
+  {%- comment -%}
+    Les pièces jointes d'une actualité (PDF déposés par la mairie), sous le
+    texte : le nom du lien dit ce qu'on télécharge, son format et son poids.
+  {%- endcomment -%}
+  {%- if page.documents and page.documents.size > 0 %}
+  <section class="article-documents" aria-labelledby="titre-documents">
+    <h2 class="article-documents-titre" id="titre-documents">{% if page.documents.size > 1 %}Pièces jointes{% else %}Pièce jointe{% endif %}</h2>
+    <ul>
+      {%- for doc in page.documents %}
+      <li><a href="{{ doc.src | relative_url }}">Télécharger {{ doc.titre | default: "le document" }} (PDF{% if doc.taille and doc.taille != "" %}, {{ doc.taille }}{% endif %})</a></li>
+      {%- endfor %}
+    </ul>
+  </section>
+  {%- endif %}
 </article>

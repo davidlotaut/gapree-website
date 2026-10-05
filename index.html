@@ -3,13 +3,13 @@ layout: default
 section: accueil
 ---
 <div class="hero">
-  <img src="{{ site.data.accueil.photo | relative_url }}" alt="{{ site.data.accueil.alt_photo | default: '' }}" fetchpriority="high">
+  <img src="{{ site.data.accueil.photo | relative_url }}" alt="{{ site.data.accueil.alt_photo | default: '' | escape }}" fetchpriority="high">
   <p class="plate">Gâprée</p>
 </div>
 
 <section class="intro">
   <p class="intro-sub">{{ site.data.accueil.sous_titre }}</p>
-  {% if site.data.accueil.texte %}<p class="intro-texte">{{ site.data.accueil.texte }}</p>{% endif %}
+  {% if site.data.accueil.texte %}<p class="intro-texte">{{ site.data.accueil.texte | newline_to_br }}</p>{% endif %}
 </section>
 
 {% assign actus = site.actualites | sort: "date" | reverse %}

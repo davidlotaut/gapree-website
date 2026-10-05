@@ -1,9 +1,12 @@
 /* Confort de lecture des photos, rien de plus : les flèches qui font défiler
-   les bandes, et le clavier dans la vue en grand.
+   les bandes, et la vue en grand au clavier et avec le bouton Retour.
 
    Tout le reste du site fonctionne sans ce fichier. La vue en grand s'ouvre par
-   l'adresse de la photo, et les bandes se font glisser au doigt : si ce script
-   ne se charge pas, on perd le confort, jamais l'accès aux photos. */
+   l'adresse de la photo, et la bande de photos d'un article se fait glisser au
+   doigt. Sur les cartes des listes, le lien de la carte couvre ses photos :
+   elles s'y passent avec les flèches de ce script, et sans lui elles restent
+   toutes dans l'article. Si ce script ne se charge pas, on perd le confort,
+   jamais l'accès aux photos. */
 (function () {
   "use strict";
 
@@ -71,16 +74,97 @@
     for (var i = 0; i < bandes.length; i++) equipe(bandes[i]);
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", equipeTout);
-  } else {
-    equipeTout();
+  /* La vue en grand et le bouton Retour du téléphone. Sans script, flèches et
+     « Fermer » sont des ancres : chacune ajoute une page à l'historique, et
+     Retour rouvrait les photos une à une. Ici, les flèches remplacent la photo
+     affichée, et « Fermer » (ou le fond) revient en arrière quand la vue a été
+     ouverte d'un clic sur la bande pendant cette visite : un seul Retour
+     quitte ensuite l'article. Arrivé directement sur une photo (lien partagé,
+     page rechargée), « Fermer » ramène à la bande sans quitter le site. */
+  var ouverteParClic = false;
+  /* La flèche qui avait le focus, à retrouver dans la photo suivante. */
+  var flecheGardee = null;
+  /* La vue affichée avant le dernier changement d'adresse. */
+  var vuePrecedente = null;
+
+  function vueOuverte() {
+    var id = location.hash.slice(1);
+    var vue = id ? document.getElementById(id) : null;
+    return vue && vue.classList.contains("visionneuse") ? vue : null;
   }
 
-  /* Dans la vue en grand : les flèches du clavier changent de photo, Échap ferme. */
+  document.addEventListener("click", function (e) {
+    /* Ctrl, Cmd ou Maj : le navigateur garde la main (nouvel onglet...). */
+    if (e.defaultPrevented || e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+    var lien = e.target && e.target.closest ? e.target.closest("a") : null;
+    if (!lien) return;
+    if (lien.classList.contains("galerie-lien")) {
+      ouverteParClic = true;
+      return;
+    }
+    if (!lien.closest(".visionneuse")) return;
+    e.preventDefault();
+    if (lien.classList.contains("visionneuse-fleche")) {
+      flecheGardee = document.activeElement === lien
+        ? (lien.classList.contains("visionneuse-fleche--avant") ? ".visionneuse-fleche--avant" : ".visionneuse-fleche--apres")
+        : null;
+      location.replace(lien.href);
+    } else if (ouverteParClic) {
+      history.back();
+    } else {
+      location.replace(lien.href);
+    }
+  });
+
+  /* Le clavier dans la vue en grand : le focus va sur « Fermer » à
+     l'ouverture, Tab et Maj+Tab tournent sur les liens de la vue (le reste de
+     la page est sous le voile), et à la fermeture le focus revient sur la
+     vignette de la dernière photo vue. D'une photo à l'autre, il reste sur la
+     flèche qui l'avait : un second appui sur Entrée avance encore au lieu de
+     fermer la vue. */
+  function liensDe(vue) {
+    var tous = vue.querySelectorAll("a[href]");
+    var liens = [];
+    for (var i = 0; i < tous.length; i++) {
+      if (tous[i].getAttribute("tabindex") !== "-1") liens.push(tous[i]);
+    }
+    return liens;
+  }
+
+  function suitLaVue() {
+    var vue = vueOuverte();
+    if (vue) {
+      var cible = (flecheGardee && vue.querySelector(flecheGardee)) || vue.querySelector(".visionneuse-fermer");
+      if (cible) cible.focus();
+    } else {
+      ouverteParClic = false;
+      if (vuePrecedente) {
+        var vignette = document.querySelector('.galerie-lien[href="#' + vuePrecedente.id + '"]');
+        if (vignette) vignette.focus();
+      }
+    }
+    flecheGardee = null;
+    vuePrecedente = vue;
+  }
+
+  window.addEventListener("hashchange", suitLaVue);
+
+  /* Dans la vue en grand : Tab reste dans la vue, les flèches du clavier
+     changent de photo, Échap ferme. Avec Alt, Ctrl ou Cmd, la touche reste au
+     navigateur (Alt + flèche gauche, c'est son Retour). */
   document.addEventListener("keydown", function (e) {
-    var ouverte = document.querySelector(".visionneuse:target");
-    if (!ouverte) return;
+    var ouverte = vueOuverte();
+    if (!ouverte || e.altKey || e.ctrlKey || e.metaKey) return;
+    if (e.key === "Tab") {
+      var liens = liensDe(ouverte);
+      if (!liens.length) return;
+      var i = liens.indexOf(document.activeElement);
+      var dernier = liens.length - 1;
+      var suivant = e.shiftKey ? (i <= 0 ? dernier : i - 1) : (i === -1 || i === dernier ? 0 : i + 1);
+      e.preventDefault();
+      liens[suivant].focus();
+      return;
+    }
     var lien = null;
     if (e.key === "ArrowLeft") lien = ouverte.querySelector('[rel="prev"]');
     else if (e.key === "ArrowRight") lien = ouverte.querySelector('[rel="next"]');
@@ -90,4 +174,15 @@
       lien.click();
     }
   });
+
+  function demarre() {
+    equipeTout();
+    suitLaVue();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", demarre);
+  } else {
+    demarre();
+  }
 })();

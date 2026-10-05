@@ -24,19 +24,19 @@
       l'article. Une seule : rien ne change.
     {%- endcomment -%}
     {%- if item.photos and item.photos.size > 0 %}
-    <div class="carte-photos" role="group" aria-label="Photos de « {{ item.title }} »">
-      <img src="{{ item.image | relative_url }}" alt="{{ item.alt }}" loading="lazy">
+    <div class="carte-photos" role="group" aria-label="Photos de « {{ item.title | escape }} »">
+      <img src="{{ item.image | relative_url }}" alt="{{ item.alt | escape }}" loading="lazy">
       {%- for photo in item.photos %}
-      <img src="{{ photo.src | relative_url }}" alt="{{ photo.alt }}" loading="lazy">
+      <img src="{{ photo.src | relative_url }}" alt="{{ photo.alt | escape }}" loading="lazy">
       {%- endfor %}
     </div>
     {%- else %}
-    <img src="{{ item.image | relative_url }}" alt="{{ item.alt }}" loading="lazy">
+    <img src="{{ item.image | relative_url }}" alt="{{ item.alt | escape }}" loading="lazy">
     {%- endif %}
     {%- if include.type == "actualite" %}
     <p class="card-chip">
       <span class="visually-hidden">Publié le {% include date_fr.html date=item.date %}. </span>
-      <span aria-hidden="true">{{ item.date | date: "%-d" }} {{ mabr }}</span>
+      <span aria-hidden="true">{{ item.date | date: "%-d" }} {{ mabr }} {{ item.date | date: "%Y" }}</span>
     </p>
     {%- endif %}
   </div>
@@ -47,6 +47,7 @@
       <span class="visually-hidden">Publié le {% include date_fr.html date=item.date %}. </span>
       <span aria-hidden="true" class="card-date-jour">{{ item.date | date: "%-d" }}</span>
       <span aria-hidden="true" class="card-date-mois">{{ mabr }}</span>
+      <span aria-hidden="true" class="card-date-annee">{{ item.date | date: "%Y" }}</span>
     </p>
     {%- endif %}
     <div class="card-text">

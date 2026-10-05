@@ -451,6 +451,18 @@ button:focus-visible {
   color: var(--ardoise);
 }
 
+/* L'année est toujours écrite : sans elle, deux annonces d'années différentes
+   portent la même date à l'écran. */
+.card-date-annee {
+  display: block;
+  margin-top: 0.1rem;
+  font-family: var(--signaletique);
+  font-weight: 600;
+  font-size: 0.9rem;
+  letter-spacing: 0.04em;
+  color: var(--ardoise);
+}
+
 .card-text { min-width: 0; }
 
 .card-title {
@@ -573,6 +585,9 @@ button:focus-visible {
   max-width: min(100%, 92ch);
   font-size: inherit;
   line-height: 1.75;
+  /* Une adresse web collée se coupe plutôt que de déborder de l'écran du
+     téléphone (break-word : anywhere n'existe qu'à partir d'iOS 15.4). */
+  overflow-wrap: break-word;
 }
 
 .prose p { margin: 0 0 1.1em; }
@@ -605,6 +620,44 @@ button:focus-visible {
   border: 0;
   border-top: 1px solid var(--sauge);
   margin: 2em 0;
+}
+
+/* Pièces jointes d'une actualité : un lien par document, large et lisible. */
+.article-documents {
+  max-width: min(100%, 92ch);
+  margin: 1.8rem 0 0;
+}
+
+.article-documents-titre {
+  margin: 0 0 0.7rem;
+  font-family: var(--bulletin);
+  font-size: 1.25rem;
+  line-height: 1.3;
+}
+
+.article-documents ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.article-documents li { margin: 0 0 0.6rem; }
+
+.article-documents a {
+  display: inline-block;
+  padding: 0.75rem 1.1rem;
+  border: 1px solid var(--sauge);
+  border-radius: 8px;
+  background: var(--sauge-pale);
+  color: var(--prairie-fonce);
+  font-weight: 600;
+  line-height: 1.4;
+  overflow-wrap: break-word;
+}
+
+.article-documents a:hover {
+  border-color: var(--prairie);
+  color: var(--encre);
 }
 
 /* --- Contact ----------------------------------------------------------------- */
