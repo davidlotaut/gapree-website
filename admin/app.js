@@ -261,6 +261,22 @@
     });
   }
 
+  /* Photos en préparation, tous éditeurs confondus. Elles n'entrent dans
+     l'éditeur qu'une fois prêtes : changer d'onglet avant la fin les perdait
+     sans un mot (revue du 05/10/2026). Les onglets attendent donc la fin. */
+  var preparations = 0;
+
+  function prepare(promesse) {
+    preparations++;
+    majOnglets();
+    function fin() { preparations--; majOnglets(); }
+    return promesse.then(function (r) { fin(); return r; }, function (e) { fin(); throw e; });
+  }
+
+  function majOnglets() {
+    document.querySelectorAll(".onglets button").forEach(function (b) { b.disabled = preparations > 0; });
+  }
+
   var toastTimer = null;
   function toast(msg) {
     var t = document.getElementById("toast");
@@ -437,18 +453,27 @@
       texte: document.getElementById("ch-texte")
     };
     var boutonEnregistrer = document.getElementById("btn-enregistrer");
+    var boutonRetour = document.getElementById("btn-retour");
+    var boutonAnnuler = document.getElementById("btn-annuler");
     var etatTexte = document.getElementById("etat-texte");
-    /* L'aperçu de CET éditeur : un rappel tardif ne doit jamais écrire dans
-       celui d'un autre article ouvert entre-temps. */
+    /* La liste des photos et l'aperçu de CET éditeur : un rappel tardif ne doit
+       jamais écrire dans ceux d'un autre article ouvert entre-temps. */
+    var zonePhotos = document.getElementById("liste-photos");
     var cadreApercu = document.getElementById("apercu");
+    /* Des photos en préparation n'entrent dans la liste qu'à la fin : jusque-là,
+       enregistrer ou quitter l'éditeur les perdrait sans un mot. */
+    var enPreparation = false;
 
     function majBoutons() {
-      boutonEnregistrer.disabled = !texteCharge;
+      boutonEnregistrer.disabled = !texteCharge || enPreparation;
       refs.texte.disabled = !texteCharge;
+      [boutonRetour, boutonAnnuler, btnSupprimer, inputImages].forEach(function (b) {
+        if (b) b.disabled = enPreparation;
+      });
     }
 
     function rendPhotos() {
-      var zone = document.getElementById("liste-photos");
+      var zone = zonePhotos;
       if (!photos.length) {
         zone.innerHTML = '<p class="aide aide--vide">Aucune photo pour le moment.</p>';
       } else {
@@ -537,11 +562,20 @@
       /* Une par une : cent photos décodées en même temps saturent la mémoire
          de la page, et la jauge doit pouvoir avancer. */
       var illisibles = 0;
-      unParUn(images, function (n, total) {
+      enPreparation = true;
+      majBoutons();
+      prepare(unParUn(images, function (n, total) {
         return total > 1 ? "Préparation des photos… " + n + " sur " + total : "Préparation de la photo…";
       }, function (fichier) {
         return litPhoto(fichier).catch(function () { illisibles++; return null; });
-      }).then(function (reduites) {
+      })).then(function (reduites) {
+        enPreparation = false;
+        majBoutons();
+        /* L'éditeur a été fermé pendant la préparation : ses photos ne vont nulle part. */
+        if (!zonePhotos.isConnected) {
+          toast("Les photos n'ont pas été ajoutées : l'article a été fermé avant la fin de leur préparation");
+          return;
+        }
         reduites.forEach(function (r) {
           if (r) photos.push({ src: r.src, vignette: r.vignette, alt: "" });
         });
@@ -550,12 +584,16 @@
         var ajoutees = images.length - illisibles;
         toast(ajoutees > 1 ? ajoutees + " photos ajoutées" : "Photo ajoutée");
         if (illisibles > 0) toast(illisibles + (illisibles > 1 ? " photos n'ont pas pu être lues" : " photo n'a pas pu être lue"));
+      }, function () {
+        enPreparation = false;
+        majBoutons();
+        if (zonePhotos.isConnected) toast("Les photos n'ont pas pu être préparées");
       });
     });
 
     function retourListe() { vue = { type: "liste", rubrique: rubrique }; rendre(); }
-    document.getElementById("btn-retour").addEventListener("click", retourListe);
-    document.getElementById("btn-annuler").addEventListener("click", retourListe);
+    boutonRetour.addEventListener("click", retourListe);
+    boutonAnnuler.addEventListener("click", retourListe);
 
     document.getElementById("btn-enregistrer").addEventListener("click", function () {
       if (!refs.titre.value.trim()) { toast("Le titre est obligatoire"); refs.titre.focus(); return; }
@@ -687,21 +725,36 @@
 
     var photo = item.photo || null;
     var inputImage = document.getElementById("ch-image");
+    var imagePortrait = document.getElementById("photo-actuelle");
+    /* Tant que la photo se prépare, enregistrer garderait l'ancienne et quitter
+       la fiche perdrait la nouvelle : ces boutons attendent. */
+    var enAttente = ["btn-enregistrer", "btn-retour", "btn-annuler", "btn-supprimer"]
+      .map(function (id) { return document.getElementById(id); }).concat(inputImage);
+    function attend(oui) { enAttente.forEach(function (b) { if (b) b.disabled = oui; }); }
     inputImage.addEventListener("change", function () {
       var f = inputImage.files[0];
       if (!f) return;
       inputImage.value = "";
-      litPhoto(f).then(function (reduite) {
+      attend(true);
+      prepare(litPhoto(f)).then(function (reduite) {
+        attend(false);
+        /* La fiche a été fermée entre-temps : rien à y écrire. */
+        if (!imagePortrait.isConnected) {
+          toast("La photo n'a pas été ajoutée : la fiche a été fermée avant la fin de sa préparation");
+          return;
+        }
         photo = reduite.src;
-        var img = document.getElementById("photo-actuelle");
-        img.src = photo;
-        img.hidden = false;
-      }).catch(function () { toast("La photo n'a pas pu être lue"); });
+        imagePortrait.src = photo;
+        imagePortrait.hidden = false;
+      }, function () {
+        attend(false);
+        if (imagePortrait.isConnected) toast("La photo n'a pas pu être lue");
+      });
     });
     var btnRetirePhoto = document.getElementById("btn-retire-photo");
     if (btnRetirePhoto) btnRetirePhoto.addEventListener("click", function () {
       photo = null;
-      document.getElementById("photo-actuelle").hidden = true;
+      imagePortrait.hidden = true;
     });
 
     function retour() { vue = { type: "liste", rubrique: "elus" }; rendre(); }
@@ -787,14 +840,28 @@
 
     var photoAccueil = accueil.photo || null;
     var inputPhoto = document.getElementById("ch-photo-accueil");
+    var imageAccueil = document.getElementById("photo-accueil");
+    var boutonAccueil = document.getElementById("btn-enregistre-accueil");
+    /* Tant que la photo se prépare, enregistrer garderait l'ancienne. */
+    function attendPhoto(oui) { boutonAccueil.disabled = oui; inputPhoto.disabled = oui; }
     inputPhoto.addEventListener("change", function () {
       var f = inputPhoto.files[0];
       if (!f) return;
       inputPhoto.value = "";
-      litPhoto(f).then(function (reduite) {
+      attendPhoto(true);
+      prepare(litPhoto(f)).then(function (reduite) {
+        attendPhoto(false);
+        /* Les Réglages ont été fermés entre-temps : rien à y écrire. */
+        if (!imageAccueil.isConnected) {
+          toast("La photo d'accueil n'a pas été ajoutée : les Réglages ont été fermés avant la fin de sa préparation");
+          return;
+        }
         photoAccueil = reduite.src;
-        document.getElementById("photo-accueil").src = photoAccueil;
-      }).catch(function () { toast("La photo n'a pas pu être lue"); });
+        imageAccueil.src = photoAccueil;
+      }, function () {
+        attendPhoto(false);
+        if (imageAccueil.isConnected) toast("La photo n'a pas pu être lue");
+      });
     });
 
     function rendHoraires() {

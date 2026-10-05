@@ -146,6 +146,9 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .onglets button:hover { color: var(--prairie-fonce); border-bottom-color: var(--sauge); }
 .onglets button.actif { border-bottom-color: var(--rouge); }
 
+/* Pendant la préparation d'une photo, les onglets et le retour attendent. */
+.onglets button:disabled, .retour-liste:disabled { opacity: 0.5; cursor: default; pointer-events: none; }
+
 /* --- Zone principale ------------------------------------------------------------ */
 
 #app { padding: 1.6rem var(--gouttiere) 3.5rem; }
