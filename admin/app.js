@@ -1896,7 +1896,7 @@
      chaque panneau des Réglages, qui reçoit une saisie est noté ; un
      enregistrement fait depuis lui, ou un changement de vue, l'efface.       */
   var QUESTION_SAISIE = "Ce que vous avez saisi n'est pas enregistré et sera perdu. Quitter quand même ?";
-  var GESTES_D_EDITION = "[data-retire], [data-monte], [data-descend], #btn-retire-photo, #btn-ajout-horaire";
+  var GESTES_D_EDITION = "[data-retire], [data-monte], [data-descend], [data-retire-document], #btn-retire-photo, #btn-ajout-horaire";
   var zonesModifiees = [];
   var zoneDuGeste = null;
 

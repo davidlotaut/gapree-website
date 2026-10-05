@@ -153,3 +153,18 @@ test("défaut 42 : se déconnecter avec une saisie non enregistrée demande conf
   assert.equal(questionsSaisie(p).length, 1);
   assert.equal(m.connecte, true);
 });
+
+test("défaut 42 : retirer une pièce jointe (bouton du lot admin-editeurs) compte comme une saisie", async () => {
+  const m = creeMonde(siteDeDepart());
+  const p = ouvrePage(m);
+  await p.attends();
+  p.ouvre(H);
+  await p.attends();
+  /* Le bouton tel que l'éditeur d'actualité l'écrit pour une pièce jointe. */
+  p.el("liste-photos").innerHTML = '<button type="button" class="lien-reinit lien-reinit--danger" data-retire-document="0">Retirer</button>';
+  p.el("liste-photos").querySelector("[data-retire-document]").tire("click");
+  p.reponses.push(false);
+  p.onglet("talents");
+  await p.attends();
+  assert.equal(questionsSaisie(p).length, 1);
+});
