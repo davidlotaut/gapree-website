@@ -99,7 +99,9 @@ test("défaut 43 : un refus 409 signale les entrées en conflit, les écarte des
   p.clic("btn-publier");
   await p.attends();
   assert.equal(m.publications.length, 1, "pas de nouvel essai automatique sur un refus");
-  assert.equal(p.etat(), message);
+  // La barre parle de l'article, pas du fichier cité par le serveur (banc d'intégration du 06/10/2026).
+  assert.equal(p.etat(), "Rien n'a été publié : quelqu'un d'autre a changé entre-temps ce que vous vouliez publier (voir ci-dessous).");
+  assert.doesNotMatch(p.etat(), /_actualites|\.md/);
   assert.equal(lignes(p).length, 1);
   assert.match(lignes(p)[0].textContent, /« Halloween » a été changé par quelqu'un d'autre/);
   assert.deepEqual(Object.keys(m.brouillon().modifies), [H], "le brouillon est intact");

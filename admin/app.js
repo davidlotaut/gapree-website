@@ -7,7 +7,7 @@
 (function () {
   "use strict";
 
-  var VERSION = "2026-10-05-a";
+  var VERSION = "2026-10-06-a";
   var DEPOT_RAW = "https://raw.githubusercontent.com/davidlotaut/gapree-website/";
   var CLE_DEMO = "gapree-demo-admin";
 
@@ -2155,7 +2155,11 @@
         suite = "";
       }
       if (e && e.conflits) majBarrePublication();
-      etat.textContent = (e.message || "La publication a échoué.") + suite;
+      /* Le message du serveur cite des noms de fichiers : l'écran parle de l'article,
+         nommé par son titre dans les lignes en dessous. */
+      etat.textContent = (e && e.conflits
+        ? "Rien n'a été publié : quelqu'un d'autre a changé entre-temps ce que vous vouliez publier (voir ci-dessous)."
+        : (e.message || "La publication a échoué.")) + suite;
       bouton.disabled = nombreEnAttente() === 0;
       toast("La publication a échoué");
     });
