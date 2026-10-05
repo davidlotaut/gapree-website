@@ -14,7 +14,7 @@
   {%- if page.image %}
   <figure class="galerie-photo">
     <a class="galerie-lien" href="#photo-1" aria-label="Voir la photo 1 en grand">
-      <img src="{{ page.image | relative_url }}" alt="{{ page.alt }}">
+      <img src="{{ page.image | relative_url }}" alt="{{ page.alt | escape }}">
       <span class="galerie-loupe" aria-hidden="true">Agrandir</span>
     </a>
     {%- if page.alt and page.alt != "" %}<figcaption>{{ page.alt }}</figcaption>{% endif %}
@@ -24,7 +24,7 @@
   {%- if page.image %}{% assign rang = forloop.index | plus: 1 %}{% else %}{% assign rang = forloop.index %}{% endif %}
   <figure class="galerie-photo">
     <a class="galerie-lien" href="#photo-{{ rang }}" aria-label="Voir la photo {{ rang }} en grand">
-      <img src="{{ photo.src | relative_url }}" alt="{{ photo.alt }}" loading="lazy">
+      <img src="{{ photo.src | relative_url }}" alt="{{ photo.alt | escape }}" loading="lazy">
       <span class="galerie-loupe" aria-hidden="true">Agrandir</span>
     </a>
     {%- if photo.alt and photo.alt != "" %}<figcaption>{{ photo.alt }}</figcaption>{% endif %}

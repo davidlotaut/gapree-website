@@ -45,7 +45,7 @@ description: "Contacter la mairie de Gâprée (Orne) : adresse, téléphone, cou
       {% for m in membres %}
       <li class="trombi-card">
         {% if m.photo %}
-        <img class="trombi-photo" src="{{ m.photo | relative_url }}" alt="Portrait de {{ m.title }}" loading="lazy">
+        <img class="trombi-photo" src="{{ m.photo | relative_url }}" alt="Portrait de {{ m.title | escape }}" loading="lazy">
         {% else %}
         {% assign parts = m.title | split: " " %}
         <span class="trombi-initiales" aria-hidden="true">{% for p in parts limit: 2 %}{{ p | slice: 0 }}{% endfor %}</span>

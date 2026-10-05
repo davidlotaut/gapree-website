@@ -18,7 +18,7 @@
      aria-label="Photo suivante" rel="next"><span aria-hidden="true">&#8250;</span></a>
   {%- endif %}
   <figure class="visionneuse-cadre">
-    <img src="{{ include.src | relative_url }}" alt="{{ include.alt }}" loading="lazy">
+    <img src="{{ include.src | relative_url }}" alt="{{ include.alt | escape }}" loading="lazy">
     {%- if include.alt and include.alt != "" %}
     <figcaption class="visionneuse-legende">{{ include.alt }}</figcaption>
     {%- endif %}

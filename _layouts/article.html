@@ -18,7 +18,7 @@ layout: default
   {% include galerie.html %}
   {% elsif page.image %}
   <figure class="article-figure">
-    <img src="{{ page.image | relative_url }}" alt="{{ page.alt }}">
+    <img src="{{ page.image | relative_url }}" alt="{{ page.alt | escape }}">
     {% if page.alt %}<figcaption>{{ page.alt }}</figcaption>{% endif %}
   </figure>
   {% endif %}
