@@ -9,7 +9,7 @@ section: accueil
 
 <section class="intro">
   <p class="intro-sub">{{ site.data.accueil.sous_titre }}</p>
-  {% if site.data.accueil.texte %}<p class="intro-texte">{{ site.data.accueil.texte }}</p>{% endif %}
+  {% if site.data.accueil.texte %}<p class="intro-texte">{{ site.data.accueil.texte | newline_to_br }}</p>{% endif %}
 </section>
 
 {% assign actus = site.actualites | sort: "date" | reverse %}

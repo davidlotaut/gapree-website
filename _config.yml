@@ -8,6 +8,10 @@ url: "https://gapree.com"
 baseurl: ""
 
 markdown: kramdown
+# Un retour à la ligne tapé dans un texte reste un retour à la ligne sur le site,
+# comme dans l'aperçu de l'éditeur (GitHub Pages laisse surcharger ce réglage).
+kramdown:
+  hard_wrap: true
 future: true
 
 # true = noindex sur tout le site (phase de construction). Le site est en service

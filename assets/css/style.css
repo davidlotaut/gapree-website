@@ -573,6 +573,9 @@ button:focus-visible {
   max-width: min(100%, 92ch);
   font-size: inherit;
   line-height: 1.75;
+  /* Une adresse web collée se coupe plutôt que de déborder de l'écran du
+     téléphone (break-word : anywhere n'existe qu'à partir d'iOS 15.4). */
+  overflow-wrap: break-word;
 }
 
 .prose p { margin: 0 0 1.1em; }
