@@ -798,8 +798,8 @@
     });
 
     function retourListe() { vue = { type: "liste", rubrique: rubrique }; rendre(); }
-    boutonRetour.addEventListener("click", retourListe);
-    boutonAnnuler.addEventListener("click", retourListe);
+    document.getElementById("btn-retour").addEventListener("click", retourListe);
+    document.getElementById("btn-annuler").addEventListener("click", retourListe);
 
     document.getElementById("btn-enregistrer").addEventListener("click", function () {
       if (!refs.titre.value.trim()) { toast("Le titre est obligatoire"); refs.titre.focus(); return; }
@@ -972,7 +972,7 @@
     var btnRetirePhoto = document.getElementById("btn-retire-photo");
     if (btnRetirePhoto) btnRetirePhoto.addEventListener("click", function () {
       photo = null;
-      imagePortrait.hidden = true;
+      document.getElementById("photo-actuelle").hidden = true;
     });
 
     function retour() { vue = { type: "liste", rubrique: "elus" }; rendre(); }
