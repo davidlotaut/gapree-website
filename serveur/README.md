@@ -9,7 +9,10 @@ qu'il ne peut pas avoir seul :
   même chiffrée, dans un dépôt public.
 
 Ce qui y est stocké : les comptes de la mairie (adresse, sel, empreinte du mot
-de passe, droit de gérer les accès) et les sessions ouvertes. Rien d'autre, et
+de passe, droit de gérer les accès, numéro de version des sessions) et les
+sessions ouvertes. Une session porte le numéro de version de son compte : un
+nouveau mot de passe, une réinitialisation ou un compte retiré puis recréé le
+changent, et les sessions qui portent l'ancien sont refusées. Rien d'autre, et
 rien qui touche aux autres projets du compte Cloudflare qui l'héberge.
 
 ## Ce que fait le serveur
@@ -19,9 +22,9 @@ rien qui touche aux autres projets du compte Cloudflare qui l'héberge.
 | `POST /connexion` | tout le monde | Vérifie l'adresse et le mot de passe, ouvre une session de 12 h. Après 10 essais ratés en un quart d'heure sur une même adresse depuis une même connexion d'origine (`CF-Connecting-IP`), bloque cette connexion seulement : un inconnu ne peut plus bloquer le compte des autres. |
 | `GET /moi` | connecté | Rend l'identité de la session en cours. |
 | `POST /deconnexion` | connecté | Ferme la session. |
-| `POST /motdepasse` | connecté | Remplace son propre mot de passe (8 caractères minimum). |
+| `POST /motdepasse` | connecté | Remplace son propre mot de passe (8 caractères minimum) et ferme toutes ses autres sessions ; celle en cours reste ouverte jusqu'à son échéance. |
 | `GET /utilisateurs` | gestionnaire | Liste les accès. |
-| `POST /utilisateurs` | gestionnaire | Crée un accès (ou en réinitialise un) et rend le mot de passe une seule fois. |
+| `POST /utilisateurs` | gestionnaire | Crée un accès (ou en réinitialise un, ce qui ferme ses sessions ouvertes) et rend le mot de passe une seule fois. |
 | `PATCH /utilisateurs` | gestionnaire | Promeut ou rétrograde un compte, sans toucher à son mot de passe. Personne ne peut se rétrograder soi-même. |
 | `DELETE /utilisateurs?email=` | gestionnaire | Retire un accès. Personne ne peut retirer le sien. |
 | `POST /televerser` | connecté | Dépose des photos ou des documents sans rien publier, dans les emplacements permis ci-dessous. |

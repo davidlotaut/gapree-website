@@ -110,6 +110,14 @@ async function ecritCompte(env, compte) {
   await env.COMPTES.put(cleCompte(compte.email), JSON.stringify(compte));
 }
 
+/* Numéro de version des sessions d'un compte, copié dans chaque session à la
+   connexion. Il change avec le mot de passe, à la réinitialisation et à la
+   création (au hasard : un compte retiré puis recréé ne ranime aucune
+   ancienne session) ; une session qui porte un autre numéro est refusée.
+   Les comptes et sessions d'avant cette règle n'en ont pas, et restent
+   valables entre eux jusqu'au premier changement. */
+const nouvelleVersion = () => base64(alea(9));
+
 async function creeCompte(env, email, admin) {
   const motDePasse = motDePasseGenere();
   const sel = alea(16);
@@ -119,7 +127,8 @@ async function creeCompte(env, email, admin) {
     empreinte: await empreinte(motDePasse, sel),
     admin: !!admin,
     cree: new Date().toISOString(),
-    aChange: false
+    aChange: false,
+    version: nouvelleVersion()
   };
   await ecritCompte(env, compte);
   return motDePasse;
@@ -208,8 +217,8 @@ async function sessionDe(requete, env) {
   const session = await env.COMPTES.get(cleSession(jeton), "json");
   if (!session) return null;
   const compte = await litCompte(env, session.email);
-  if (!compte) return null;
-  return { jeton, compte };
+  if (!compte || compte.version !== session.version) return null;
+  return { jeton, compte, fin: session.fin };
 }
 
 /* --------------------------------------------------------------- GitHub */
@@ -529,7 +538,9 @@ export default {
 
         await env.COMPTES.delete(cleEssais(email, ip));
         const jeton = base64(alea(32)).replace(/[^A-Za-z0-9]/g, "").slice(0, 40);
-        await env.COMPTES.put(cleSession(jeton), JSON.stringify({ email }), { expirationTtl: DUREE_SESSION });
+        const fin = Math.floor(Date.now() / 1000) + DUREE_SESSION;
+        await env.COMPTES.put(cleSession(jeton), JSON.stringify({ email, version: compte.version, fin }),
+          { expirationTtl: DUREE_SESSION });
         return reponse({
           jeton, email, admin: compte.admin, doitChangerMotDePasse: !compte.aChange
         }, 200, requete, env);
@@ -563,7 +574,15 @@ export default {
         compte.sel = base64(sel);
         compte.empreinte = await empreinte(nouveau, sel);
         compte.aChange = true;
+        compte.version = nouvelleVersion();
         await ecritCompte(env, compte);
+        /* Toutes les autres sessions du compte tombent ; celle-ci reste
+           ouverte, jusqu'à son échéance d'origine. */
+        const maintenant = Math.floor(Date.now() / 1000);
+        const fin = session.fin || maintenant + DUREE_SESSION;
+        await env.COMPTES.put(cleSession(session.jeton),
+          JSON.stringify({ email: compte.email, version: compte.version, fin }),
+          { expirationTtl: Math.max(60, fin - maintenant) });
         return reponse({ ok: true }, 200, requete, env);
       }
 

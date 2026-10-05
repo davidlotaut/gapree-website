@@ -45,7 +45,10 @@ const compte = {
   empreinte: base64(bits),
   admin: true,
   cree: new Date().toISOString(),
-  aChange: false
+  aChange: false,
+  /* Numéro de version des sessions (voir creeCompte dans src/index.js) :
+     recréer un compte d'ici coupe aussi ses sessions ouvertes. */
+  version: base64(crypto.getRandomValues(new Uint8Array(9)))
 };
 
 const args = ["kv", "key", "put", "compte:" + email, JSON.stringify(compte), "--binding", "COMPTES"];
