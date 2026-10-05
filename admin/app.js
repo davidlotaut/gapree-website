@@ -135,6 +135,34 @@
     return ".." + chemin;
   }
 
+  /* Adresse web collée telle quelle (https://… ou www.…). Le signe qui la
+     précède (début de ligne, espace, parenthèse, guillemet ou gras ouvrant)
+     est gardé à part. */
+  var ADRESSE_NUE = /(^|[\s(«"“'‘*_])((?:https?:\/\/|www\.)[^\s<>"«»“”]+)/gm;
+
+  /* Remplace chaque adresse nue d'un texte par ce que rend fabrique(adresse).
+     La ponctuation qui la suit (point, virgule, parenthèse fermante sans
+     ouvrante…) reste hors du lien ; une adresse déjà écrite en lien,
+     [texte](adresse) ou <adresse>, n'est pas touchée. Sert à l'écriture des
+     articles comme à l'aperçu, pour qu'ils lient les mêmes adresses. */
+  function remplaceAdresses(texte, fabrique) {
+    return String(texte).replace(ADRESSE_NUE, function (tout, avant, adresse, position, chaine) {
+      if (avant === "(" && chaine.charAt(position - 1) === "]") return tout;
+      var suite = "";
+      for (;;) {
+        var c = adresse.slice(-1);
+        if (/[.,;:!?'’*\]]/.test(c) || (c === ")" && adresse.split(")").length > adresse.split("(").length)) {
+          suite = c + suite;
+          adresse = adresse.slice(0, -1);
+        } else {
+          break;
+        }
+      }
+      if (/^(?:https?:\/\/|www\.)$/.test(adresse)) return tout;
+      return avant + fabrique(adresse) + suite;
+    });
+  }
+
   /* Rendu simplifié du texte (paragraphes, gras, italique, liens, sous-titres, listes) */
   function rendMarkdown(texte) {
     var blocs = String(texte || "").replace(/\r/g, "").split(/\n{2,}/);
@@ -153,6 +181,13 @@
     }).join("");
 
     function enLigne(t) {
+      /* Les adresses nues deviennent des liens, comme sur le site : repérées
+         dans le texte brut, elles sont mises de côté le temps du reste. */
+      var liens = [];
+      t = remplaceAdresses(t, function (adresse) {
+        liens.push(adresse);
+        return "\uE000" + (liens.length - 1) + "\uE001";
+      });
       var h = echap(t);
       h = h.replace(/\[([^\]]+)\]\(([^()\s]+)\)/g, function (_, txt, url) {
         if (/^https?:\/\//.test(url) || /^mailto:/.test(url)) {
@@ -162,7 +197,12 @@
       });
       h = h.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
       h = h.replace(/(^|[\s(])\*([^*\n]+)\*(?=[\s).,;:!?]|$)/g, "$1<em>$2</em>");
-      return h;
+      return h.replace(/\uE000(\d+)\uE001/g, function (tout, i) {
+        var adresse = liens[+i];
+        if (adresse === undefined) return tout;
+        var cible = /^www\./.test(adresse) ? "https://" + adresse : adresse;
+        return '<a href="' + echap(cible) + '">' + echap(adresse) + "</a>";
+      });
     }
   }
 
@@ -438,7 +478,7 @@
       '<div class="champ"><label for="ch-video">Vidéo YouTube</label><input type="url" id="ch-video" value="' + echap(item.video || "") + '"><p class="aide">Facultatif. Collez le lien d\'une vidéo YouTube.</p></div>' +
       '<div class="champ"><label for="ch-texte">Texte</label>' +
       '<p class="etat-texte" id="etat-texte" hidden></p><textarea id="ch-texte"></textarea>' +
-      '<p class="aide">Texte simple. Une ligne vide sépare les paragraphes ; **mot** met en gras.</p></div>' +
+      '<p class="aide">Texte simple. Une ligne vide sépare les paragraphes ; **mot** met en gras ; une adresse web collée devient un lien.</p></div>' +
       '<div class="actions"><button type="button" class="btn" id="btn-enregistrer">Enregistrer</button>' +
       '<button type="button" class="btn btn--secondaire" id="btn-annuler">Annuler</button>' +
       (creation ? "" : '<button type="button" class="btn btn--danger" id="btn-supprimer">Supprimer</button>') +
@@ -965,12 +1005,16 @@
        qui reste figé alors que l'écran dit « Publié ». Le lecteur voit « { » ;
      - une ligne faite seulement de « - » ou de « = » est précédée d'une barre
        oblique inverse : sinon la ligne au-dessus devient un intertitre (une
-       signature « -- » sous « Bien cordialement. », le 05/10/2026). */
+       signature « -- » sous « Bien cordialement. », le 05/10/2026) ;
+     - une adresse web nue devient un lien : <https://…>, ou [www.…](https://www.…)
+       pour garder le texte d'une adresse sans https. kramdown ne fait pas de
+       lien d'une adresse nue. */
   function corpsEcrit(texte) {
-    return nettoieSaisie(texte)
+    return remplaceAdresses(nettoieSaisie(texte)
       .replace(/\{(?=[{%])/g, "&#123;")
-      .replace(/^( {0,3})([-=]+[ \t]*)$/gm, "$1\\$2")
-      .trim();
+      .replace(/^( {0,3})([-=]+[ \t]*)$/gm, "$1\\$2"), function (adresse) {
+      return /^www\./.test(adresse) ? "[" + adresse + "](https://" + adresse + ")" : "<" + adresse + ">";
+    }).trim();
   }
 
   /* Le même corps relu dans l'éditeur : la personne retrouve le texte tel
@@ -979,7 +1023,9 @@
   function corpsSaisi(ecrit) {
     var saisi = String(ecrit == null ? "" : ecrit)
       .replace(/&#123;(?=[{%]|&#123;)/g, "{")
-      .replace(/^( {0,3})\\([-=]+[ \t]*)$/gm, "$1$2");
+      .replace(/^( {0,3})\\([-=]+[ \t]*)$/gm, "$1$2")
+      .replace(/\[(www\.[^\]\s]+)\]\(https:\/\/\1\)/g, "$1")
+      .replace(/<(https?:\/\/[^\s<>]+)>/g, "$1");
     return corpsEcrit(saisi) === corpsEcrit(ecrit) ? saisi : ecrit;
   }
 
