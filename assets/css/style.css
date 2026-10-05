@@ -451,6 +451,18 @@ button:focus-visible {
   color: var(--ardoise);
 }
 
+/* L'année est toujours écrite : sans elle, deux annonces d'années différentes
+   portent la même date à l'écran. */
+.card-date-annee {
+  display: block;
+  margin-top: 0.1rem;
+  font-family: var(--signaletique);
+  font-weight: 600;
+  font-size: 0.9rem;
+  letter-spacing: 0.04em;
+  color: var(--ardoise);
+}
+
 .card-text { min-width: 0; }
 
 .card-title {

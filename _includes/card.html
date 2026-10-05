@@ -36,7 +36,7 @@
     {%- if include.type == "actualite" %}
     <p class="card-chip">
       <span class="visually-hidden">Publié le {% include date_fr.html date=item.date %}. </span>
-      <span aria-hidden="true">{{ item.date | date: "%-d" }} {{ mabr }}</span>
+      <span aria-hidden="true">{{ item.date | date: "%-d" }} {{ mabr }} {{ item.date | date: "%Y" }}</span>
     </p>
     {%- endif %}
   </div>
@@ -47,6 +47,7 @@
       <span class="visually-hidden">Publié le {% include date_fr.html date=item.date %}. </span>
       <span aria-hidden="true" class="card-date-jour">{{ item.date | date: "%-d" }}</span>
       <span aria-hidden="true" class="card-date-mois">{{ mabr }}</span>
+      <span aria-hidden="true" class="card-date-annee">{{ item.date | date: "%Y" }}</span>
     </p>
     {%- endif %}
     <div class="card-text">
