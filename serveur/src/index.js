@@ -504,6 +504,44 @@ async function publie(env, changements) {
   return { commit: nouveauCommit.sha };
 }
 
+/* ------------------------------------------------- comptes rendus d'échec */
+
+/* Les journaux de Cloudflare ne gardent que 3 jours sur l'offre gratuite :
+   un échec signalé après un week-end ne laissait plus de trace. Chaque échec
+   de /publier et de /televerser, et chaque compte rendu d'erreur reçu par
+   /journal, est donc aussi gardé 30 jours dans COMPTES (clés « journal:… »,
+   lisibles dans le tableau de bord de Cloudflare). Le compte y est désigné
+   par son libellé, jamais par son adresse ; le contenu des photos n'y entre
+   jamais. Quelques écritures par mois. */
+const DUREE_JOURNAL = 30 * 24 * 3600;
+
+async function garde(env, session, quoi) {
+  try {
+    const quand = new Date().toISOString();
+    const entree = Object.assign({ quand, compte: await libelleCompte(session.compte.email) }, quoi);
+    await env.COMPTES.put("journal:" + quand + ":" + base64(alea(6)).replace(/[^A-Za-z0-9]/g, ""),
+      JSON.stringify(entree), { expirationTtl: DUREE_JOURNAL });
+  } catch (e) {
+    console.log("compte rendu non gardé : " + String(e && e.message || e));
+  }
+}
+
+/* Ce qu'un envoi contenait, sans aucun contenu : nombres et emplacements. */
+function resumeEnvoi(corps) {
+  const liste = (x) => (Array.isArray(x) ? x : []);
+  const fichiers = liste(corps && corps.fichiers);
+  const retraits = liste(corps && corps.suppressions);
+  const nom = (e) => String(e && typeof e === "object" ? e.chemin : e).slice(0, 200);
+  return {
+    fichiers: fichiers.length,
+    avecTexte: fichiers.filter((f) => f && typeof f.texte === "string").length,
+    avecReference: fichiers.filter((f) => f && f.sha).length,
+    avecPhoto: fichiers.filter((f) => f && f.base64).length,
+    chemins: fichiers.slice(0, 30).map(nom),
+    retraits: retraits.slice(0, 30).map(nom)
+  };
+}
+
 /* ----------------------------------------------------------------- routes */
 
 export default {
@@ -513,6 +551,8 @@ export default {
 
     if (requete.method === "OPTIONS") return reponse(null, 204, requete, env);
 
+    let session = null;
+    let envoi = null;
     try {
       /* --- connexion ---------------------------------------------------- */
       if (chemin === "/connexion" && requete.method === "POST") {
@@ -547,7 +587,7 @@ export default {
       }
 
       /* --- tout ce qui suit demande une session ------------------------- */
-      const session = await sessionDe(requete, env);
+      session = await sessionDe(requete, env);
 
       if (chemin === "/moi" && requete.method === "GET") {
         if (!session) return erreur("Session expirée.", 401, requete, env);
@@ -645,26 +685,34 @@ export default {
            quoi que ce soit à la personne. */
         const corps = await requete.json().catch(() => ({}));
         console.log("ÉCHEC CHEZ " + session.compte.email + " : " + JSON.stringify(corps).slice(0, 4000));
+        /* Le compte rendu de départ, envoyé à chaque publication, porte une
+           erreur « null » : seuls les échecs sont gardés. */
+        const erreurRecue = corps && typeof corps.erreur === "string" ? corps.erreur : "";
+        if (erreurRecue && erreurRecue !== "null" && erreurRecue !== "undefined") {
+          await garde(env, session, { route: "/journal", compteRendu: JSON.stringify(corps).slice(0, 4000) });
+        }
         return reponse({ ok: true }, 200, requete, env);
       }
 
       /* --- dépôt des photos, avant publication --------------------------- */
       if (chemin === "/televerser" && requete.method === "POST") {
         if (tropLourd(requete)) {
-          return erreur("Ce paquet de photos est trop lourd pour être envoyé en une fois.", 413, requete, env);
+          throw refus("Ce paquet de photos est trop lourd pour être envoyé en une fois.", 413);
         }
         const corps = await requete.json();
+        envoi = resumeEnvoi(corps);
         const fichiers = corps.fichiers || [];
-        if (!fichiers.length) return erreur("Aucune photo à déposer.", 400, requete, env);
+        if (!fichiers.length) throw refus("Aucune photo à déposer.", 400);
         return reponse({ fichiers: await televerse(env, fichiers) }, 200, requete, env);
       }
 
       /* --- publication --------------------------------------------------- */
       if (chemin === "/publier" && requete.method === "POST") {
         if (tropLourd(requete)) {
-          return erreur("Cet envoi est trop lourd pour être publié en une fois.", 413, requete, env);
+          throw refus("Cet envoi est trop lourd pour être publié en une fois.", 413);
         }
         const changements = await requete.json();
+        envoi = resumeEnvoi(changements);
         const qui = await libelleCompte(session.compte.email);
         console.log("publication demandée par " + session.compte.email + " (" + qui + ")");
         const resultat = await publie(env, {
@@ -678,9 +726,16 @@ export default {
 
       return erreur("Adresse inconnue.", 404, requete, env);
     } catch (e) {
+      const statut = (e && e.statut) || 500;
       const donnees = { erreur: String(e && e.message || e) };
       if (e && Array.isArray(e.conflits)) donnees.conflits = e.conflits;
-      return reponse(donnees, (e && e.statut) || 500, requete, env);
+      if (session && (chemin === "/publier" || chemin === "/televerser")) {
+        await garde(env, session, {
+          route: chemin, statut, erreur: donnees.erreur, conflits: donnees.conflits,
+          github: (e && e.github) || null, envoi
+        });
+      }
+      return reponse(donnees, statut, requete, env);
     }
   }
 };

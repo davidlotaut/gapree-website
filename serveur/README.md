@@ -12,8 +12,10 @@ Ce qui y est stocké : les comptes de la mairie (adresse, sel, empreinte du mot
 de passe, droit de gérer les accès, numéro de version des sessions) et les
 sessions ouvertes. Une session porte le numéro de version de son compte : un
 nouveau mot de passe, une réinitialisation ou un compte retiré puis recréé le
-changent, et les sessions qui portent l'ancien sont refusées. Rien d'autre, et
-rien qui touche aux autres projets du compte Cloudflare qui l'héberge.
+changent, et les sessions qui portent l'ancien sont refusées. S'y ajoutent,
+pendant 30 jours, les comptes rendus d'échec de publication (voir plus bas).
+Rien d'autre, et rien qui touche aux autres projets du compte Cloudflare qui
+l'héberge.
 
 ## Ce que fait le serveur
 
@@ -27,6 +29,7 @@ rien qui touche aux autres projets du compte Cloudflare qui l'héberge.
 | `POST /utilisateurs` | gestionnaire | Crée un accès (ou en réinitialise un, ce qui ferme ses sessions ouvertes) et rend le mot de passe une seule fois. |
 | `PATCH /utilisateurs` | gestionnaire | Promeut ou rétrograde un compte, sans toucher à son mot de passe. Personne ne peut se rétrograder soi-même. |
 | `DELETE /utilisateurs?email=` | gestionnaire | Retire un accès. Personne ne peut retirer le sien. |
+| `POST /journal` | connecté | Reçoit le compte rendu d'un échec vécu dans l'espace d'administration. |
 | `POST /televerser` | connecté | Dépose des photos ou des documents sans rien publier, dans les emplacements permis ci-dessous. |
 | `POST /publier` | connecté | Écrit tous les changements dans le dépôt, en un seul enregistrement. |
 
@@ -84,6 +87,19 @@ Enfin, reporter l'adresse rendue par `wrangler deploy` dans
 Vider `admin/config.js` remet l'espace d'administration en démonstration :
 il s'ouvre sans mot de passe et ne publie rien. Le serveur peut rester en
 place, il ne sert plus.
+
+## Comptes rendus d'échec
+
+Les journaux de Cloudflare ne gardent que 3 jours sur l'offre gratuite. Chaque
+échec de `/publier` et de `/televerser` (statut, message montré à la mairie,
+statut et détail de GitHub, emplacements envoyés), et chaque compte rendu
+d'erreur reçu par `/journal`, est donc aussi gardé 30 jours dans le stockage
+`COMPTES`, sous une clé `journal:<date>:<hasard>`. Le compte y est désigné par
+« compte » suivi des 8 premiers caractères de l'empreinte SHA-256 de son adresse,
+comme dans les enregistrements du dépôt ; le contenu des photos n'y entre jamais.
+Pour les lire : tableau de bord Cloudflare, Workers KV, espace `COMPTES`, clés qui
+commencent par `journal:`, ou
+`wrangler kv key list --binding COMPTES --prefix journal: --remote`.
 
 ## Version de l'API GitHub
 
