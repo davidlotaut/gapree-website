@@ -77,6 +77,45 @@
     equipeTout();
   }
 
+  /* La vue en grand et le bouton Retour du téléphone. Sans script, flèches et
+     « Fermer » sont des ancres : chacune ajoute une page à l'historique, et
+     Retour rouvrait les photos une à une. Ici, les flèches remplacent la photo
+     affichée, et « Fermer » (ou le fond) revient en arrière quand la vue a été
+     ouverte d'un clic sur la bande pendant cette visite : un seul Retour
+     quitte ensuite l'article. Arrivé directement sur une photo (lien partagé,
+     page rechargée), « Fermer » ramène à la bande sans quitter le site. */
+  var ouverteParClic = false;
+
+  function vueOuverte() {
+    var id = location.hash.slice(1);
+    var vue = id ? document.getElementById(id) : null;
+    return vue && vue.classList.contains("visionneuse") ? vue : null;
+  }
+
+  document.addEventListener("click", function (e) {
+    /* Ctrl, Cmd ou Maj : le navigateur garde la main (nouvel onglet...). */
+    if (e.defaultPrevented || e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+    var lien = e.target && e.target.closest ? e.target.closest("a") : null;
+    if (!lien) return;
+    if (lien.classList.contains("galerie-lien")) {
+      ouverteParClic = true;
+      return;
+    }
+    if (!lien.closest(".visionneuse")) return;
+    e.preventDefault();
+    if (lien.classList.contains("visionneuse-fleche")) {
+      location.replace(lien.href);
+    } else if (ouverteParClic) {
+      history.back();
+    } else {
+      location.replace(lien.href);
+    }
+  });
+
+  window.addEventListener("hashchange", function () {
+    if (!vueOuverte()) ouverteParClic = false;
+  });
+
   /* Dans la vue en grand : les flèches du clavier changent de photo, Échap ferme. */
   document.addEventListener("keydown", function (e) {
     var ouverte = document.querySelector(".visionneuse:target");
