@@ -931,14 +931,27 @@
       .slice(0, 60) || "sans-titre";
   }
 
+  /* Caractères qu'un fichier YAML refuse (caractères de contrôle, non-caractères),
+     et séparateurs qu'il lit comme des retours à la ligne. Collés depuis un
+     traitement de texte, ils rendaient le fichier illisible : un fichier de
+     _data figeait la construction du site, un article sortait sans titre ni
+     photo (revue du 05/10/2026). Les séparateurs, comme le saut de ligne
+     manuel de Word (U+000B), deviennent de vrais retours à la ligne ; le
+     reste disparaît. */
+  function nettoieSaisie(v) {
+    return String(v == null ? "" : v)
+      .replace(/\r\n?|[\u000B\u000C\u0085\u2028\u2029]/g, "\n")
+      .replace(/[\u0000-\u0008\u000E-\u001F\u007F-\u0084\u0086-\u009F\uFFFE\uFFFF]/g, "");
+  }
+
   /* Chaîne YAML entre guillemets : sûre quel que soit le contenu saisi. */
   function yTexte(v) {
-    return '"' + String(v == null ? "" : v).replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\n/g, " ") + '"';
+    return '"' + nettoieSaisie(v).replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\n/g, " ") + '"';
   }
 
   /* Bloc YAML littéral, pour les valeurs qui peuvent tenir sur plusieurs lignes. */
   function yBloc(cle, v, retrait) {
-    var texte = String(v == null ? "" : v).replace(/\r/g, "").trim();
+    var texte = nettoieSaisie(v).trim();
     if (!texte) return retrait + cle + ': ""';
     return retrait + cle + ": |-\n" + texte.split("\n").map(function (l) {
       return retrait + "  " + l;
@@ -951,7 +964,7 @@
      construction du site, qui reste figé alors que l'écran dit « Publié ». Le
      lecteur voit toujours « { ». */
   function corpsEcrit(texte) {
-    return String(texte == null ? "" : texte).replace(/\r/g, "")
+    return nettoieSaisie(texte)
       .replace(/\{(?=[{%])/g, "&#123;")
       .trim();
   }
