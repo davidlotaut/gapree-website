@@ -418,7 +418,7 @@
       html += '<div class="lignes">' + items.map(function (it) {
         var etat = etatItem(it.chemin);
         return '<button type="button" class="ligne" data-chemin="' + echap(it.chemin) + '">' +
-          (it.image ? '<img class="ligne-vignette" src="' + echap(urlImage(it.image)) + '" alt="">'
+          (it.image ? '<img class="ligne-vignette" src="' + echap(urlImage(it.image)) + '" alt="" loading="lazy" decoding="async">'
             : '<span class="ligne-vignette--vide" aria-hidden="true"></span>') +
           '<span class="ligne-texte"><span class="ligne-titre">' + echap(it.titre) + "</span>" +
           '<span class="ligne-meta">' + dateFr(it.date) + (it.sous_titre ? " · " + echap(it.sous_titre) : "") + "</span></span>" +
@@ -524,7 +524,7 @@
       } else {
         zone.innerHTML = photos.map(function (ph, i) {
           return '<div class="photo-ligne">' +
-            '<img class="photo-vignette" src="' + echap(urlImage(ph.vignette || ph.src)) + '" alt="">' +
+            '<img class="photo-vignette" src="' + echap(urlImage(ph.vignette || ph.src)) + '" alt="" loading="lazy" decoding="async">' +
             '<div class="photo-champs">' +
             (i === 0 ? '<p class="photo-role">Photo principale</p>' : "") +
             '<input type="text" class="photo-alt" data-i="' + i + '" placeholder="Ce que montre la photo" value="' + echap(ph.alt) + '">' +
@@ -571,14 +571,14 @@
         ? "Publié le " + dateFr(refs.date.value)
         : echap(refs.sousTitre && refs.sousTitre.value || "")) + "</p>";
       if (photos.length === 1) {
-        html += '<img class="apercu-image" src="' + echap(urlImage(photos[0].src)) + '" alt="">';
+        html += '<img class="apercu-image" src="' + echap(urlImage(photos[0].src)) + '" alt="" loading="lazy" decoding="async">';
         if (photos[0].alt.trim()) html += '<p class="apercu-legende">' + echap(photos[0].alt.trim()) + "</p>";
       } else if (photos.length > 1) {
         /* L'aperçu s'arrête aux douze premières : les redessiner toutes à
            chaque lettre tapée fige la page sur un gros reportage. */
         var montrees = photos.slice(0, 12);
         html += '<div class="apercu-galerie">' + montrees.map(function (ph) {
-          return '<figure><img src="' + echap(urlImage(ph.vignette || ph.src)) + '" alt="">' +
+          return '<figure><img src="' + echap(urlImage(ph.vignette || ph.src)) + '" alt="" loading="lazy" decoding="async">' +
             (ph.alt.trim() ? "<figcaption>" + echap(ph.alt.trim()) + "</figcaption>" : "") + "</figure>";
         }).join("") + "</div>";
         html += '<p class="apercu-legende">' + photos.length + " photos qui défilent"
