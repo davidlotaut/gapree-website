@@ -498,6 +498,51 @@
     return liste;
   }
 
+  function existe(chemin) {
+    var r = rubriqueDe(chemin);
+    return !r || elementsPublies(r).some(function (x) { return x.chemin === chemin; });
+  }
+
+  /* Chemins que le serveur a refusé d'écrire à la dernière publication : le
+     fichier avait changé depuis l'ouverture de l'élément (contrat 2). */
+  var conflitsSignales = [];
+
+  /* Entrées du brouillon qui ne peuvent pas partir : elles visent un fichier
+     qui n'est plus sur le site (supprimé par une autre personne), ou que le
+     serveur a refusé d'écrire. Publiées, les premières recréaient l'article
+     supprimé (revue du 05/10/2026), les secondes faisaient refuser toute la
+     publication. Elles sont signalées, ne partent plus, et se retirent une à
+     une. */
+  function entreesBloquees() {
+    if (!donnees) return [];
+    var liste = [];
+    var change = " a été changé par quelqu'un d'autre depuis que vous l'avez ouvert : ";
+    Object.keys(surcouche.modifies).forEach(function (c) {
+      if (estSupprime(c)) return;
+      var v = surcouche.modifies[c], nom = "« " + (v.titre || v.nom || c.split("/").pop()) + " »";
+      if (!existe(c)) liste.push({ cle: "m:" + c, chemin: c, texte: nom + " a été supprimé du site entre-temps : votre modification ne sera pas publiée." });
+      else if (conflitsSignales.indexOf(c) !== -1) liste.push({ cle: "m:" + c, chemin: c, texte: nom + change + "votre version ne sera pas publiée." });
+    });
+    surcouche.supprimes.forEach(function (c) {
+      var nom = "« " + c.split("/").pop() + " »";
+      if (!existe(c)) liste.push({ cle: "s:" + c, chemin: c, texte: nom + " n'est déjà plus sur le site : sa suppression n'a plus d'objet." });
+      else if (conflitsSignales.indexOf(c) !== -1) liste.push({ cle: "s:" + c, chemin: c, texte: nom + change + "sa suppression ne sera pas publiée." });
+    });
+    Object.keys(surcouche.reglages).forEach(function (n) {
+      var c = cheminReglage(n);
+      if (conflitsSignales.indexOf(c) !== -1) {
+        liste.push({ cle: "r:" + n, chemin: c, texte: "« " + (n === "accueil" ? "Page d'accueil" : "Coordonnées de la mairie") + " »" + change + "votre version ne sera pas publiée." });
+      }
+    });
+    return liste;
+  }
+
+  function clesBloquees() {
+    var cles = {};
+    entreesBloquees().forEach(function (e) { cles[e.cle] = true; });
+    return cles;
+  }
+
   function reglagesPublies(nom) {
     var r = Object.assign({}, donnees.reglages[nom] || {});
     publicationsEnAttente().forEach(function (p) {
@@ -1191,7 +1236,9 @@
     reperesEnvoyes = {};
     occurrences = {};
     var bases = surcouche.bases || {};
-    var suppressions = surcouche.supprimes.map(function (c) { return bases[c] ? { chemin: c, base: bases[c] } : c; });
+    var bloquees = clesBloquees();
+    var retires = surcouche.supprimes.filter(function (c) { return !bloquees["s:" + c]; });
+    var suppressions = retires.map(function (c) { return bases[c] ? { chemin: c, base: bases[c] } : c; });
     var resume = [];
     /* Les entrées du brouillon que cette publication emporte, telles qu'elles
        sont au départ : seules celles-là en sortiront au succès. */
@@ -1245,6 +1292,7 @@
     });
 
     Object.keys(surcouche.modifies).forEach(function (chemin) {
+      if (bloquees["m:" + chemin]) return;
       /* Une modification d'un élément retiré dans la même publication n'a plus d'objet. */
       entrees["m:" + chemin] = copie(surcouche.modifies[chemin]);
       if (estSupprime(chemin)) return;
@@ -1262,7 +1310,7 @@
       ecrit(chemin, v);
     });
 
-    if (surcouche.reglages.accueil) {
+    if (surcouche.reglages.accueil && !bloquees["r:accueil"]) {
       reglages.accueil = reglagesFusionnes("accueil");
       var accueil = fichierAccueil(reglages.accueil, fichiers);
       if (bases[accueil.chemin]) accueil.base = bases[accueil.chemin];
@@ -1270,7 +1318,7 @@
       resume.push("page d'accueil");
       entrees["r:accueil"] = copie(surcouche.reglages.accueil);
     }
-    if (surcouche.reglages.mairie) {
+    if (surcouche.reglages.mairie && !bloquees["r:mairie"]) {
       reglages.mairie = reglagesFusionnes("mairie");
       var mairie = fichierMairie(reglages.mairie);
       if (bases[mairie.chemin]) mairie.base = bases[mairie.chemin];
@@ -1279,7 +1327,7 @@
       entrees["r:mairie"] = copie(surcouche.reglages.mairie);
     }
 
-    surcouche.supprimes.forEach(function (chemin) {
+    retires.forEach(function (chemin) {
       resume.push("suppression : " + chemin.split("/").pop());
       entrees["s:" + chemin] = true;
     });
@@ -1290,7 +1338,7 @@
       resume: resume,
       entrees: entrees,
       ecrits: ecrits,
-      retires: surcouche.supprimes.slice(),
+      retires: retires,
       reglages: reglages,
       message: "Mise à jour du site depuis l'espace d'administration\n\n" + resume.join("\n") + "\n"
     };
@@ -1309,6 +1357,7 @@
     });
     Object.keys(surcouche.modifies).forEach(function (c) { pris[c] = true; });
     surcouche.supprimes.forEach(function (c) { pris[c] = true; });
+    conflitsSignales.forEach(function (c) { pris[c] = true; });
     return pris;
   }
 
@@ -1355,7 +1404,7 @@
     ["actualites", "talents", "elus"].forEach(function (r) { c += (surcouche.nouveaux[r] || []).length; });
     if (surcouche.reglages.accueil) c++;
     if (surcouche.reglages.mairie) c++;
-    return c;
+    return c - entreesBloquees().length;
   }
 
   function majBarrePublication() {
@@ -1380,6 +1429,37 @@
       : (n > 1
         ? n + " modifications ne sont pas encore en ligne."
         : "1 modification n'est pas encore en ligne.");
+    afficheEntreesBloquees();
+  }
+
+  /* Les entrées qui ne partiront pas, sous la barre, chacune avec « Retirer ». */
+  function afficheEntreesBloquees() {
+    var barre = document.getElementById("barre-publication");
+    if (!barre) return;
+    var zone = document.getElementById("entrees-bloquees");
+    if (!zone) {
+      zone = document.createElement("div");
+      zone.id = "entrees-bloquees";
+      zone.style.flexBasis = "100%";
+      barre.appendChild(zone);
+    }
+    var liste = entreesBloquees();
+    zone.hidden = !liste.length;
+    zone.innerHTML = liste.map(function (e, i) {
+      return '<p class="etat-publication">' + echap(e.texte) +
+        ' <button type="button" class="lien-reinit" data-entree="' + i + '">Retirer</button></p>';
+    }).join("");
+    zone.querySelectorAll("[data-entree]").forEach(function (b) {
+      b.addEventListener("click", function () { retireEntree(liste[parseInt(b.dataset.entree, 10)]); });
+    });
+  }
+
+  function retireEntree(e) {
+    if (publicationBloque()) return;
+    conflitsSignales = conflitsSignales.filter(function (c) { return c !== e.chemin; });
+    appliqueIci([{ cle: e.cle, retire: true }]);
+    majBarrePublication();
+    toast("Retiré des modifications à publier");
   }
 
   /* ------------------------------------------------------- mise en ligne
@@ -1459,9 +1539,13 @@
   /* Une coupure passagère ne doit pas coûter tout le reportage. */
   function reessaieUneFois(action) {
     return action().catch(function (premiere) {
+      /* Un refus du serveur (session expirée, conflit…) ne passera pas mieux au second essai. */
+      if (estUnRefus(premiere)) throw premiere;
       return respire().then(action).catch(function () { throw premiere; });
     });
   }
+
+  function estUnRefus(e) { return !!(e && e.statut >= 400 && e.statut < 500); }
 
   /* Décrit un échec assez précisément pour être compris à distance, sans jamais
      transporter le contenu des photos. */
@@ -1601,7 +1685,8 @@
         textes.concat(deposees), changements.suppressions);
       var gardees = Object.keys(surcouche.deposees || {}).length;
       var suite;
-      if (etapeFinale && gardees && !deuxiemeChance) {
+      if (e && e.conflits) conflitsSignales = e.conflits.slice();
+      if (etapeFinale && gardees && !deuxiemeChance && !estUnRefus(e)) {
         /* L'envoi s'est bien passé et c'est la mise à jour qui a échoué : une des
            références gardées n'est donc pas exploitable. On les oublie et on
            renvoie les photos tout de suite, sans rien demander : sinon chaque
@@ -1620,8 +1705,9 @@
       } else {
         suite = "";
       }
+      if (e && e.conflits) majBarrePublication();
       etat.textContent = (e.message || "La publication a échoué.") + suite;
-      bouton.disabled = false;
+      bouton.disabled = nombreEnAttente() === 0;
       toast("La publication a échoué");
     });
   }
@@ -1755,6 +1841,7 @@
     if (!confirm(question)) return;
     /* N'efface que ce que cette page connaît : ce qu'un autre onglet vient
        d'enregistrer reste, et s'affiche aussitôt. */
+    conflitsSignales = [];
     appliqueIci(Object.keys(aplatit(surcouche)).map(function (cle) { return { cle: cle, retire: true }; }))
       .then(function () {
         toast("Modifications effacées");

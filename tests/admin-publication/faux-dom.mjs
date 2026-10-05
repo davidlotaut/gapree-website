@@ -204,7 +204,12 @@ export function creeDocument(htmlCorps, crochets) {
       if (m[1]) {
         const tag = m[1].toUpperCase();
         for (let i = pile.length - 1; i > 0; i--) {
-          if (pile[i].tagName === tag) { pile.length = i; break; }
+          if (pile[i].tagName === tag) {
+            /* Le contenu brut de chaque élément refermé ici, pour innerHTML et textContent. */
+            for (let j = pile.length - 1; j >= i; j--) pile[j]._html = html.slice(pile[j]._debut, m.index);
+            pile.length = i;
+            break;
+          }
         }
         continue;
       }
@@ -225,7 +230,7 @@ export function creeDocument(htmlCorps, crochets) {
         re.lastIndex = fin < 0 ? html.length : fin + "</textarea>".length;
         continue;
       }
-      if (!VIDES.has(tag)) pile.push(el);
+      if (!VIDES.has(tag)) { el._debut = re.lastIndex; pile.push(el); }
     }
   }
 
