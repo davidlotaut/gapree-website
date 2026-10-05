@@ -234,27 +234,32 @@ async function appelGitHub(env, chemin, options, secondEssai) {
     const detail = await r.text();
     /* Messages compréhensibles par la mairie ; le détail technique reste dans les journaux. */
     console.log("GitHub " + r.status + " : " + detail.slice(0, 300));
+    /* Chaque erreur emporte le statut et le détail de GitHub : le contrôle de
+       version les lit, et le compte rendu d'échec les garde. */
+    const echec = (message) => Object.assign(new Error(message), {
+      github: { statut: r.status, detail: detail.slice(0, 300) }
+    });
     /* Freinage passager : GitHub demande d'attendre, la clé n'est pas en cause. */
     const attenteDemandee = r.headers.get("retry-after");
     if ((r.status === 403 || r.status === 429)
       && (attenteDemandee || /secondary rate limit|abuse detection/i.test(detail))) {
-      if (secondEssai) throw new Error("Le site reçoit trop de photos à la fois. Réessayez dans une minute.");
+      if (secondEssai) throw echec("Le site reçoit trop de photos à la fois. Réessayez dans une minute.");
       await patiente(Math.min(parseInt(attenteDemandee || "60", 10), 90) * 1000);
       return await appelGitHub(env, chemin, options, true);
     }
     if (r.status === 401 || r.status === 403) {
-      throw new Error("La clé d'écriture du site n'est plus valable. Prévenez la personne qui a installé le site.");
+      throw echec("La clé d'écriture du site n'est plus valable. Prévenez la personne qui a installé le site.");
     }
     /* Version d'API arrêtée (410) ou demande que GitHub ne comprend plus
        (400) : réessayer n'y changera rien, seul le serveur peut être corrigé. */
     if (r.status === 400 || r.status === 410) {
-      throw new Error("Le site doit être mis à jour par la personne qui l'a installé (erreur "
+      throw echec("Le site doit être mis à jour par la personne qui l'a installé (erreur "
         + r.status + " de GitHub). Prévenez-la.");
     }
     if (r.status === 409 || r.status === 422) {
-      throw new Error("Le site a été modifié entre-temps. Rechargez la page, puis publiez à nouveau.");
+      throw echec("Le site a été modifié entre-temps. Rechargez la page, puis publiez à nouveau.");
     }
-    throw new Error("Le site n'a pas pu être mis à jour (erreur " + r.status + "). Réessayez dans un instant.");
+    throw echec("Le site n'a pas pu être mis à jour (erreur " + r.status + "). Réessayez dans un instant.");
   }
   return await r.json();
 }
@@ -287,6 +292,99 @@ async function televerse(env, fichiers) {
   return deposes;
 }
 
+/* ------------------------------------------------- contrôle de version */
+
+/* Chaque entrée peut porter la révision du site (un commit de main) sur
+   laquelle l'élément a été ouvert : « base ». Elle part dans une adresse de
+   l'API GitHub, d'où un format strict, vérifié avant tout appel. */
+const REVISION = /^[0-9a-f]{40}$/;
+
+function verifieBases(entrees) {
+  for (const e of entrees) {
+    const base = e.base;
+    if (base === undefined || base === null || base === "") continue;
+    if (typeof base !== "string" || !REVISION.test(base)) {
+      throw refus("Version de base illisible pour " + String(e.chemin).slice(0, 200)
+        + ". Rechargez la page, puis refaites la modification.", 400);
+    }
+  }
+}
+
+/* Empreinte que Git donne à un contenu (SHA-1 de « blob <taille>\0 » suivi
+   des octets) : celle que GitHub calculera en l'écrivant. */
+async function empreinteBlob(contenu) {
+  const entete = new TextEncoder().encode("blob " + contenu.length + "\0");
+  const tout = new Uint8Array(entete.length + contenu.length);
+  tout.set(entete);
+  tout.set(contenu, entete.length);
+  const h = new Uint8Array(await crypto.subtle.digest("SHA-1", tout));
+  return Array.from(h, (o) => o.toString(16).padStart(2, "0")).join("");
+}
+
+async function empreinteEnvoyee(f) {
+  try {
+    if (f.sha) return String(f.sha);
+    if (f.base64) return await empreinteBlob(octets(f.base64));
+    if (typeof f.texte === "string") return await empreinteBlob(new TextEncoder().encode(f.texte));
+  } catch (e) { /* contenu illisible : il sera refusé plus loin */ }
+  return null;
+}
+
+/* Chemin -> empreinte de chaque fichier d'un arbre. */
+async function empreintesArbre(env, shaArbre) {
+  const arbre = await appelGitHub(env, "/git/trees/" + shaArbre + "?recursive=1");
+  return new Map((arbre.tree || []).filter((e) => e.type === "blob").map((e) => [e.path, e.sha]));
+}
+
+/* Rend les chemins qui ont changé sur main depuis que la personne les a
+   ouverts : écrire ou retirer par-dessus effacerait sans le dire le travail
+   de quelqu'un d'autre (texte perdu le 05/09/2026). Une entrée sans base ni
+   « nouveau » vient d'une page ouverte avant cette règle : aucun contrôle. */
+async function chercheConflits(env, ecrits, retraits, shaCommit, surMain) {
+  const versions = new Map([[shaCommit, surMain]]);
+  async function contenuA(revision) {
+    if (!versions.has(revision)) {
+      let contenu = null;
+      try {
+        const c = await appelGitHub(env, "/git/commits/" + revision);
+        contenu = await empreintesArbre(env, c.tree.sha);
+      } catch (e) {
+        /* Révision inconnue de GitHub : rien ne permet de vérifier, l'entrée
+           est refusée comme un conflit plutôt qu'écrite à l'aveugle. */
+        if (!e.github || (e.github.statut !== 404 && e.github.statut !== 422)) throw e;
+        console.log("révision de base introuvable : " + revision);
+      }
+      versions.set(revision, contenu);
+    }
+    return versions.get(revision);
+  }
+
+  const conflits = [];
+  for (const f of ecrits) {
+    if (!f.base && f.nouveau !== true) continue;
+    const actuel = surMain.get(f.chemin);
+    /* main porte déjà exactement ce contenu : réessai d'une publication
+       réussie dont la réponse s'est perdue. */
+    if (actuel !== undefined && actuel === await empreinteEnvoyee(f)) continue;
+    if (f.nouveau === true && actuel !== undefined) {
+      conflits.push(f.chemin);
+      continue;
+    }
+    if (f.base) {
+      const aLaBase = await contenuA(f.base);
+      if (!aLaBase || aLaBase.get(f.chemin) !== actuel) conflits.push(f.chemin);
+    }
+  }
+  for (const s of retraits) {
+    if (!s.base) continue;
+    const actuel = surMain.get(s.chemin);
+    if (actuel === undefined) continue;     // déjà retiré : le résultat voulu
+    const aLaBase = await contenuA(s.base);
+    if (!aLaBase || aLaBase.get(s.chemin) !== actuel) conflits.push(s.chemin);
+  }
+  return conflits;
+}
+
 /* Écrit tous les changements en un seul enregistrement. */
 async function publie(env, changements) {
   const branche = env.BRANCHE || "main";
@@ -296,22 +394,38 @@ async function publie(env, changements) {
     .map((s) => (typeof s === "string" ? { chemin: s } : s));
   if (!fichiers.length && !retraits.length) throw new Error("Rien à publier.");
   verifieEmplacements(fichiers, retraits);
+  verifieBases(fichiers.concat(retraits));
 
-  const ref = await appelGitHub(env, "/git/ref/heads/" + branche);
-  const shaCommit = ref.object.sha;
-  const commit = await appelGitHub(env, "/git/commits/" + shaCommit);
-
-  const arbre = [];
+  /* Un même fichier cité deux fois fait rejeter l'enregistrement entier :
+     le premier fait foi. */
+  const ecrits = [];
   const dejaVus = new Set();
   for (const f of fichiers) {
-    /* Un même fichier cité deux fois fait rejeter l'enregistrement entier :
-       le premier fait foi. */
     if (dejaVus.has(f.chemin)) {
       console.log("chemin en double, ignoré : " + f.chemin);
       continue;
     }
     dejaVus.add(f.chemin);
+    ecrits.push(f);
+  }
 
+  const ref = await appelGitHub(env, "/git/ref/heads/" + branche);
+  const shaCommit = ref.object.sha;
+  const commit = await appelGitHub(env, "/git/commits/" + shaCommit);
+
+  /* Ce que porte main, fichier par fichier : sert aux retraits et au contrôle
+     de version, lu seulement s'il y en a besoin. */
+  const aControler = retraits.length || ecrits.some((f) => f.base || f.nouveau === true);
+  const surMain = aControler ? await empreintesArbre(env, commit.tree.sha) : null;
+
+  const conflits = await chercheConflits(env, ecrits, retraits, shaCommit, surMain);
+  if (conflits.length) {
+    throw refus("Rien n'a été publié : entre-temps, quelqu'un d'autre a changé " + conflits.join(", ")
+      + ". Reprenez ces modifications à partir de la version en ligne.", 409, { conflits });
+  }
+
+  const arbre = [];
+  for (const f of ecrits) {
     if (f.sha) {
       /* Photo déjà déposée par /televerser : il ne reste qu'à lui donner sa place. */
       arbre.push({ path: f.chemin, mode: "100644", type: "blob", sha: f.sha });
@@ -331,21 +445,17 @@ async function publie(env, changements) {
         + "seules les photos manquantes repartiront.");
     }
   }
-  if (retraits.length) {
-    /* Demander la suppression d'un fichier qui n'est plus là fait rejeter
-       l'enregistrement ENTIER (GitRPC::BadObjectState), sans dire lequel est en
-       cause. C'est ce qui a bloqué la mairie du 08 au 10/09/2026 : un article
-       déjà retiré traînait dans les modifications en attente, et plus rien ne
-       pouvait être publié. Un fichier déjà absent, c'est le résultat voulu. */
-    const arbreBase = await appelGitHub(env, "/git/trees/" + commit.tree.sha + "?recursive=1");
-    const presents = new Set((arbreBase.tree || []).map((e) => e.path));
-    for (const { chemin } of retraits) {
-      if (!presents.has(chemin)) {
-        console.log("suppression sans objet, ignorée : " + chemin);
-        continue;
-      }
-      arbre.push({ path: chemin, mode: "100644", type: "blob", sha: null });
+  /* Demander la suppression d'un fichier qui n'est plus là fait rejeter
+     l'enregistrement ENTIER (GitRPC::BadObjectState), sans dire lequel est en
+     cause. C'est ce qui a bloqué la mairie du 08 au 10/09/2026 : un article
+     déjà retiré traînait dans les modifications en attente, et plus rien ne
+     pouvait être publié. Un fichier déjà absent, c'est le résultat voulu. */
+  for (const { chemin } of retraits) {
+    if (!surMain.has(chemin)) {
+      console.log("suppression sans objet, ignorée : " + chemin);
+      continue;
     }
+    arbre.push({ path: chemin, mode: "100644", type: "blob", sha: null });
   }
   /* Rien ne change réellement (retraits déjà faits, ou fichiers identiques à
      ceux en ligne) : le résultat voulu est atteint. Un refus bloquait la
@@ -530,7 +640,9 @@ export default {
 
       return erreur("Adresse inconnue.", 404, requete, env);
     } catch (e) {
-      return erreur(String(e && e.message || e), (e && e.statut) || 500, requete, env);
+      const donnees = { erreur: String(e && e.message || e) };
+      if (e && Array.isArray(e.conflits)) donnees.conflits = e.conflits;
+      return reponse(donnees, (e && e.statut) || 500, requete, env);
     }
   }
 };

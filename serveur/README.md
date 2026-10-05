@@ -33,6 +33,17 @@ noms en minuscules, chiffres et tirets. En suppression : les mêmes, sauf `_data
 autre chemin (code de l'administration, `_config.yml`, `CNAME`…) fait refuser l'envoi
 entier avant le moindre appel à GitHub.
 
+Contrôle de version : chaque fichier envoyé à `/publier` peut porter `base`, la
+révision du site (commit de `main`) sur laquelle l'élément a été ouvert, ou
+`nouveau: true` pour un ajout ; chaque retrait, la forme `{ chemin, base }`. Un
+fichier changé sur `main` depuis `base` (modifié, retiré ou créé), ou déjà présent
+pour un ajout, fait refuser l'envoi entier : `409 { erreur, conflits: [chemins] }`,
+sauf si `main` porte déjà exactement le contenu envoyé (réessai d'une publication
+réussie dont la réponse s'est perdue). Sans `base` ni `nouveau` (page ouverte avant
+cette règle), aucun contrôle. Quand rien ne change réellement (retraits déjà faits,
+fichiers identiques), la réponse est `{ ok: true, inchange: true }`, sans
+enregistrement ni reconstruction du site.
+
 Mots de passe : PBKDF2-SHA256, 100 000 itérations (le maximum accepté par le runtime Cloudflare), sel de 16 octets propre à
 chaque compte. Comparaison à durée constante. Les mots de passe fabriqués
 évitent les caractères qu'on confond au téléphone (ni `0`/`O`, ni `1`/`l`/`I`).
