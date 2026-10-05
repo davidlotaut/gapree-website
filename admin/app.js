@@ -519,21 +519,23 @@
     if (!donnees) return [];
     var liste = [];
     var change = " a été changé par quelqu'un d'autre depuis que vous l'avez ouvert : ";
+    /* La version de l'autre personne n'apparaît ici qu'une fois le site reconstruit. */
+    var refaire = " Retirez-la, puis refaites la modification dans quelques minutes.";
     Object.keys(surcouche.modifies).forEach(function (c) {
       if (estSupprime(c)) return;
       var v = surcouche.modifies[c], nom = "« " + (v.titre || v.nom || c.split("/").pop()) + " »";
       if (!existe(c)) liste.push({ cle: "m:" + c, chemin: c, texte: nom + " a été supprimé du site entre-temps : votre modification ne sera pas publiée." });
-      else if (conflitsSignales.indexOf(c) !== -1) liste.push({ cle: "m:" + c, chemin: c, texte: nom + change + "votre version ne sera pas publiée." });
+      else if (conflitsSignales.indexOf(c) !== -1) liste.push({ cle: "m:" + c, chemin: c, texte: nom + change + "votre version ne sera pas publiée." + refaire });
     });
     surcouche.supprimes.forEach(function (c) {
       var nom = "« " + c.split("/").pop() + " »";
       if (!existe(c)) liste.push({ cle: "s:" + c, chemin: c, texte: nom + " n'est déjà plus sur le site : sa suppression n'a plus d'objet." });
-      else if (conflitsSignales.indexOf(c) !== -1) liste.push({ cle: "s:" + c, chemin: c, texte: nom + change + "sa suppression ne sera pas publiée." });
+      else if (conflitsSignales.indexOf(c) !== -1) liste.push({ cle: "s:" + c, chemin: c, texte: nom + change + "sa suppression ne sera pas publiée." + refaire });
     });
     Object.keys(surcouche.reglages).forEach(function (n) {
       var c = cheminReglage(n);
       if (conflitsSignales.indexOf(c) !== -1) {
-        liste.push({ cle: "r:" + n, chemin: c, texte: "« " + (n === "accueil" ? "Page d'accueil" : "Coordonnées de la mairie") + " »" + change + "votre version ne sera pas publiée." });
+        liste.push({ cle: "r:" + n, chemin: c, texte: "« " + (n === "accueil" ? "Page d'accueil" : "Coordonnées de la mairie") + " »" + change + "votre version ne sera pas publiée." + refaire });
       }
     });
     return liste;
