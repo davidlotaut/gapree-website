@@ -959,13 +959,17 @@
   }
 
   /* Corps d'un article tel qu'il part dans le fichier (contrat d'écriture de la
-     revue du 05/10/2026). « { » suivi de « { » ou de « % » s'écrit &#123; :
-     sinon Liquid y lit une balise, et une balise inachevée fait échouer la
-     construction du site, qui reste figé alors que l'écran dit « Publié ». Le
-     lecteur voit toujours « { ». */
+     revue du 05/10/2026) :
+     - « { » suivi de « { » ou de « % » s'écrit &#123; : sinon Liquid y lit une
+       balise, et une balise inachevée fait échouer la construction du site,
+       qui reste figé alors que l'écran dit « Publié ». Le lecteur voit « { » ;
+     - une ligne faite seulement de « - » ou de « = » est précédée d'une barre
+       oblique inverse : sinon la ligne au-dessus devient un intertitre (une
+       signature « -- » sous « Bien cordialement. », le 05/10/2026). */
   function corpsEcrit(texte) {
     return nettoieSaisie(texte)
       .replace(/\{(?=[{%])/g, "&#123;")
+      .replace(/^( {0,3})([-=]+[ \t]*)$/gm, "$1\\$2")
       .trim();
   }
 
@@ -974,7 +978,8 @@
      pour ne jamais rien perdre. */
   function corpsSaisi(ecrit) {
     var saisi = String(ecrit == null ? "" : ecrit)
-      .replace(/&#123;(?=[{%]|&#123;)/g, "{");
+      .replace(/&#123;(?=[{%]|&#123;)/g, "{")
+      .replace(/^( {0,3})\\([-=]+[ \t]*)$/gm, "$1$2");
     return corpsEcrit(saisi) === corpsEcrit(ecrit) ? saisi : ecrit;
   }
 
