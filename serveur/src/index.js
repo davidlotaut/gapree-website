@@ -10,7 +10,7 @@
 
 const ITERATIONS = 100000;   // maximum accepté par le runtime Cloudflare
 const DUREE_SESSION = 12 * 3600;        // secondes
-const ESSAIS_MAX = 10;                  // par quart d'heure et par compte
+const ESSAIS_MAX = 10;                  // par quart d'heure, par compte et par connexion d'origine
 const FENETRE_ESSAIS = 900;
 
 /* Un reportage peut compter cent photos, et tout envoyer d'un coup dépasse la
@@ -96,7 +96,11 @@ async function libelleCompte(email) {
 
 const cleCompte = (email) => "compte:" + email;
 const cleSession = (jeton) => "session:" + jeton;
-const cleEssais = (email) => "essais:" + email;
+/* Les essais faux se comptent par adresse ET par connexion d'origine : les
+   identifiants sont publics, et un compteur par adresse seule laissait
+   n'importe qui bloquer un compte pour tout le monde. Un seul compteur, donc
+   pas plus d'écritures qu'avant. */
+const cleEssais = (email, ip) => "essais:" + email + ":" + ip;
 
 async function litCompte(env, email) {
   return await env.COMPTES.get(cleCompte(email), "json");
@@ -508,7 +512,8 @@ export default {
         const motDePasse = String(corps.motDePasse || "");
         if (!email || !motDePasse) return erreur("Adresse et mot de passe requis.", 400, requete, env);
 
-        const essais = parseInt(await env.COMPTES.get(cleEssais(email)) || "0", 10);
+        const ip = requete.headers.get("CF-Connecting-IP") || "";
+        const essais = parseInt(await env.COMPTES.get(cleEssais(email, ip)) || "0", 10);
         if (essais >= ESSAIS_MAX) {
           return erreur("Trop de tentatives. Réessayez dans un quart d'heure.", 429, requete, env);
         }
@@ -518,11 +523,11 @@ export default {
         const calculee = await empreinte(motDePasse, compte ? octets(compte.sel) : alea(16));
 
         if (!compte || !memeChaine(attendue, calculee)) {
-          await env.COMPTES.put(cleEssais(email), String(essais + 1), { expirationTtl: FENETRE_ESSAIS });
+          await env.COMPTES.put(cleEssais(email, ip), String(essais + 1), { expirationTtl: FENETRE_ESSAIS });
           return erreur("Adresse ou mot de passe incorrect.", 401, requete, env);
         }
 
-        await env.COMPTES.delete(cleEssais(email));
+        await env.COMPTES.delete(cleEssais(email, ip));
         const jeton = base64(alea(32)).replace(/[^A-Za-z0-9]/g, "").slice(0, 40);
         await env.COMPTES.put(cleSession(jeton), JSON.stringify({ email }), { expirationTtl: DUREE_SESSION });
         return reponse({

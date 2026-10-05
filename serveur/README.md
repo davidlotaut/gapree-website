@@ -16,7 +16,7 @@ rien qui touche aux autres projets du compte Cloudflare qui l'héberge.
 
 | Adresse | Qui | Effet |
 |---|---|---|
-| `POST /connexion` | tout le monde | Vérifie l'adresse et le mot de passe, ouvre une session de 12 h. Bloque un compte après 10 essais ratés en un quart d'heure. |
+| `POST /connexion` | tout le monde | Vérifie l'adresse et le mot de passe, ouvre une session de 12 h. Après 10 essais ratés en un quart d'heure sur une même adresse depuis une même connexion d'origine (`CF-Connecting-IP`), bloque cette connexion seulement : un inconnu ne peut plus bloquer le compte des autres. |
 | `GET /moi` | connecté | Rend l'identité de la session en cours. |
 | `POST /deconnexion` | connecté | Ferme la session. |
 | `POST /motdepasse` | connecté | Remplace son propre mot de passe (8 caractères minimum). |
