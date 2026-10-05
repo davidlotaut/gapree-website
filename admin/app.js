@@ -283,9 +283,65 @@
   var MOIS = ["janvier", "février", "mars", "avril", "mai", "juin",
     "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
 
+  /* Date du jour à l'heure locale du navigateur, au format AAAA-MM-JJ : seule
+     fonction qui fabrique une date (revue du 05/10/2026). toISOString donnait
+     la date de Greenwich : entre minuit et deux heures (une heure l'hiver), un
+     article prenait la date et le nom de fichier de la veille. */
+  function deuxChiffres(n) { return (n < 10 ? "0" : "") + n; }
+
+  function dateLocale(d) {
+    d = d || new Date();
+    return d.getFullYear() + "-" + deuxChiffres(d.getMonth() + 1) + "-" + deuxChiffres(d.getDate());
+  }
+
+  /* L'instant local complet, au format de contenu.json : 2026-10-05T12:06:58+02:00.
+     Sans heure, les actualités d'un même jour se classaient sur le site par nom
+     de fichier, et la dernière publiée pouvait manquer à l'accueil (05/10/2026). */
+  function instantLocal(d) {
+    d = d || new Date();
+    var ecart = -d.getTimezoneOffset();
+    var signe = ecart < 0 ? "-" : "+";
+    ecart = Math.abs(ecart);
+    return dateLocale(d) + "T" + deuxChiffres(d.getHours()) + ":" + deuxChiffres(d.getMinutes()) + ":" +
+      deuxChiffres(d.getSeconds()) + signe + deuxChiffres(Math.floor(ecart / 60)) + ":" + deuxChiffres(ecart % 60);
+  }
+
+  /* Découpe une date d'article, sous ses trois formes : « 2026-10-05 »,
+     « 2026-10-05T12:06:58+02:00 » (contenu.json, brouillon) et
+     « 2026-10-05 12:06:58 +0200 » (fichier). */
+  function litDate(v) {
+    var m = String(v == null ? "" : v)
+      .match(/^(\d{4}-\d{2}-\d{2})(?:[T ](\d{2}:\d{2}:\d{2})(?:\.\d+)? ?(Z|[+-]\d{2}:?\d{2})?)?/);
+    if (!m) return { jour: "", heure: "", decalage: "" };
+    return { jour: m[1], heure: m[2] || "", decalage: m[3] === "Z" ? "+0000" : (m[3] || "").replace(":", "") };
+  }
+
+  /* Date d'un article à l'enregistrement (contrat de la revue du 05/10/2026) :
+     le jour choisi dans le champ, avec l'heure de l'article quand elle est
+     connue. Sans heure connue, l'article garde son jour seul tant que ce jour
+     ne change pas ; s'il change, il prend l'heure du moment. Minuit pile vaut
+     « sans heure » : c'est ainsi que contenu.json rend une date sans heure. */
+  function dateAEnregistrer(jour, avant) {
+    var a = litDate(avant);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(jour || "")) jour = a.jour || dateLocale();
+    var connue = a.heure !== "" && a.heure !== "00:00:00";
+    if (jour === a.jour) return connue ? avant : jour;
+    var j = jour.split("-");
+    var h = (connue ? a.heure : instantLocal().slice(11, 19)).split(":");
+    return instantLocal(new Date(+j[0], +j[1] - 1, +j[2], +h[0], +h[1], +h[2]));
+  }
+
+  /* Date telle qu'écrite dans un article : « 2026-10-05 12:06:58 +0200 », ou le
+     jour seul quand l'heure n'est pas connue. */
+  function dateEcrite(v) {
+    var d = litDate(v);
+    if (!d.jour) return String(v == null ? "" : v);
+    return d.heure ? d.jour + " " + d.heure + (d.decalage ? " " + d.decalage : "") : d.jour;
+  }
+
   function dateFr(iso) {
     if (!iso) return "";
-    var p = iso.split("-");
+    var p = String(iso).slice(0, 10).split("-");
     if (p.length !== 3) return iso;
     var j = parseInt(p[2], 10);
     return (j === 1 ? "1er" : j) + " " + (MOIS[parseInt(p[1], 10) - 1] || "") + " " + p[0];
@@ -307,6 +363,34 @@
     return ".." + chemin;
   }
 
+  /* Adresse web collée telle quelle (https://… ou www.…). Le signe qui la
+     précède (début de ligne, espace, parenthèse, guillemet ou gras ouvrant)
+     est gardé à part. */
+  var ADRESSE_NUE = /(^|[\s(«"“'‘*_])((?:https?:\/\/|www\.)[^\s<>"«»“”]+)/gm;
+
+  /* Remplace chaque adresse nue d'un texte par ce que rend fabrique(adresse).
+     La ponctuation qui la suit (point, virgule, parenthèse fermante sans
+     ouvrante…) reste hors du lien ; une adresse déjà écrite en lien,
+     [texte](adresse) ou <adresse>, n'est pas touchée. Sert à l'écriture des
+     articles comme à l'aperçu, pour qu'ils lient les mêmes adresses. */
+  function remplaceAdresses(texte, fabrique) {
+    return String(texte).replace(ADRESSE_NUE, function (tout, avant, adresse, position, chaine) {
+      if (avant === "(" && chaine.charAt(position - 1) === "]") return tout;
+      var suite = "";
+      for (;;) {
+        var c = adresse.slice(-1);
+        if (/[.,;:!?'’*\]]/.test(c) || (c === ")" && adresse.split(")").length > adresse.split("(").length)) {
+          suite = c + suite;
+          adresse = adresse.slice(0, -1);
+        } else {
+          break;
+        }
+      }
+      if (/^(?:https?:\/\/|www\.)$/.test(adresse)) return tout;
+      return avant + fabrique(adresse) + suite;
+    });
+  }
+
   /* Rendu simplifié du texte (paragraphes, gras, italique, liens, sous-titres, listes) */
   function rendMarkdown(texte) {
     var blocs = String(texte || "").replace(/\r/g, "").split(/\n{2,}/);
@@ -325,6 +409,13 @@
     }).join("");
 
     function enLigne(t) {
+      /* Les adresses nues deviennent des liens, comme sur le site : repérées
+         dans le texte brut, elles sont mises de côté le temps du reste. */
+      var liens = [];
+      t = remplaceAdresses(t, function (adresse) {
+        liens.push(adresse);
+        return "\uE000" + (liens.length - 1) + "\uE001";
+      });
       var h = echap(t);
       h = h.replace(/\[([^\]]+)\]\(([^()\s]+)\)/g, function (_, txt, url) {
         if (/^https?:\/\//.test(url) || /^mailto:/.test(url)) {
@@ -334,7 +425,12 @@
       });
       h = h.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
       h = h.replace(/(^|[\s(])\*([^*\n]+)\*(?=[\s).,;:!?]|$)/g, "$1<em>$2</em>");
-      return h;
+      return h.replace(/\uE000(\d+)\uE001/g, function (tout, i) {
+        var adresse = liens[+i];
+        if (adresse === undefined) return tout;
+        var cible = /^www\./.test(adresse) ? "https://" + adresse : adresse;
+        return '<a href="' + echap(cible) + '">' + echap(adresse) + "</a>";
+      });
     }
   }
 
@@ -347,6 +443,9 @@
      tout : il dépasse la mémoire du serveur comme la place réservée aux
      brouillons. */
   var COTE_MAX = 1800;
+  /* Un portrait d'élu ne s'affiche qu'en rond de 92 points, sans vue en grand :
+     600 points suffisent, pour un poids bien moindre (revue du 05/10/2026). */
+  var COTE_PORTRAIT = 600;
   var QUALITE = 0.85;
   var COTE_VIGNETTE = 240;     // aperçu dans l'éditeur, jamais envoyé
   var TAILLE_PHOTO_MAX = 60 * 1024 * 1024;
@@ -390,13 +489,42 @@
     });
   }
 
-  function litPhoto(fichier) {
+  /* Rend { src, vignette }, jamais une chaîne : chaque appel prend .src.
+     coteMax est facultatif (COTE_MAX par défaut). */
+  function litPhoto(fichier, coteMax) {
     return ouvreImage(fichier).then(function (image) {
-      var reduite = { src: dessine(image, COTE_MAX, QUALITE), vignette: dessine(image, COTE_VIGNETTE, 0.7) };
+      var reduite = { src: dessine(image, coteMax || COTE_MAX, QUALITE), vignette: dessine(image, COTE_VIGNETTE, 0.7) };
       if (image.close) image.close();
       if (image.src && image.src.indexOf("blob:") === 0) URL.revokeObjectURL(image.src);
       return reduite;
     });
+  }
+
+  /* Un document PDF joint à une actualité part tel quel, sans réduction ni
+     conversion, 10 Mo au plus : la taille d'un paquet d'envoi (contrat 6 de la
+     revue du 05/10/2026). Sans lui, la mairie remplaçait une lettre ou un bon
+     de commande par une image illisible sur téléphone. */
+  var TAILLE_DOCUMENT_MAX = 10 * 1024 * 1024;
+
+  function estPdf(fichier) {
+    return fichier.type === "application/pdf" || /\.pdf$/i.test(fichier.name || "");
+  }
+
+  function litDocument(fichier) {
+    return new Promise(function (resolve, reject) {
+      var lecteur = new FileReader();
+      lecteur.onload = function () {
+        resolve(String(lecteur.result).replace(/^data:[^,]*?;base64,/, "data:application/pdf;base64,"));
+      };
+      lecteur.onerror = function () { reject(lecteur.error || new Error("lecture impossible")); };
+      lecteur.readAsDataURL(fichier);
+    });
+  }
+
+  /* Poids affiché à côté du lien : « 342 Ko » ou « 2,4 Mo ». */
+  function tailleLisible(octets) {
+    if (octets < 1024 * 1024) return Math.max(1, Math.round(octets / 1024)) + " Ko";
+    return (octets / (1024 * 1024)).toFixed(1).replace(".", ",") + " Mo";
   }
 
   /* Jauge d'attente : appeler avec un texte et une part faite, puis sans rien
@@ -431,6 +559,22 @@
       progression(null);
       throw e;
     });
+  }
+
+  /* Photos en préparation, tous éditeurs confondus. Elles n'entrent dans
+     l'éditeur qu'une fois prêtes : changer d'onglet avant la fin les perdait
+     sans un mot (revue du 05/10/2026). Les onglets attendent donc la fin. */
+  var preparations = 0;
+
+  function prepare(promesse) {
+    preparations++;
+    majOnglets();
+    function fin() { preparations--; majOnglets(); }
+    return promesse.then(function (r) { fin(); return r; }, function (e) { fin(); throw e; });
+  }
+
+  function majOnglets() {
+    document.querySelectorAll(".onglets button").forEach(function (b) { b.disabled = preparations > 0; });
   }
 
   var toastTimer = null;
@@ -639,7 +783,7 @@
       html += '<div class="lignes">' + items.map(function (it) {
         var etat = etatItem(it.chemin);
         return '<button type="button" class="ligne" data-chemin="' + echap(it.chemin) + '">' +
-          (it.image ? '<img class="ligne-vignette" src="' + echap(urlImage(it.image)) + '" alt="">'
+          (it.image ? '<img class="ligne-vignette" src="' + echap(urlImage(it.image)) + '" alt="" loading="lazy" decoding="async">'
             : '<span class="ligne-vignette--vide" aria-hidden="true"></span>') +
           '<span class="ligne-texte"><span class="ligne-titre">' + echap(it.titre) + "</span>" +
           '<span class="ligne-meta">' + dateFr(it.date) + (it.sous_titre ? " · " + echap(it.sous_titre) : "") + "</span></span>" +
@@ -674,9 +818,15 @@
     var lib = LIBELLES[rubrique];
     var creation = !chemin;
     var item = creation
-      ? { chemin: "nouveau:" + rubrique + ":" + Date.now(), titre: "", date: new Date().toISOString().slice(0, 10), image: null, alt: null, photos: [], video: null, texte: "" }
+      ? { chemin: "nouveau:" + rubrique + ":" + Date.now(), titre: "", date: instantLocal(), image: null, alt: null, photos: [], video: null, texte: "" }
       : trouve(rubrique, chemin);
     if (!item) { vue = { type: "liste", rubrique: rubrique }; return rendre(); }
+
+    /* Le texte d'un article déjà publié arrive après coup. Tant qu'il n'est pas
+       là, le champ et « Enregistrer » attendent : enregistrer plus tôt publiait
+       « Chargement du texte… », ou un texte vide après un échec (revue du
+       05/10/2026). */
+    var texteCharge = creation || typeof item.texte === "string";
 
     /* Une seule liste de photos : la première est celle qui illustre la carte. */
     var photos = [];
@@ -684,20 +834,31 @@
     (item.photos || []).forEach(function (ph) {
       if (ph && ph.src) photos.push({ src: ph.src, alt: ph.alt || "" });
     });
+    /* Documents PDF joints (actualités seulement) : { src, titre, taille }. */
+    var documents = (item.documents || []).filter(function (d) { return d && typeof d.src === "string"; })
+      .map(function (d) { return { src: d.src, titre: d.titre || "", taille: d.taille || "" }; });
 
     app.innerHTML = '<button type="button" class="retour-liste" id="btn-retour">&larr; ' + lib.titre + "</button>" +
       '<div class="editeur"><div class="editeur-form">' +
       '<div class="champ"><label for="ch-titre">Titre</label><input type="text" id="ch-titre" value="' + echap(item.titre) + '"></div>' +
-      '<div class="champ"><label for="ch-date">Date</label><input type="date" id="ch-date" value="' + echap(item.date) + '"></div>' +
+      '<div class="champ"><label for="ch-date">Date</label><input type="date" id="ch-date" value="' + echap(litDate(item.date).jour) + '"></div>' +
       (rubrique === "talents" ? '<div class="champ"><label for="ch-soustitre">Sous-titre</label><input type="text" id="ch-soustitre" value="' + echap(item.sous_titre || "") + '"><p class="aide">Le métier ou l\'activité. Exemple : Apicultrice au bourg.</p></div>' : "") +
       '<div class="champ"><label for="ch-images">Photos</label>' +
       '<div id="liste-photos"></div>' +
       '<input type="file" id="ch-images" accept="image/*" multiple>' +
       '<p class="aide">Vous pouvez en choisir plusieurs d\'un coup, telles qu\'elles sortent de votre appareil. ' +
-      'La première illustre l\'article dans les listes ; les suivantes défilent à côté d\'elle.</p></div>' +
+      'La première illustre l\'article dans les listes ; les suivantes défilent à côté d\'elle.</p>' +
+      '<p class="aide">Décrivez chaque photo en une phrase : la description est lue aux personnes malvoyantes. ' +
+      'Si la photo montre un document, recopiez son texte dans l\'article.</p></div>' +
+      (rubrique === "actualites" ? '<div class="champ"><label for="ch-documents">Documents à télécharger (PDF)</label>' +
+        '<div id="liste-documents"></div>' +
+        '<input type="file" id="ch-documents" accept="application/pdf,.pdf" multiple>' +
+        '<p class="aide">Une lettre, un bon de commande, un compte rendu : chaque document est mis en ligne tel quel, ' +
+        'en PDF de 10 Mo au plus, avec un lien sous l\'article. Donnez-lui un intitulé clair.</p></div>' : "") +
       '<div class="champ"><label for="ch-video">Vidéo YouTube</label><input type="url" id="ch-video" value="' + echap(item.video || "") + '"><p class="aide">Facultatif. Collez le lien d\'une vidéo YouTube.</p></div>' +
-      '<div class="champ"><label for="ch-texte">Texte</label><textarea id="ch-texte">Chargement du texte…</textarea>' +
-      '<p class="aide">Texte simple. Une ligne vide sépare les paragraphes ; **mot** met en gras.</p></div>' +
+      '<div class="champ"><label for="ch-texte">Texte</label>' +
+      '<p class="etat-texte" id="etat-texte" hidden></p><textarea id="ch-texte"></textarea>' +
+      '<p class="aide">Texte simple. Une ligne vide sépare les paragraphes ; **mot** met en gras ; une adresse web collée devient un lien.</p></div>' +
       '<div class="actions"><button type="button" class="btn" id="btn-enregistrer">Enregistrer</button>' +
       '<button type="button" class="btn btn--secondaire" id="btn-annuler">Annuler</button>' +
       (creation ? "" : '<button type="button" class="btn btn--danger" id="btn-supprimer">Supprimer</button>') +
@@ -711,18 +872,40 @@
       video: document.getElementById("ch-video"),
       texte: document.getElementById("ch-texte")
     };
+    var boutonEnregistrer = document.getElementById("btn-enregistrer");
+    var boutonRetour = document.getElementById("btn-retour");
+    var boutonAnnuler = document.getElementById("btn-annuler");
+    var etatTexte = document.getElementById("etat-texte");
+    /* La liste des photos et l'aperçu de CET éditeur : un rappel tardif ne doit
+       jamais écrire dans ceux d'un autre article ouvert entre-temps. */
+    var zonePhotos = document.getElementById("liste-photos");
+    var zoneDocuments = document.getElementById("liste-documents");
+    var inputDocuments = document.getElementById("ch-documents");
+    var cadreApercu = document.getElementById("apercu");
+    /* Des photos en préparation n'entrent dans la liste qu'à la fin : jusque-là,
+       enregistrer ou quitter l'éditeur les perdrait sans un mot. */
+    var enPreparation = false;
+
+    function majBoutons() {
+      boutonEnregistrer.disabled = !texteCharge || enPreparation;
+      refs.texte.disabled = !texteCharge;
+      [boutonRetour, boutonAnnuler, btnSupprimer, inputImages, inputDocuments].forEach(function (b) {
+        if (b) b.disabled = enPreparation;
+      });
+    }
 
     function rendPhotos() {
-      var zone = document.getElementById("liste-photos");
+      var zone = zonePhotos;
       if (!photos.length) {
         zone.innerHTML = '<p class="aide aide--vide">Aucune photo pour le moment.</p>';
       } else {
         zone.innerHTML = photos.map(function (ph, i) {
           return '<div class="photo-ligne">' +
-            '<img class="photo-vignette" src="' + echap(urlImage(ph.vignette || ph.src)) + '" alt="">' +
+            '<img class="photo-vignette" src="' + echap(urlImage(ph.vignette || ph.src)) + '" alt="" loading="lazy" decoding="async">' +
             '<div class="photo-champs">' +
             (i === 0 ? '<p class="photo-role">Photo principale</p>' : "") +
-            '<input type="text" class="photo-alt" data-i="' + i + '" placeholder="Ce que montre la photo" value="' + echap(ph.alt) + '">' +
+            '<label for="photo-alt-' + i + '">Description, lue aux personnes malvoyantes</label>' +
+            '<input type="text" class="photo-alt" id="photo-alt-' + i + '" data-i="' + i + '" placeholder="Ce que montre la photo" value="' + echap(ph.alt) + '">' +
             "</div>" +
             '<div class="photo-boutons">' +
             (i > 0 ? '<button type="button" class="lien-reinit" data-monte="' + i + '" title="Mettre avant">&uarr;</button>' : "") +
@@ -760,27 +943,58 @@
       });
     }
 
+    function rendDocuments() {
+      if (!zoneDocuments) return;
+      zoneDocuments.innerHTML = documents.length ? documents.map(function (d, i) {
+        return '<div class="document-ligne"><div class="document-champs">' +
+          '<label for="document-titre-' + i + '">Intitulé du document (PDF' + (d.taille ? ", " + echap(d.taille) : "") + ")</label>" +
+          '<input type="text" class="document-titre" id="document-titre-' + i + '" data-i="' + i + '" value="' + echap(d.titre) + '">' +
+          "</div>" +
+          '<button type="button" class="lien-reinit lien-reinit--danger" data-retire-document="' + i + '">Retirer</button></div>';
+      }).join("") : '<p class="aide aide--vide">Aucun document pour le moment.</p>';
+      zoneDocuments.querySelectorAll(".document-titre").forEach(function (inp) {
+        inp.addEventListener("input", function () {
+          documents[parseInt(inp.dataset.i, 10)].titre = inp.value;
+          apercu();
+        });
+      });
+      zoneDocuments.querySelectorAll("[data-retire-document]").forEach(function (b) {
+        b.addEventListener("click", function () {
+          documents.splice(parseInt(b.dataset.retireDocument, 10), 1);
+          rendDocuments(); apercu();
+        });
+      });
+    }
+
     function apercu() {
       var html = "<h1>" + echap(refs.titre.value || "(sans titre)") + "</h1>";
       html += '<p class="apercu-meta">' + (rubrique === "actualites"
         ? "Publié le " + dateFr(refs.date.value)
         : echap(refs.sousTitre && refs.sousTitre.value || "")) + "</p>";
       if (photos.length === 1) {
-        html += '<img class="apercu-image" src="' + echap(urlImage(photos[0].src)) + '" alt="">';
+        html += '<img class="apercu-image" src="' + echap(urlImage(photos[0].src)) + '" alt="" loading="lazy" decoding="async">';
         if (photos[0].alt.trim()) html += '<p class="apercu-legende">' + echap(photos[0].alt.trim()) + "</p>";
       } else if (photos.length > 1) {
         /* L'aperçu s'arrête aux douze premières : les redessiner toutes à
            chaque lettre tapée fige la page sur un gros reportage. */
         var montrees = photos.slice(0, 12);
         html += '<div class="apercu-galerie">' + montrees.map(function (ph) {
-          return '<figure><img src="' + echap(urlImage(ph.vignette || ph.src)) + '" alt="">' +
+          return '<figure><img src="' + echap(urlImage(ph.vignette || ph.src)) + '" alt="" loading="lazy" decoding="async">' +
             (ph.alt.trim() ? "<figcaption>" + echap(ph.alt.trim()) + "</figcaption>" : "") + "</figure>";
         }).join("") + "</div>";
         html += '<p class="apercu-legende">' + photos.length + " photos qui défilent"
           + (photos.length > montrees.length ? " (les " + montrees.length + " premières sont montrées ici)" : "") + "</p>";
       }
       html += rendMarkdown(refs.texte.value);
-      document.getElementById("apercu").innerHTML = html;
+      /* Les pièces jointes, comme sous l'article en ligne ; un document pas
+         encore publié n'a pas d'adresse, son lien n'apparaît qu'en texte. */
+      if (documents.length) {
+        html += "<h2>" + (documents.length > 1 ? "Pièces jointes" : "Pièce jointe") + "</h2><ul>" + documents.map(function (d) {
+          var libelle = "Télécharger " + echap(d.titre.trim() || "le document") + " (PDF" + (d.taille ? ", " + echap(d.taille) : "") + ")";
+          return "<li>" + (/^\/assets\/docs\//.test(d.src) ? '<a href="' + echap(".." + d.src) + '">' + libelle + "</a>" : libelle) + "</li>";
+        }).join("") + "</ul>";
+      }
+      cadreApercu.innerHTML = html;
     }
 
     ["input", "change"].forEach(function (ev) {
@@ -796,17 +1010,27 @@
       if (!fichiersChoisis.length) return;
       var images = fichiersChoisis.filter(function (f) { return /^image\//.test(f.type) && f.size <= TAILLE_PHOTO_MAX; });
       var ecartees = fichiersChoisis.length - images.length;
-      if (ecartees > 0) toast(ecartees + (ecartees > 1 ? " fichiers écartés : " : " fichier écarté : ") + "ce ne sont pas des photos");
+      if (ecartees > 0) toast(ecartees + (ecartees > 1 ? " fichiers écartés : " : " fichier écarté : ") + "ce ne sont pas des photos"
+        + (inputDocuments && fichiersChoisis.some(estPdf) ? " (un PDF se joint dans « Documents à télécharger »)" : ""));
       if (!images.length) return;
 
       /* Une par une : cent photos décodées en même temps saturent la mémoire
          de la page, et la jauge doit pouvoir avancer. */
       var illisibles = 0;
-      unParUn(images, function (n, total) {
+      enPreparation = true;
+      majBoutons();
+      prepare(unParUn(images, function (n, total) {
         return total > 1 ? "Préparation des photos… " + n + " sur " + total : "Préparation de la photo…";
       }, function (fichier) {
         return litPhoto(fichier).catch(function () { illisibles++; return null; });
-      }).then(function (reduites) {
+      })).then(function (reduites) {
+        enPreparation = false;
+        majBoutons();
+        /* L'éditeur a été fermé pendant la préparation : ses photos ne vont nulle part. */
+        if (!zonePhotos.isConnected) {
+          toast("Les photos n'ont pas été ajoutées : l'article a été fermé avant la fin de leur préparation");
+          return;
+        }
         reduites.forEach(function (r) {
           if (r) photos.push({ src: r.src, vignette: r.vignette, alt: "" });
         });
@@ -815,6 +1039,43 @@
         var ajoutees = images.length - illisibles;
         toast(ajoutees > 1 ? ajoutees + " photos ajoutées" : "Photo ajoutée");
         if (illisibles > 0) toast(illisibles + (illisibles > 1 ? " photos n'ont pas pu être lues" : " photo n'a pas pu être lue"));
+      }, function () {
+        enPreparation = false;
+        majBoutons();
+        if (zonePhotos.isConnected) toast("Les photos n'ont pas pu être préparées");
+      });
+    });
+
+    if (inputDocuments) inputDocuments.addEventListener("change", function () {
+      var choisis = [].slice.call(inputDocuments.files || []);
+      inputDocuments.value = "";
+      if (!choisis.length) return;
+      var gardes = choisis.filter(function (f) { return estPdf(f) && f.size <= TAILLE_DOCUMENT_MAX; });
+      var ecartes = choisis.length - gardes.length;
+      if (ecartes > 0) {
+        toast(ecartes + (ecartes > 1 ? " fichiers écartés" : " fichier écarté") + " : seuls les documents PDF de 10 Mo au plus sont acceptés");
+      }
+      if (!gardes.length) return;
+      enPreparation = true;
+      majBoutons();
+      prepare(Promise.all(gardes.map(function (f) {
+        return litDocument(f).then(function (src) {
+          return { src: src, titre: String(f.name || "").replace(/\.pdf$/i, ""), taille: tailleLisible(f.size) };
+        }, function () { return null; });
+      }))).then(function (lus) {
+        enPreparation = false;
+        majBoutons();
+        /* L'éditeur a été fermé pendant la lecture : ces documents ne vont nulle part. */
+        if (!zoneDocuments.isConnected) {
+          toast("Les documents n'ont pas été ajoutés : l'article a été fermé avant la fin de leur lecture");
+          return;
+        }
+        var ajoutes = lus.filter(Boolean);
+        documents = documents.concat(ajoutes);
+        rendDocuments();
+        apercu();
+        if (ajoutes.length < lus.length) toast("Un document n'a pas pu être lu");
+        else toast(ajoutes.length > 1 ? ajoutes.length + " documents ajoutés" : "Document ajouté");
       });
     });
 
@@ -825,9 +1086,18 @@
     document.getElementById("btn-enregistrer").addEventListener("click", function () {
       if (publicationBloque()) return;
       if (!refs.titre.value.trim()) { toast("Le titre est obligatoire"); refs.titre.focus(); return; }
+      if (!texteCharge) { toast("Le texte de l'article n'est pas encore chargé : enregistrement impossible pour l'instant"); return; }
+      /* Sans description, un lecteur d'écran saute la photo : on le rappelle pour
+         la photo principale, sans l'imposer (revue du 05/10/2026). */
+      if (photos.length && !(photos[0].alt || "").trim() &&
+        !confirm("La photo principale n'a pas de description : les personnes malvoyantes ne sauront pas ce qu'elle montre.\n\nEnregistrer quand même ?")) {
+        var champDescription = zonePhotos.querySelector(".photo-alt");
+        if (champDescription) champDescription.focus();
+        return;
+      }
       var valeurs = {
         titre: refs.titre.value.trim(),
-        date: refs.date.value || item.date,
+        date: dateAEnregistrer(refs.date.value, item.date),
         image: photos.length ? photos[0].src : null,
         alt: photos.length ? (photos[0].alt || "").trim() || null : null,
         photos: photos.slice(1).map(function (ph) { return { src: ph.src, alt: (ph.alt || "").trim() }; }),
@@ -835,6 +1105,9 @@
         texte: refs.texte.value
       };
       if (rubrique === "talents") valeurs.sous_titre = (refs.sousTitre.value || "").trim() || null;
+      if (rubrique === "actualites") {
+        valeurs.documents = documents.map(function (d) { return { src: d.src, titre: d.titre.trim(), taille: d.taille }; });
+      }
       if (creation) {
         surcouche.nouveaux[rubrique].push(Object.assign({ chemin: item.chemin }, valeurs));
       } else if (item.chemin.indexOf("nouveau:") === 0) {
@@ -865,20 +1138,39 @@
       retourListe();
     });
 
-    rendPhotos();
+    function chargeLeTexte() {
+      etatTexte.className = "etat-texte";
+      etatTexte.innerHTML = "Chargement du texte…";
+      etatTexte.hidden = false;
+      chargeTexte(item).then(function (texte) {
+        /* L'éditeur a pu être fermé entre-temps : il n'y a plus rien à remplir. */
+        if (!refs.texte.isConnected) return;
+        refs.texte.value = corpsSaisi(texte);
+        texteCharge = true;
+        etatTexte.hidden = true;
+        majBoutons();
+        apercu();
+      }, function () {
+        if (!refs.texte.isConnected) return;
+        /* Un message qui reste, et non un toast de deux secondes : sans le texte,
+           l'article ne peut pas être enregistré. */
+        etatTexte.className = "etat-texte etat-texte--echec";
+        etatTexte.innerHTML = "Le texte de l'article n'a pas pu être chargé. Vérifiez la connexion internet, puis réessayez. " +
+          '<button type="button" class="btn btn--secondaire" id="btn-reessayer-texte">Réessayer</button>';
+        etatTexte.querySelector("button").addEventListener("click", chargeLeTexte);
+      });
+    }
 
-    if (creation || typeof item.texte === "string") {
+    rendPhotos();
+    rendDocuments();
+    majBoutons();
+
+    if (texteCharge) {
       refs.texte.value = item.texte || "";
       apercu();
     } else {
-      chargeTexte(item).then(function (texte) {
-        refs.texte.value = texte;
-        apercu();
-      }).catch(function () {
-        refs.texte.value = "";
-        toast("Le texte n'a pas pu être chargé");
-        apercu();
-      });
+      apercu();
+      chargeLeTexte();
     }
   }
 
@@ -935,16 +1227,31 @@
 
     var photo = item.photo || null;
     var inputImage = document.getElementById("ch-image");
+    var imagePortrait = document.getElementById("photo-actuelle");
+    /* Tant que la photo se prépare, enregistrer garderait l'ancienne et quitter
+       la fiche perdrait la nouvelle : ces boutons attendent. */
+    var enAttente = ["btn-enregistrer", "btn-retour", "btn-annuler", "btn-supprimer"]
+      .map(function (id) { return document.getElementById(id); }).concat(inputImage);
+    function attend(oui) { enAttente.forEach(function (b) { if (b) b.disabled = oui; }); }
     inputImage.addEventListener("change", function () {
       var f = inputImage.files[0];
       if (!f) return;
       inputImage.value = "";
-      litPhoto(f).then(function (reduite) {
+      attend(true);
+      prepare(litPhoto(f, COTE_PORTRAIT)).then(function (reduite) {
+        attend(false);
+        /* La fiche a été fermée entre-temps : rien à y écrire. */
+        if (!imagePortrait.isConnected) {
+          toast("La photo n'a pas été ajoutée : la fiche a été fermée avant la fin de sa préparation");
+          return;
+        }
         photo = reduite.src;
-        var img = document.getElementById("photo-actuelle");
-        img.src = photo;
-        img.hidden = false;
-      }).catch(function () { toast("La photo n'a pas pu être lue"); });
+        imagePortrait.src = photo;
+        imagePortrait.hidden = false;
+      }, function () {
+        attend(false);
+        if (imagePortrait.isConnected) toast("La photo n'a pas pu être lue");
+      });
     });
     var btnRetirePhoto = document.getElementById("btn-retire-photo");
     if (btnRetirePhoto) btnRetirePhoto.addEventListener("click", function () {
@@ -999,10 +1306,16 @@
 
   /* ----------------------------------------------------------------- réglages */
 
+  function copieCreneau(h) { return Object.assign({}, h); }
+
   function rendReglages() {
     var accueil = reglagesFusionnes("accueil");
     var mairie = reglagesFusionnes("mairie");
-    var horaires = (mairie.horaires || []).slice();
+    /* Des copies des créneaux, ici et à l'enregistrement : l'écran modifie ses
+       créneaux à chaque frappe, et partager les mêmes objets avec les données
+       ou le brouillon faisait publier une saisie abandonnée sans « Enregistrer »
+       (revue du 05/10/2026). */
+    var horaires = (mairie.horaires || []).map(copieCreneau);
 
     app.innerHTML = '<div class="barre-liste"><h2>Réglages du site</h2></div>' +
       '<div class="panneaux">' +
@@ -1020,7 +1333,10 @@
       '<section class="panneau"><h3>Coordonnées de la mairie</h3>' +
       '<div class="champ"><label for="ch-adresse">Adresse</label><textarea id="ch-adresse" style="min-height:90px">' + echap(mairie.adresse || "") + "</textarea></div>" +
       '<div class="champ"><label for="ch-telephone">Téléphone</label><input type="text" id="ch-telephone" value="' + echap(mairie.telephone || "") + '"></div>' +
-      '<div class="champ"><label for="ch-email">Adresse électronique</label><input type="email" id="ch-email" value="' + echap(mairie.email || "") + '"></div>' +
+      /* Un id distinct de celui du champ de connexion (ch-email, placé avant dans
+         la page) : sinon l'enregistrement lisait ce dernier et publiait une adresse
+         vide ou celle du compte connecté (revue du 05/10/2026). */
+      '<div class="champ"><label for="ch-mairie-email">Adresse électronique</label><input type="email" id="ch-mairie-email" value="' + echap(mairie.email || "") + '"></div>' +
       '<div class="champ"><label>Horaires d\'ouverture</label><div id="liste-horaires"></div>' +
       '<button type="button" class="btn btn--secondaire" id="btn-ajout-horaire">Ajouter un créneau</button></div>' +
       '<div class="actions"><button type="button" class="btn" id="btn-enregistre-mairie">Enregistrer</button></div>' +
@@ -1028,14 +1344,28 @@
 
     var photoAccueil = accueil.photo || null;
     var inputPhoto = document.getElementById("ch-photo-accueil");
+    var imageAccueil = document.getElementById("photo-accueil");
+    var boutonAccueil = document.getElementById("btn-enregistre-accueil");
+    /* Tant que la photo se prépare, enregistrer garderait l'ancienne. */
+    function attendPhoto(oui) { boutonAccueil.disabled = oui; inputPhoto.disabled = oui; }
     inputPhoto.addEventListener("change", function () {
       var f = inputPhoto.files[0];
       if (!f) return;
       inputPhoto.value = "";
-      litPhoto(f).then(function (reduite) {
+      attendPhoto(true);
+      prepare(litPhoto(f)).then(function (reduite) {
+        attendPhoto(false);
+        /* Les Réglages ont été fermés entre-temps : rien à y écrire. */
+        if (!imageAccueil.isConnected) {
+          toast("La photo d'accueil n'a pas été ajoutée : les Réglages ont été fermés avant la fin de sa préparation");
+          return;
+        }
         photoAccueil = reduite.src;
-        document.getElementById("photo-accueil").src = photoAccueil;
-      }).catch(function () { toast("La photo n'a pas pu être lue"); });
+        imageAccueil.src = photoAccueil;
+      }, function () {
+        attendPhoto(false);
+        if (imageAccueil.isConnected) toast("La photo n'a pas pu être lue");
+      });
     });
 
     function rendHoraires() {
@@ -1085,8 +1415,8 @@
       surcouche.reglages.mairie = Object.assign({}, mairie, {
         adresse: document.getElementById("ch-adresse").value.trim(),
         telephone: document.getElementById("ch-telephone").value.trim(),
-        email: document.getElementById("ch-email").value.trim(),
-        horaires: horaires.filter(function (h) { return (h.jours || h.heures || "").trim() !== ""; })
+        email: document.getElementById("ch-mairie-email").value.trim(),
+        horaires: horaires.filter(function (h) { return (h.jours || h.heures || "").trim() !== ""; }).map(copieCreneau)
       });
       ecritSurcouche(surcouche);
       majBarrePublication();
@@ -1107,18 +1437,62 @@
       .slice(0, 60) || "sans-titre";
   }
 
+  /* Caractères qu'un fichier YAML refuse (caractères de contrôle, non-caractères),
+     et séparateurs qu'il lit comme des retours à la ligne. Collés depuis un
+     traitement de texte, ils rendaient le fichier illisible : un fichier de
+     _data figeait la construction du site, un article sortait sans titre ni
+     photo (revue du 05/10/2026). Les séparateurs, comme le saut de ligne
+     manuel de Word (U+000B), deviennent de vrais retours à la ligne ; le
+     reste disparaît. */
+  function nettoieSaisie(v) {
+    return String(v == null ? "" : v)
+      .replace(/\r\n?|[\u000B\u000C\u0085\u2028\u2029]/g, "\n")
+      .replace(/[\u0000-\u0008\u000E-\u001F\u007F-\u0084\u0086-\u009F\uFFFE\uFFFF]/g, "");
+  }
+
   /* Chaîne YAML entre guillemets : sûre quel que soit le contenu saisi. */
   function yTexte(v) {
-    return '"' + String(v == null ? "" : v).replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\n/g, " ") + '"';
+    return '"' + nettoieSaisie(v).replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\n/g, " ") + '"';
   }
 
   /* Bloc YAML littéral, pour les valeurs qui peuvent tenir sur plusieurs lignes. */
   function yBloc(cle, v, retrait) {
-    var texte = String(v == null ? "" : v).replace(/\r/g, "").trim();
+    var texte = nettoieSaisie(v).trim();
     if (!texte) return retrait + cle + ': ""';
     return retrait + cle + ": |-\n" + texte.split("\n").map(function (l) {
       return retrait + "  " + l;
     }).join("\n");
+  }
+
+  /* Corps d'un article tel qu'il part dans le fichier (contrat d'écriture de la
+     revue du 05/10/2026) :
+     - « { » suivi de « { » ou de « % » s'écrit &#123; : sinon Liquid y lit une
+       balise, et une balise inachevée fait échouer la construction du site,
+       qui reste figé alors que l'écran dit « Publié ». Le lecteur voit « { » ;
+     - une ligne faite seulement de « - » ou de « = » est précédée d'une barre
+       oblique inverse : sinon la ligne au-dessus devient un intertitre (une
+       signature « -- » sous « Bien cordialement. », le 05/10/2026) ;
+     - une adresse web nue devient un lien : <https://…>, ou [www.…](https://www.…)
+       pour garder le texte d'une adresse sans https. kramdown ne fait pas de
+       lien d'une adresse nue. */
+  function corpsEcrit(texte) {
+    return remplaceAdresses(nettoieSaisie(texte)
+      .replace(/\{(?=[{%])/g, "&#123;")
+      .replace(/^( {0,3})([-=]+[ \t]*)$/gm, "$1\\$2"), function (adresse) {
+      return /^www\./.test(adresse) ? "[" + adresse + "](https://" + adresse + ")" : "<" + adresse + ">";
+    }).trim();
+  }
+
+  /* Le même corps relu dans l'éditeur : la personne retrouve le texte tel
+     qu'elle l'a tapé. Seulement si cela redonne exactement le même fichier,
+     pour ne jamais rien perdre. */
+  function corpsSaisi(ecrit) {
+    var saisi = String(ecrit == null ? "" : ecrit)
+      .replace(/&#123;(?=[{%]|&#123;)/g, "{")
+      .replace(/^( {0,3})\\([-=]+[ \t]*)$/gm, "$1$2")
+      .replace(/\[(www\.[^\]\s]+)\]\(https:\/\/\1\)/g, "$1")
+      .replace(/<(https?:\/\/[^\s<>]+)>/g, "$1");
+    return corpsEcrit(saisi) === corpsEcrit(ecrit) ? saisi : ecrit;
   }
 
   var EXTENSIONS = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp", "image/gif": "gif" };
@@ -1146,12 +1520,15 @@
     return base + "#" + occurrences[base];
   }
 
-  /* Une photo choisie dans l'éditeur arrive en data: ; elle devient un fichier du site. */
-  function extraitPhoto(valeur, base, fichiers) {
+  /* Une photo choisie dans l'éditeur arrive en data: ; elle devient un fichier du site.
+     Avec pdf, c'est un document PDF joint : il devient assets/docs/….pdf, déposé
+     tel quel par le même circuit que les photos. */
+  function extraitPhoto(valeur, base, fichiers, pdf) {
     valeur = photoValide(valeur);
     if (!valeur || valeur.indexOf("data:") !== 0) return valeur;
     var m = String(valeur).match(/^data:([^;]+);base64,(.+)$/);
     if (!m) return null;
+    if (pdf && m[1] !== "application/pdf") return null;
 
     /* Photo déjà déposée lors d'une tentative précédente : sa référence est
        réutilisée au lieu de la renvoyer. C'est ce qui permet à une publication
@@ -1168,7 +1545,9 @@
     /* L'horodatage seul ne suffit pas : plusieurs photos d'un même article
        partent dans la même milliseconde et s'écraseraient l'une l'autre. */
     var marque = Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 7);
-    var chemin = "assets/img/" + slug(base) + "-" + marque + "." + (EXTENSIONS[m[1]] || "jpg");
+    var chemin = pdf
+      ? "assets/docs/" + slug(base) + "-" + marque + ".pdf"
+      : "assets/img/" + slug(base) + "-" + marque + "." + (EXTENSIONS[m[1]] || "jpg");
     fichiers.push({ chemin: chemin, base64: m[2] });
     reperesEnvoyes[chemin] = marqueur;
     return "/" + chemin;
@@ -1176,7 +1555,7 @@
 
   function fichierArticle(rubrique, valeurs, chemin, fichiers) {
     var image = extraitPhoto(valeurs.image, valeurs.titre, fichiers);
-    var lignes = ["---", "title: " + yTexte(valeurs.titre), "date: " + (valeurs.date || "")];
+    var lignes = ["---", "title: " + yTexte(valeurs.titre), "date: " + dateEcrite(valeurs.date)];
     if (rubrique === "talents" && valeurs.sous_titre) lignes.push("sous_titre: " + yTexte(valeurs.sous_titre));
     if (image) lignes.push("image: " + yTexte(image));
     if (image && valeurs.alt) lignes.push("alt: " + yTexte(valeurs.alt));
@@ -1191,8 +1570,19 @@
       });
     }
     if (valeurs.video) lignes.push("video: " + yTexte(valeurs.video));
+    var documents = (valeurs.documents || []).map(function (d) {
+      return { src: extraitPhoto(d.src, d.titre || valeurs.titre, fichiers, true), titre: d.titre, taille: d.taille };
+    }).filter(function (d) { return d.src; });
+    if (documents.length) {
+      lignes.push("documents:");
+      documents.forEach(function (d) {
+        lignes.push("  - src: " + yTexte(d.src));
+        if (d.titre) lignes.push("    titre: " + yTexte(d.titre));
+        if (d.taille) lignes.push("    taille: " + yTexte(d.taille));
+      });
+    }
     lignes.push("---");
-    var corps = String(valeurs.texte || "").replace(/\r/g, "").trim();
+    var corps = corpsEcrit(valeurs.texte);
     return { chemin: chemin, texte: lignes.join("\n") + "\n" + corps + "\n" };
   }
 
@@ -1274,7 +1664,7 @@
       (surcouche.nouveaux[rubrique] || []).forEach(function (v) {
         /* Le jour seul, même si la date porte l'heure. */
         var nom = rubrique === "actualites"
-          ? String(v.date || new Date().toISOString()).slice(0, 10) + "-" + slug(v.titre)
+          ? (litDate(v.date).jour || dateLocale()) + "-" + slug(v.titre)
           : slug(v.titre);
         var chemin = cheminLibre("_" + rubrique + "/" + nom + ".md");
         var fichier = fichierArticle(rubrique, v, chemin, fichiers);

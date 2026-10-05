@@ -146,6 +146,9 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .onglets button:hover { color: var(--prairie-fonce); border-bottom-color: var(--sauge); }
 .onglets button.actif { border-bottom-color: var(--rouge); }
 
+/* Pendant la préparation d'une photo, les onglets et le retour attendent. */
+.onglets button:disabled, .retour-liste:disabled { opacity: 0.5; cursor: default; pointer-events: none; }
+
 /* --- Zone principale ------------------------------------------------------------ */
 
 #app { padding: 1.6rem var(--gouttiere) 3.5rem; }
@@ -193,6 +196,14 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 
 .btn--danger { background: var(--blanc); color: var(--rouge); border: 1px solid #E8C7C2; }
 .btn--danger:hover { background: #FBEEEC; }
+
+/* Un bouton qui attend (texte pas encore chargé, photos en préparation). */
+.btn:disabled, .btn:disabled:hover {
+  background: var(--sauge);
+  color: var(--ardoise);
+  border-color: var(--sauge);
+  cursor: default;
+}
 
 /* --- Listes ---------------------------------------------------------------------- */
 
@@ -304,6 +315,11 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .champ textarea { min-height: 220px; line-height: 1.55; resize: vertical; }
 
 .champ .aide { margin: 0.25rem 0 0; font-size: 0.9rem; font-style: italic; color: var(--ardoise); }
+
+/* Chargement du texte d'un article, ou son échec, hors du champ lui-même. */
+.etat-texte { margin: 0 0 0.5rem; font-style: italic; color: var(--ardoise); }
+.etat-texte--echec { font-style: normal; color: var(--rouge); }
+.etat-texte .btn { margin-top: 0.4rem; }
 
 .photo-actuelle { display: block; max-height: 170px; border-radius: 8px; margin-bottom: 0.5rem; }
 
@@ -640,6 +656,15 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .acces-actions .lien-reinit { margin-left: 0; color: var(--prairie); }
 .lien-reinit--danger { color: var(--rouge); }
 
+/* Sur téléphone, les liens d'une ligne passent sous l'adresse au lieu de
+   sortir de l'écran : ils demandent 441 à 467 points, la ligne ne tenait qu'à
+   partir de 554 de large (revue du 05/10/2026). */
+@media (max-width: 620px) {
+  .ligne--acces { flex-wrap: wrap; }
+  .acces-actions { flex-wrap: wrap; flex-shrink: 1; gap: 0.35rem 1.2rem; }
+  .ligne--acces .ligne-titre { overflow-wrap: break-word; overflow-wrap: anywhere; }
+}
+
 .panneau--acces {
   max-width: 44rem;
   margin-bottom: 2rem;
@@ -725,6 +750,12 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
   color: var(--prairie-fonce);
 }
 
+.photo-champs label {
+  margin-bottom: 0.2rem;
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+}
+
 .photo-champs input {
   width: 100%;
   font-family: inherit;
@@ -744,6 +775,29 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .photo-boutons .lien-reinit { margin-left: 0; font-style: normal; }
 
 .aide--vide { font-style: italic; margin: 0 0 0.6rem; }
+
+/* --- Documents PDF joints à une actualité ------------------------------------- */
+
+.document-ligne {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.6rem;
+  background: var(--blanc);
+  border: 1px solid var(--sauge);
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.document-champs { flex: 1; min-width: 0; }
+
+.document-champs label {
+  margin-bottom: 0.2rem;
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+}
+
+.document-ligne .lien-reinit { margin-left: 0; font-style: normal; flex-shrink: 0; }
 
 .apercu-galerie {
   display: grid;
