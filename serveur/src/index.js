@@ -6,7 +6,8 @@
    - une clé d'écriture qui ne quitte jamais ce serveur.
 
    Rien de personnel n'y est stocké : les comptes de la mairie, leurs sessions,
-   et une clé qui ne sait faire qu'une chose, écrire dans le dépôt du site.   */
+   30 jours de comptes rendus d'échec (sans adresse), et une clé qui ne sait
+   faire qu'une chose, écrire dans le dépôt du site.                          */
 
 const ITERATIONS = 100000;   // maximum accepté par le runtime Cloudflare
 const DUREE_SESSION = 12 * 3600;        // secondes

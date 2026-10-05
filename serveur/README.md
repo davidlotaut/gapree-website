@@ -126,6 +126,13 @@ node amorcer.mjs essai@exemple.fr --local
 La publication échoue alors volontairement (le jeton est faux), ce qui permet
 de vérifier que le message d'erreur reste lisible pour la mairie.
 
+Tests sans réseau (GitHub et stockage simulés, module réel du serveur), depuis
+la racine du dépôt, avec Node 24 et sans rien installer :
+
+```bash
+node --test 'tests/serveur/*.test.mjs'
+```
+
 ## Coût
 
 Offre gratuite de Cloudflare : 100 000 requêtes par jour, 1 000 écritures par
