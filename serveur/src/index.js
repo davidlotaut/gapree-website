@@ -347,11 +347,16 @@ async function publie(env, changements) {
       arbre.push({ path: chemin, mode: "100644", type: "blob", sha: null });
     }
   }
-  if (!arbre.length) throw new Error("Il n'y a rien de nouveau à publier.");
+  /* Rien ne change réellement (retraits déjà faits, ou fichiers identiques à
+     ceux en ligne) : le résultat voulu est atteint. Un refus bloquait la
+     mairie à chaque appui ; un enregistrement vide relançait la construction
+     du site, quitte à annuler celle de la publication précédente. */
+  if (!arbre.length) return { inchange: true };
 
   const nouvelArbre = await appelGitHub(env, "/git/trees", {
     method: "POST", corps: { base_tree: commit.tree.sha, tree: arbre }
   });
+  if (nouvelArbre.sha === commit.tree.sha) return { inchange: true };
   const nouveauCommit = await appelGitHub(env, "/git/commits", {
     method: "POST",
     corps: { message: changements.message || "Mise à jour du site", tree: nouvelArbre.sha, parents: [shaCommit] }
@@ -359,7 +364,7 @@ async function publie(env, changements) {
   await appelGitHub(env, "/git/refs/heads/" + branche, {
     method: "PATCH", corps: { sha: nouveauCommit.sha }
   });
-  return nouveauCommit.sha;
+  return { commit: nouveauCommit.sha };
 }
 
 /* ----------------------------------------------------------------- routes */
@@ -514,12 +519,13 @@ export default {
         const changements = await requete.json();
         const qui = await libelleCompte(session.compte.email);
         console.log("publication demandée par " + session.compte.email + " (" + qui + ")");
-        const sha = await publie(env, {
+        const resultat = await publie(env, {
           message: (changements.message || "Mise à jour du site") + "\n\nPublié par " + qui + "\n",
           fichiers: changements.fichiers,
           suppressions: changements.suppressions
         });
-        return reponse({ ok: true, commit: sha }, 200, requete, env);
+        return reponse(resultat.inchange ? { ok: true, inchange: true } : { ok: true, commit: resultat.commit },
+          200, requete, env);
       }
 
       return erreur("Adresse inconnue.", 404, requete, env);
