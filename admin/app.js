@@ -396,6 +396,12 @@
       : trouve(rubrique, chemin);
     if (!item) { vue = { type: "liste", rubrique: rubrique }; return rendre(); }
 
+    /* Le texte d'un article déjà publié arrive après coup. Tant qu'il n'est pas
+       là, le champ et « Enregistrer » attendent : enregistrer plus tôt publiait
+       « Chargement du texte… », ou un texte vide après un échec (revue du
+       05/10/2026). */
+    var texteCharge = creation || typeof item.texte === "string";
+
     /* Une seule liste de photos : la première est celle qui illustre la carte. */
     var photos = [];
     if (item.image) photos.push({ src: item.image, alt: item.alt || "" });
@@ -414,7 +420,8 @@
       '<p class="aide">Vous pouvez en choisir plusieurs d\'un coup, telles qu\'elles sortent de votre appareil. ' +
       'La première illustre l\'article dans les listes ; les suivantes défilent à côté d\'elle.</p></div>' +
       '<div class="champ"><label for="ch-video">Vidéo YouTube</label><input type="url" id="ch-video" value="' + echap(item.video || "") + '"><p class="aide">Facultatif. Collez le lien d\'une vidéo YouTube.</p></div>' +
-      '<div class="champ"><label for="ch-texte">Texte</label><textarea id="ch-texte">Chargement du texte…</textarea>' +
+      '<div class="champ"><label for="ch-texte">Texte</label>' +
+      '<p class="etat-texte" id="etat-texte" hidden></p><textarea id="ch-texte"></textarea>' +
       '<p class="aide">Texte simple. Une ligne vide sépare les paragraphes ; **mot** met en gras.</p></div>' +
       '<div class="actions"><button type="button" class="btn" id="btn-enregistrer">Enregistrer</button>' +
       '<button type="button" class="btn btn--secondaire" id="btn-annuler">Annuler</button>' +
@@ -429,6 +436,16 @@
       video: document.getElementById("ch-video"),
       texte: document.getElementById("ch-texte")
     };
+    var boutonEnregistrer = document.getElementById("btn-enregistrer");
+    var etatTexte = document.getElementById("etat-texte");
+    /* L'aperçu de CET éditeur : un rappel tardif ne doit jamais écrire dans
+       celui d'un autre article ouvert entre-temps. */
+    var cadreApercu = document.getElementById("apercu");
+
+    function majBoutons() {
+      boutonEnregistrer.disabled = !texteCharge;
+      refs.texte.disabled = !texteCharge;
+    }
 
     function rendPhotos() {
       var zone = document.getElementById("liste-photos");
@@ -498,7 +515,7 @@
           + (photos.length > montrees.length ? " (les " + montrees.length + " premières sont montrées ici)" : "") + "</p>";
       }
       html += rendMarkdown(refs.texte.value);
-      document.getElementById("apercu").innerHTML = html;
+      cadreApercu.innerHTML = html;
     }
 
     ["input", "change"].forEach(function (ev) {
@@ -542,6 +559,7 @@
 
     document.getElementById("btn-enregistrer").addEventListener("click", function () {
       if (!refs.titre.value.trim()) { toast("Le titre est obligatoire"); refs.titre.focus(); return; }
+      if (!texteCharge) { toast("Le texte de l'article n'est pas encore chargé : enregistrement impossible pour l'instant"); return; }
       var valeurs = {
         titre: refs.titre.value.trim(),
         date: refs.date.value || item.date,
@@ -581,20 +599,38 @@
       retourListe();
     });
 
-    rendPhotos();
+    function chargeLeTexte() {
+      etatTexte.className = "etat-texte";
+      etatTexte.innerHTML = "Chargement du texte…";
+      etatTexte.hidden = false;
+      chargeTexte(item).then(function (texte) {
+        /* L'éditeur a pu être fermé entre-temps : il n'y a plus rien à remplir. */
+        if (!refs.texte.isConnected) return;
+        refs.texte.value = texte;
+        texteCharge = true;
+        etatTexte.hidden = true;
+        majBoutons();
+        apercu();
+      }, function () {
+        if (!refs.texte.isConnected) return;
+        /* Un message qui reste, et non un toast de deux secondes : sans le texte,
+           l'article ne peut pas être enregistré. */
+        etatTexte.className = "etat-texte etat-texte--echec";
+        etatTexte.innerHTML = "Le texte de l'article n'a pas pu être chargé. Vérifiez la connexion internet, puis réessayez. " +
+          '<button type="button" class="btn btn--secondaire" id="btn-reessayer-texte">Réessayer</button>';
+        etatTexte.querySelector("button").addEventListener("click", chargeLeTexte);
+      });
+    }
 
-    if (creation || typeof item.texte === "string") {
+    rendPhotos();
+    majBoutons();
+
+    if (texteCharge) {
       refs.texte.value = item.texte || "";
       apercu();
     } else {
-      chargeTexte(item).then(function (texte) {
-        refs.texte.value = texte;
-        apercu();
-      }).catch(function () {
-        refs.texte.value = "";
-        toast("Le texte n'a pas pu être chargé");
-        apercu();
-      });
+      apercu();
+      chargeLeTexte();
     }
   }
 

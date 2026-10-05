@@ -194,6 +194,14 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .btn--danger { background: var(--blanc); color: var(--rouge); border: 1px solid #E8C7C2; }
 .btn--danger:hover { background: #FBEEEC; }
 
+/* Un bouton qui attend (texte pas encore chargé, photos en préparation). */
+.btn:disabled, .btn:disabled:hover {
+  background: var(--sauge);
+  color: var(--ardoise);
+  border-color: var(--sauge);
+  cursor: default;
+}
+
 /* --- Listes ---------------------------------------------------------------------- */
 
 .lignes { display: flex; flex-direction: column; gap: 10px; }
@@ -304,6 +312,11 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .champ textarea { min-height: 220px; line-height: 1.55; resize: vertical; }
 
 .champ .aide { margin: 0.25rem 0 0; font-size: 0.9rem; font-style: italic; color: var(--ardoise); }
+
+/* Chargement du texte d'un article, ou son échec, hors du champ lui-même. */
+.etat-texte { margin: 0 0 0.5rem; font-style: italic; color: var(--ardoise); }
+.etat-texte--echec { font-style: normal; color: var(--rouge); }
+.etat-texte .btn { margin-top: 0.4rem; }
 
 .photo-actuelle { display: block; max-height: 170px; border-radius: 8px; margin-bottom: 0.5rem; }
 

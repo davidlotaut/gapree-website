@@ -204,7 +204,7 @@ export async function ouvreBanc(options = {}) {
   const document = fauxDocument(corps, compteur);
   const stock = new Map();
   const publications = [], televersements = [], toasts = [], confirmations = [], minuteries = [], erreurs = [];
-  const raw = { delai: 0, echec: false, appels: 0, textes: Object.assign({}, options.textes || TEXTES_DE_TEST) };
+  const raw = { delai: 0, delais: {}, echec: false, appels: 0, textes: Object.assign({}, options.textes || TEXTES_DE_TEST) };
   const contenu = options.contenu || contenuDeTest();
   const pause = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -267,7 +267,7 @@ export async function ouvreBanc(options = {}) {
       const m = url.match(/^https:\/\/raw\.githubusercontent\.com\/[^/]+\/[^/]+\/[^/]+\/(.+)$/);
       if (m) {
         raw.appels++;
-        await pause(raw.delai);
+        await pause(raw.delais[m[1]] !== undefined ? raw.delais[m[1]] : raw.delai);
         if (raw.echec) throw new TypeError("Failed to fetch");
         const texte = raw.textes[m[1]];
         if (texte === undefined) return { ok: false, status: 404, text: async () => "" };
