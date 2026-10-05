@@ -734,7 +734,10 @@
       '<section class="panneau"><h3>Coordonnées de la mairie</h3>' +
       '<div class="champ"><label for="ch-adresse">Adresse</label><textarea id="ch-adresse" style="min-height:90px">' + echap(mairie.adresse || "") + "</textarea></div>" +
       '<div class="champ"><label for="ch-telephone">Téléphone</label><input type="text" id="ch-telephone" value="' + echap(mairie.telephone || "") + '"></div>' +
-      '<div class="champ"><label for="ch-email">Adresse électronique</label><input type="email" id="ch-email" value="' + echap(mairie.email || "") + '"></div>' +
+      /* Un id distinct de celui du champ de connexion (ch-email, placé avant dans
+         la page) : sinon l'enregistrement lisait ce dernier et publiait une adresse
+         vide ou celle du compte connecté (revue du 05/10/2026). */
+      '<div class="champ"><label for="ch-mairie-email">Adresse électronique</label><input type="email" id="ch-mairie-email" value="' + echap(mairie.email || "") + '"></div>' +
       '<div class="champ"><label>Horaires d\'ouverture</label><div id="liste-horaires"></div>' +
       '<button type="button" class="btn btn--secondaire" id="btn-ajout-horaire">Ajouter un créneau</button></div>' +
       '<div class="actions"><button type="button" class="btn" id="btn-enregistre-mairie">Enregistrer</button></div>' +
@@ -797,7 +800,7 @@
       surcouche.reglages.mairie = Object.assign({}, mairie, {
         adresse: document.getElementById("ch-adresse").value.trim(),
         telephone: document.getElementById("ch-telephone").value.trim(),
-        email: document.getElementById("ch-email").value.trim(),
+        email: document.getElementById("ch-mairie-email").value.trim(),
         horaires: horaires.filter(function (h) { return (h.jours || h.heures || "").trim() !== ""; })
       });
       ecritSurcouche(surcouche);
