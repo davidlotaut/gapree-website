@@ -161,3 +161,11 @@ export function filtres(sortie) {
   morceaux.push(courant.trim());
   return { expression: morceaux[0], filtres: morceaux.slice(1).map((f) => f.split(":")[0].trim()) };
 }
+
+/* Identifiant qu'un titre reçoit sur le site (kramdown, entrée GFM :
+   generate_gfm_header_id) : minuscules, tout ce qui n'est ni lettre, ni
+   chiffre, ni tiret, ni espace retiré, espaces changés en tirets. Vérifié sur
+   les 9 ancres du guide et les titres servis des mentions légales. */
+export function ancre(titre) {
+  return titre.toLowerCase().replace(/[^\p{L}\p{M}\p{Nd}\p{Pc}\- \t]/gu, "").replace(/[ \t]/g, "-");
+}

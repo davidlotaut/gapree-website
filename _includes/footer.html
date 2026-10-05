@@ -21,6 +21,7 @@
       <p>
         {% for h in site.data.mairie.horaires %}Mairie ouverte le {{ h.jours | downcase }}, {{ h.heures }}<br>{% endfor %}
         <a href="{{ '/mentions-legales/' | relative_url }}">Mentions légales</a><br>
+        <a href="{{ '/accessibilite/' | relative_url }}">Accessibilité : non conforme</a><br>
         <a href="{{ '/admin/' | relative_url }}">Administration du site</a>
       </p>
     </div>
