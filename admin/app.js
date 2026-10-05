@@ -7,7 +7,7 @@
 (function () {
   "use strict";
 
-  var VERSION = "2026-09-10-d";
+  var VERSION = "2026-10-05-a";
   var DEPOT_RAW = "https://raw.githubusercontent.com/davidlotaut/gapree-website/main/";
   var CLE_DEMO = "gapree-demo-admin";
 
@@ -119,7 +119,17 @@
     return (j === 1 ? "1er" : j) + " " + (MOIS[parseInt(p[1], 10) - 1] || "") + " " + p[0];
   }
 
+  /* Une photo enregistrée est soit une image choisie dans l'éditeur (data:),
+     soit un fichier du site (/assets/…). Toute autre valeur est écartée : du
+     08/09 au 05/10/2026, les portraits et la photo d'accueil partaient en
+     « [object Object] », et un brouillon peut encore porter l'objet fautif. */
+  function photoValide(v) {
+    if (v && typeof v === "object") v = v.src;
+    return typeof v === "string" && (v.indexOf("data:") === 0 || v.charAt(0) === "/") ? v : null;
+  }
+
   function urlImage(chemin) {
+    chemin = photoValide(chemin);
     if (!chemin) return "";
     if (chemin.indexOf("data:") === 0) return chemin;
     return ".." + chemin;
@@ -369,6 +379,7 @@
   }
 
   function champPhoto(valeur, libelle) {
+    valeur = photoValide(valeur);
     return '<div class="champ"><label for="ch-image">' + libelle + "</label>" +
       (valeur ? '<img class="photo-actuelle" id="photo-actuelle" src="' + echap(urlImage(valeur)) + '" alt="">' :
         '<img class="photo-actuelle" id="photo-actuelle" src="" alt="" hidden>') +
@@ -600,7 +611,7 @@
       '<div class="grille-elus">' + membres.map(function (m) {
         var etat = etatItem(m.chemin);
         return '<button type="button" class="fiche-elu" data-chemin="' + echap(m.chemin) + '">' +
-          (m.photo ? '<img class="elu-photo" src="' + echap(urlImage(m.photo)) + '" alt="">'
+          (photoValide(m.photo) ? '<img class="elu-photo" src="' + echap(urlImage(m.photo)) + '" alt="">'
             : '<span class="elu-initiales" aria-hidden="true">' + echap(initiales(m.nom)) + "</span>") +
           '<span><span class="elu-nom">' + echap(m.nom) + "</span>" +
           '<span class="elu-fonction">' + echap(m.fonction || "") + (etat ? " · " + (etat === "nouveau" ? "nouveau" : "modifié") : "") + "</span></span>" +
@@ -644,8 +655,8 @@
       var f = inputImage.files[0];
       if (!f) return;
       inputImage.value = "";
-      litPhoto(f).then(function (src) {
-        photo = src;
+      litPhoto(f).then(function (reduite) {
+        photo = reduite.src;
         var img = document.getElementById("photo-actuelle");
         img.src = photo;
         img.hidden = false;
@@ -735,8 +746,8 @@
       var f = inputPhoto.files[0];
       if (!f) return;
       inputPhoto.value = "";
-      litPhoto(f).then(function (src) {
-        photoAccueil = src;
+      litPhoto(f).then(function (reduite) {
+        photoAccueil = reduite.src;
         document.getElementById("photo-accueil").src = photoAccueil;
       }).catch(function () { toast("La photo n'a pas pu être lue"); });
     });
@@ -847,7 +858,8 @@
 
   /* Une photo choisie dans l'éditeur arrive en data: ; elle devient un fichier du site. */
   function extraitPhoto(valeur, base, fichiers) {
-    if (!valeur || String(valeur).indexOf("data:") !== 0) return valeur || null;
+    valeur = photoValide(valeur);
+    if (!valeur || valeur.indexOf("data:") !== 0) return valeur;
     var m = String(valeur).match(/^data:([^;]+);base64,(.+)$/);
     if (!m) return null;
 
