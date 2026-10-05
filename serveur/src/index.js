@@ -210,6 +210,13 @@ async function sessionDe(requete, env) {
 
 /* --------------------------------------------------------------- GitHub */
 
+/* Version de l'API GitHub demandée à chaque appel. GitHub garde une version
+   24 mois après la sortie de la suivante, puis répond 410 à tout appel qui la
+   demande : 2022-11-28 cesse le 10/03/2028 (docs.github.com, lu le
+   05/10/2026). La prochaine version se vérifie sur la page « Breaking
+   changes » pour les seuls appels /git/ utilisés ici. */
+const VERSION_API = "2026-03-10";
+
 async function appelGitHub(env, chemin, options, secondEssai) {
   const o = options || {};
   const r = await fetch("https://api.github.com/repos/" + env.DEPOT + chemin, {
@@ -217,7 +224,7 @@ async function appelGitHub(env, chemin, options, secondEssai) {
     headers: {
       Authorization: "Bearer " + env.JETON_GITHUB,
       Accept: "application/vnd.github+json",
-      "X-GitHub-Api-Version": "2022-11-28",
+      "X-GitHub-Api-Version": VERSION_API,
       "Content-Type": "application/json",
       "User-Agent": "gapree-admin"
     },
@@ -237,6 +244,12 @@ async function appelGitHub(env, chemin, options, secondEssai) {
     }
     if (r.status === 401 || r.status === 403) {
       throw new Error("La clé d'écriture du site n'est plus valable. Prévenez la personne qui a installé le site.");
+    }
+    /* Version d'API arrêtée (410) ou demande que GitHub ne comprend plus
+       (400) : réessayer n'y changera rien, seul le serveur peut être corrigé. */
+    if (r.status === 400 || r.status === 410) {
+      throw new Error("Le site doit être mis à jour par la personne qui l'a installé (erreur "
+        + r.status + " de GitHub). Prévenez-la.");
     }
     if (r.status === 409 || r.status === 422) {
       throw new Error("Le site a été modifié entre-temps. Rechargez la page, puis publiez à nouveau.");

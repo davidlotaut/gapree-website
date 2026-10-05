@@ -71,6 +71,17 @@ Vider `admin/config.js` remet l'espace d'administration en démonstration :
 il s'ouvre sans mot de passe et ne publie rien. Le serveur peut rester en
 place, il ne sert plus.
 
+## Version de l'API GitHub
+
+Le serveur demande la version `2026-03-10` (constante `VERSION_API` de
+`src/index.js`). GitHub garde une version 24 mois après la sortie de la
+suivante, puis répond `410 Gone` à tout appel qui la demande ; l'espace
+affiche alors « Le site doit être mis à jour par la personne qui l'a
+installé ». À la sortie d'une nouvelle version : lire la page « Breaking
+changes » de la documentation de GitHub pour les seuls appels `/git/` (refs,
+commits, trees, blobs), changer la constante, puis essayer une publication
+sur une branche d'essai (variable `BRANCHE`) avant de remettre `main`.
+
 ## Essais en local
 
 ```bash
