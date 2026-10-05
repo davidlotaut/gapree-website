@@ -196,13 +196,16 @@ export const TEXTES_DE_TEST = {
    - maintenant : instant figé (nombre ou Date) pour new Date() et Date.now()
    - sessionReprise : false pour passer par l'écran de connexion (vrai par défaut)
    - contenu, textes : données servies à la place de celles de test
-   - reponseConfirm : valeur rendue par confirm (vrai par défaut)       */
+   - reponseConfirm : valeur rendue par confirm (vrai par défaut)
+   - brouillon : brouillon déjà enregistré dans le navigateur             */
 export async function ouvreBanc(options = {}) {
   const compteur = { n: 0 };
   const html = lit("admin/index.html");
   const corps = html.slice(html.indexOf("<body>") + 6, html.indexOf("<script"));
   const document = fauxDocument(corps, compteur);
   const stock = new Map();
+  /* Brouillon laissé par une session précédente (format de la réserve du navigateur). */
+  if (options.brouillon) stock.set("gapree-demo-admin", JSON.stringify(options.brouillon));
   const publications = [], televersements = [], toasts = [], confirmations = [], minuteries = [], erreurs = [];
   const raw = { delai: 0, delais: {}, echec: false, appels: 0, textes: Object.assign({}, options.textes || TEXTES_DE_TEST) };
   const contenu = options.contenu || contenuDeTest();

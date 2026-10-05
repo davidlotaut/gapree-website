@@ -111,6 +111,17 @@
   var MOIS = ["janvier", "février", "mars", "avril", "mai", "juin",
     "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
 
+  /* Date du jour à l'heure locale du navigateur, au format AAAA-MM-JJ : seule
+     fonction qui fabrique une date (revue du 05/10/2026). toISOString donnait
+     la date de Greenwich : entre minuit et deux heures (une heure l'hiver), un
+     article prenait la date et le nom de fichier de la veille. */
+  function deuxChiffres(n) { return (n < 10 ? "0" : "") + n; }
+
+  function dateLocale(d) {
+    d = d || new Date();
+    return d.getFullYear() + "-" + deuxChiffres(d.getMonth() + 1) + "-" + deuxChiffres(d.getDate());
+  }
+
   function dateFr(iso) {
     if (!iso) return "";
     var p = iso.split("-");
@@ -453,7 +464,7 @@
     var lib = LIBELLES[rubrique];
     var creation = !chemin;
     var item = creation
-      ? { chemin: "nouveau:" + rubrique + ":" + Date.now(), titre: "", date: new Date().toISOString().slice(0, 10), image: null, alt: null, photos: [], video: null, texte: "" }
+      ? { chemin: "nouveau:" + rubrique + ":" + Date.now(), titre: "", date: dateLocale(), image: null, alt: null, photos: [], video: null, texte: "" }
       : trouve(rubrique, chemin);
     if (!item) { vue = { type: "liste", rubrique: rubrique }; return rendre(); }
 
@@ -1159,7 +1170,7 @@
     ["actualites", "talents"].forEach(function (rubrique) {
       (surcouche.nouveaux[rubrique] || []).forEach(function (v) {
         var nom = rubrique === "actualites"
-          ? (v.date || new Date().toISOString().slice(0, 10)) + "-" + slug(v.titre)
+          ? (v.date || dateLocale()) + "-" + slug(v.titre)
           : slug(v.titre);
         fichiers.push(fichierArticle(rubrique, v, "_" + rubrique + "/" + nom + ".md", fichiers));
         resume.push("ajout : " + v.titre);
