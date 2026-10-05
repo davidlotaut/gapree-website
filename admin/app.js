@@ -25,7 +25,7 @@
 
   function surcoucheVide() {
     return { modifies: {}, nouveaux: { actualites: [], talents: [], elus: [] },
-      supprimes: [], reglages: {}, deposees: {}, publiees: {} };
+      supprimes: [], reglages: {}, deposees: {}, publiees: {}, bases: {} };
   }
 
   function rangeSurcouche(brut) {
@@ -36,7 +36,8 @@
       supprimes: brut.supprimes || [],
       reglages: brut.reglages || {},
       deposees: brut.deposees || {},
-      publiees: brut.publiees || {}
+      publiees: brut.publiees || {},
+      bases: brut.bases || {}
     };
   }
 
@@ -80,7 +81,8 @@
      05/10/2026). Pour comparer, le brouillon est vu « à plat », une clé par
      entrée : m:chemin (modification), n:rubrique:repère (nouveau),
      s:chemin (suppression), r:nom (réglages), d:repère (photo déposée),
-     p:commit (publication pas encore en ligne).                              */
+     p:commit (publication pas encore en ligne), b:chemin (révision sur
+     laquelle l'élément a été ouvert, envoyée comme base : contrat 2).        */
   var RUBRIQUES = ["actualites", "talents", "elus"];
 
   function aplatit(s) {
@@ -93,6 +95,7 @@
     Object.keys(s.reglages || {}).forEach(function (n) { plat["r:" + n] = s.reglages[n]; });
     Object.keys(s.deposees || {}).forEach(function (k) { plat["d:" + k] = s.deposees[k]; });
     Object.keys(s.publiees || {}).forEach(function (k) { plat["p:" + k] = s.publiees[k]; });
+    Object.keys(s.bases || {}).forEach(function (c) { plat["b:" + c] = s.bases[c]; });
     return plat;
   }
 
@@ -105,12 +108,23 @@
       else if (type === "r") s.reglages[reste] = v;
       else if (type === "d") s.deposees[reste] = v;
       else if (type === "p") s.publiees[reste] = v;
+      else if (type === "b") s.bases[reste] = v;
       else if (type === "n") {
         var r = reste.slice(0, reste.indexOf(":"));
         if (s.nouveaux[r]) s.nouveaux[r].push(v);
       }
     });
+    /* Une base n'a de sens qu'avec son entrée : retirée avec elle. */
+    Object.keys(s.bases).forEach(function (c) { if (!aUneEntree(s, c)) delete s.bases[c]; });
     return s;
+  }
+
+  function cheminReglage(nom) { return "_data/" + nom + ".yml"; }
+
+  function aUneEntree(s, chemin) {
+    if (s.modifies[chemin] || s.supprimes.indexOf(chemin) !== -1) return true;
+    var m = /^_data\/(.+)\.yml$/.exec(chemin);
+    return !!(m && s.reglages[m[1]]);
   }
 
   /* Copie de la structure ; les textes, et les photos qu'ils portent, ne sont
@@ -235,8 +249,22 @@
     suisLaMiseEnLigne();
   }
 
+  /* Révision sur laquelle chaque élément a été ouvert dans cette page. */
+  var baseOuverte = {};
+
+  /* Chaque modification ou suppression du brouillon garde la révision en
+     vigueur quand l'élément a été ouvert (contrat 2) : le serveur refusera de
+     l'écrire si quelqu'un d'autre a changé le fichier depuis. */
+  function tientLesBases(s) {
+    s.bases = s.bases || {};
+    var vivantes = Object.keys(s.modifies).concat(s.supprimes, Object.keys(s.reglages).map(cheminReglage));
+    vivantes.forEach(function (c) { if (!s.bases[c] && baseOuverte[c]) s.bases[c] = baseOuverte[c]; });
+    Object.keys(s.bases).forEach(function (c) { if (!aUneEntree(s, c)) delete s.bases[c]; });
+  }
+
   /* Écrit les gestes faits sur le brouillon de la page depuis sa dernière écriture. */
   function ecritSurcouche(s) {
+    tientLesBases(s);
     var operations = differences(surcoucheLue, s);
     surcoucheLue = copie(s);
     return enregistre(operations);
@@ -495,11 +523,29 @@
     return tout;
   }
 
+  /* La révision de ce qu'on voit d'un élément : celle de sa première
+     ouverture s'il attend déjà dans le brouillon (inconnue pour un brouillon
+     d'avant cette règle), sinon le commit qui l'a publié depuis ce navigateur,
+     sinon la révision de contenu.json. Vide : aucun contrôle. */
+  function revisionDe(chemin) {
+    if (!chemin || chemin.indexOf("nouveau:") === 0) return "";
+    if (aUneEntree(surcouche, chemin)) return surcouche.bases[chemin] || "";
+    var publiee = "", nom = /^_data\/(.+)\.yml$/.exec(chemin);
+    publicationsEnAttente().forEach(function (p) {
+      if ((p.elements || {})[chemin] || (p.supprimes || []).indexOf(chemin) !== -1
+        || (nom && p.reglages && p.reglages[nom[1]])) publiee = p.commit;
+    });
+    return publiee || (donnees && donnees.revision) || "";
+  }
+
   function trouve(rubrique, chemin) {
-    return listeFusionnee(rubrique).filter(function (x) { return x.chemin === chemin; })[0] || null;
+    var item = listeFusionnee(rubrique).filter(function (x) { return x.chemin === chemin; })[0] || null;
+    if (item) baseOuverte[chemin] = revisionDe(chemin);
+    return item;
   }
 
   function reglagesFusionnes(nom) {
+    baseOuverte[cheminReglage(nom)] = revisionDe(cheminReglage(nom));
     return Object.assign({}, reglagesPublies(nom), surcouche.reglages[nom] || {});
   }
 
@@ -1144,7 +1190,8 @@
     var fichiers = [];
     reperesEnvoyes = {};
     occurrences = {};
-    var suppressions = surcouche.supprimes.slice();
+    var bases = surcouche.bases || {};
+    var suppressions = surcouche.supprimes.map(function (c) { return bases[c] ? { chemin: c, base: bases[c] } : c; });
     var resume = [];
     /* Les entrées du brouillon que cette publication emporte, telles qu'elles
        sont au départ : seules celles-là en sortiront au succès. */
@@ -1165,7 +1212,9 @@
           ? (v.date || new Date().toISOString().slice(0, 10)) + "-" + slug(v.titre)
           : slug(v.titre);
         var chemin = "_" + rubrique + "/" + nom + ".md";
-        fichiers.push(fichierArticle(rubrique, v, chemin, fichiers));
+        var fichier = fichierArticle(rubrique, v, chemin, fichiers);
+        fichier.nouveau = true;
+        fichiers.push(fichier);
         resume.push("ajout : " + v.titre);
         entrees["n:" + rubrique + ":" + v.chemin] = copie(v);
         ecrit(chemin, v);
@@ -1174,7 +1223,9 @@
 
     (surcouche.nouveaux.elus || []).forEach(function (v) {
       var chemin = "_elus/" + slug(v.nom) + ".md";
-      fichiers.push(fichierElu(v, chemin, fichiers));
+      var fichier = fichierElu(v, chemin, fichiers);
+      fichier.nouveau = true;
+      fichiers.push(fichier);
       resume.push("ajout : " + v.nom);
       entrees["n:elus:" + v.chemin] = copie(v);
       ecrit(chemin, v);
@@ -1184,32 +1235,38 @@
       /* Une modification d'un élément retiré dans la même publication n'a plus d'objet. */
       entrees["m:" + chemin] = copie(surcouche.modifies[chemin]);
       if (estSupprime(chemin)) return;
-      var v = surcouche.modifies[chemin];
+      var v = surcouche.modifies[chemin], fichier;
       if (chemin.indexOf("_elus/") === 0) {
-        fichiers.push(fichierElu(v, chemin, fichiers));
+        fichier = fichierElu(v, chemin, fichiers);
         resume.push("modification : " + v.nom);
       } else {
         var rubrique = chemin.indexOf("_talents/") === 0 ? "talents" : "actualites";
-        fichiers.push(fichierArticle(rubrique, v, chemin, fichiers));
+        fichier = fichierArticle(rubrique, v, chemin, fichiers);
         resume.push("modification : " + v.titre);
       }
+      if (bases[chemin]) fichier.base = bases[chemin];
+      fichiers.push(fichier);
       ecrit(chemin, v);
     });
 
     if (surcouche.reglages.accueil) {
       reglages.accueil = reglagesFusionnes("accueil");
-      fichiers.push(fichierAccueil(reglages.accueil, fichiers));
+      var accueil = fichierAccueil(reglages.accueil, fichiers);
+      if (bases[accueil.chemin]) accueil.base = bases[accueil.chemin];
+      fichiers.push(accueil);
       resume.push("page d'accueil");
       entrees["r:accueil"] = copie(surcouche.reglages.accueil);
     }
     if (surcouche.reglages.mairie) {
       reglages.mairie = reglagesFusionnes("mairie");
-      fichiers.push(fichierMairie(reglages.mairie));
+      var mairie = fichierMairie(reglages.mairie);
+      if (bases[mairie.chemin]) mairie.base = bases[mairie.chemin];
+      fichiers.push(mairie);
       resume.push("coordonnées de la mairie");
       entrees["r:mairie"] = copie(surcouche.reglages.mairie);
     }
 
-    suppressions.forEach(function (chemin) {
+    surcouche.supprimes.forEach(function (chemin) {
       resume.push("suppression : " + chemin.split("/").pop());
       entrees["s:" + chemin] = true;
     });
@@ -1500,6 +1557,9 @@
       }
       if (reponse && reponse.commit) {
         operations.push({ cle: "p:" + reponse.commit, valeur: publicationFaite(changements, reponse.commit, connues) });
+        /* Un éditeur resté ouvert montre désormais ce qui vient d'être publié. */
+        changements.ecrits.forEach(function (e) { baseOuverte[e.chemin] = reponse.commit; });
+        Object.keys(changements.reglages).forEach(function (nom) { baseOuverte[cheminReglage(nom)] = reponse.commit; });
       }
       appliqueIci(operations);
       majBarrePublication();
