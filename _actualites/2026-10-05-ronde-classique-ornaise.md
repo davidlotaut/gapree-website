@@ -1,7 +1,7 @@
 ---
 title: "Ronde classique Ornaise"
 date: 2026-10-05
-image: "/assets/img/ronde-classique-ornaise-muv2xozl-p0d8y.jpg"
+image: "/assets/img/ronde-classique-ornaise-muv3pfp8-vlwco.jpg"
 ---
 INFORMATION
 
