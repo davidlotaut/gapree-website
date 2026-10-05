@@ -1491,15 +1491,8 @@
 
   /* Les entrées qui ne partiront pas, sous la barre, chacune avec « Retirer ». */
   function afficheEntreesBloquees() {
-    var barre = document.getElementById("barre-publication");
-    if (!barre) return;
     var zone = document.getElementById("entrees-bloquees");
-    if (!zone) {
-      zone = document.createElement("div");
-      zone.id = "entrees-bloquees";
-      zone.style.flexBasis = "100%";
-      barre.appendChild(zone);
-    }
+    if (!zone) return;
     var liste = entreesBloquees();
     zone.hidden = !liste.length;
     zone.innerHTML = liste.map(function (e, i) {
