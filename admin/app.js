@@ -264,6 +264,8 @@
 
   /* Écrit les gestes faits sur le brouillon de la page depuis sa dernière écriture. */
   function ecritSurcouche(s) {
+    /* Enregistrement fait depuis un éditeur : sa saisie est désormais gardée. */
+    if (zoneDuGeste && zonesModifiees) zonesModifiees = zonesModifiees.filter(function (z) { return z !== zoneDuGeste; });
     tientLesBases(s);
     var operations = differences(surcoucheLue, s);
     surcoucheLue = copie(s);
@@ -608,6 +610,7 @@
   };
 
   function rendre() {
+    zonesModifiees = [];
     majBarrePublication();
     document.querySelectorAll(".onglets button").forEach(function (b) {
       b.classList.toggle("actif", b.dataset.rubrique === vue.rubrique);
@@ -1881,8 +1884,44 @@
 
   var pub = window.GapreePublication;
 
+  /* ------------------------------------------ saisie pas encore enregistrée
+
+     Une saisie n'existe que dans la page tant qu'on n'a pas appuyé sur
+     Enregistrer : un onglet, « ← », la déconnexion ou la fermeture de la page
+     la perdaient sans rien demander (revue du 05/10/2026). Chaque éditeur, et
+     chaque panneau des Réglages, qui reçoit une saisie est noté ; un
+     enregistrement fait depuis lui, ou un changement de vue, l'efface.       */
+  var QUESTION_SAISIE = "Ce que vous avez saisi n'est pas enregistré et sera perdu. Quitter quand même ?";
+  var GESTES_D_EDITION = "[data-retire], [data-monte], [data-descend], #btn-retire-photo, #btn-ajout-horaire";
+  var zonesModifiees = [];
+  var zoneDuGeste = null;
+
+  function zoneDe(el) { return (el && el.closest && el.closest(".panneau")) || app; }
+  function saisieEnCours() { return zonesModifiees.length > 0; }
+  function quitteSaisie() { return !saisieEnCours() || confirm(QUESTION_SAISIE); }
+
+  function noteSaisie(e) {
+    if (vue.type === "liste" && vue.rubrique === "acces") return;
+    var zone = zoneDe(e.target);
+    if (zonesModifiees.indexOf(zone) === -1) zonesModifiees.push(zone);
+  }
+
+  app.addEventListener("input", noteSaisie);
+  app.addEventListener("change", noteSaisie);
+  /* En capture, donc avant le gestionnaire du bouton lui-même : « ← » peut
+     encore être retenu, et l'on sait de quel éditeur part un enregistrement. */
+  app.addEventListener("click", function (e) {
+    var cible = e.target;
+    zoneDuGeste = zoneDe(cible);
+    if (!cible.closest) return;
+    if (cible.closest("#btn-retour") && !quitteSaisie()) { e.stopPropagation(); return; }
+    if (cible.closest(GESTES_D_EDITION)) noteSaisie(e);
+  }, true);
+  app.addEventListener("click", function () { zoneDuGeste = null; });
+
   document.querySelectorAll(".onglets button").forEach(function (b) {
     b.addEventListener("click", function () {
+      if (!quitteSaisie()) return;
       vue = { type: "liste", rubrique: b.dataset.rubrique };
       rendre();
     });
@@ -1915,12 +1954,13 @@
   document.getElementById("btn-publier").addEventListener("click", function () { publieMaintenant(); });
 
   document.getElementById("btn-deconnexion").addEventListener("click", function () {
-    if (nombreEnAttente() > 0 && !confirm("Des modifications ne sont pas publiées. Se déconnecter quand même ?")) return;
+    if (saisieEnCours() && !confirm(QUESTION_SAISIE)) return;
+    if (!saisieEnCours() && nombreEnAttente() > 0 && !confirm("Des modifications ne sont pas publiées. Se déconnecter quand même ?")) return;
     pub.deconnecte().then(function () { window.location.reload(); });
   });
 
   window.addEventListener("beforeunload", function (e) {
-    if (pub.estConnecte() && nombreEnAttente() > 0) {
+    if (pub.estConnecte() && (nombreEnAttente() > 0 || saisieEnCours())) {
       e.preventDefault();
       e.returnValue = "";
     }
