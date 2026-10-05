@@ -328,6 +328,33 @@
     });
   }
 
+  /* Un document PDF joint à une actualité part tel quel, sans réduction ni
+     conversion, 10 Mo au plus : la taille d'un paquet d'envoi (contrat 6 de la
+     revue du 05/10/2026). Sans lui, la mairie remplaçait une lettre ou un bon
+     de commande par une image illisible sur téléphone. */
+  var TAILLE_DOCUMENT_MAX = 10 * 1024 * 1024;
+
+  function estPdf(fichier) {
+    return fichier.type === "application/pdf" || /\.pdf$/i.test(fichier.name || "");
+  }
+
+  function litDocument(fichier) {
+    return new Promise(function (resolve, reject) {
+      var lecteur = new FileReader();
+      lecteur.onload = function () {
+        resolve(String(lecteur.result).replace(/^data:[^,]*?;base64,/, "data:application/pdf;base64,"));
+      };
+      lecteur.onerror = function () { reject(lecteur.error || new Error("lecture impossible")); };
+      lecteur.readAsDataURL(fichier);
+    });
+  }
+
+  /* Poids affiché à côté du lien : « 342 Ko » ou « 2,4 Mo ». */
+  function tailleLisible(octets) {
+    if (octets < 1024 * 1024) return Math.max(1, Math.round(octets / 1024)) + " Ko";
+    return (octets / (1024 * 1024)).toFixed(1).replace(".", ",") + " Mo";
+  }
+
   /* Jauge d'attente : appeler avec un texte et une part faite, puis sans rien
      pour la faire disparaître. */
   function progression(texte, fait, total) {
@@ -525,6 +552,9 @@
     (item.photos || []).forEach(function (ph) {
       if (ph && ph.src) photos.push({ src: ph.src, alt: ph.alt || "" });
     });
+    /* Documents PDF joints (actualités seulement) : { src, titre, taille }. */
+    var documents = (item.documents || []).filter(function (d) { return d && typeof d.src === "string"; })
+      .map(function (d) { return { src: d.src, titre: d.titre || "", taille: d.taille || "" }; });
 
     app.innerHTML = '<button type="button" class="retour-liste" id="btn-retour">&larr; ' + lib.titre + "</button>" +
       '<div class="editeur"><div class="editeur-form">' +
@@ -538,6 +568,11 @@
       'La première illustre l\'article dans les listes ; les suivantes défilent à côté d\'elle.</p>' +
       '<p class="aide">Décrivez chaque photo en une phrase : la description est lue aux personnes malvoyantes. ' +
       'Si la photo montre un document, recopiez son texte dans l\'article.</p></div>' +
+      (rubrique === "actualites" ? '<div class="champ"><label for="ch-documents">Documents à télécharger (PDF)</label>' +
+        '<div id="liste-documents"></div>' +
+        '<input type="file" id="ch-documents" accept="application/pdf,.pdf" multiple>' +
+        '<p class="aide">Une lettre, un bon de commande, un compte rendu : chaque document est mis en ligne tel quel, ' +
+        'en PDF de 10 Mo au plus, avec un lien sous l\'article. Donnez-lui un intitulé clair.</p></div>' : "") +
       '<div class="champ"><label for="ch-video">Vidéo YouTube</label><input type="url" id="ch-video" value="' + echap(item.video || "") + '"><p class="aide">Facultatif. Collez le lien d\'une vidéo YouTube.</p></div>' +
       '<div class="champ"><label for="ch-texte">Texte</label>' +
       '<p class="etat-texte" id="etat-texte" hidden></p><textarea id="ch-texte"></textarea>' +
@@ -562,6 +597,8 @@
     /* La liste des photos et l'aperçu de CET éditeur : un rappel tardif ne doit
        jamais écrire dans ceux d'un autre article ouvert entre-temps. */
     var zonePhotos = document.getElementById("liste-photos");
+    var zoneDocuments = document.getElementById("liste-documents");
+    var inputDocuments = document.getElementById("ch-documents");
     var cadreApercu = document.getElementById("apercu");
     /* Des photos en préparation n'entrent dans la liste qu'à la fin : jusque-là,
        enregistrer ou quitter l'éditeur les perdrait sans un mot. */
@@ -570,7 +607,7 @@
     function majBoutons() {
       boutonEnregistrer.disabled = !texteCharge || enPreparation;
       refs.texte.disabled = !texteCharge;
-      [boutonRetour, boutonAnnuler, btnSupprimer, inputImages].forEach(function (b) {
+      [boutonRetour, boutonAnnuler, btnSupprimer, inputImages, inputDocuments].forEach(function (b) {
         if (b) b.disabled = enPreparation;
       });
     }
@@ -624,6 +661,29 @@
       });
     }
 
+    function rendDocuments() {
+      if (!zoneDocuments) return;
+      zoneDocuments.innerHTML = documents.length ? documents.map(function (d, i) {
+        return '<div class="document-ligne"><div class="document-champs">' +
+          '<label for="document-titre-' + i + '">Intitulé du document (PDF' + (d.taille ? ", " + echap(d.taille) : "") + ")</label>" +
+          '<input type="text" class="document-titre" id="document-titre-' + i + '" data-i="' + i + '" value="' + echap(d.titre) + '">' +
+          "</div>" +
+          '<button type="button" class="lien-reinit lien-reinit--danger" data-retire-document="' + i + '">Retirer</button></div>';
+      }).join("") : '<p class="aide aide--vide">Aucun document pour le moment.</p>';
+      zoneDocuments.querySelectorAll(".document-titre").forEach(function (inp) {
+        inp.addEventListener("input", function () {
+          documents[parseInt(inp.dataset.i, 10)].titre = inp.value;
+          apercu();
+        });
+      });
+      zoneDocuments.querySelectorAll("[data-retire-document]").forEach(function (b) {
+        b.addEventListener("click", function () {
+          documents.splice(parseInt(b.dataset.retireDocument, 10), 1);
+          rendDocuments(); apercu();
+        });
+      });
+    }
+
     function apercu() {
       var html = "<h1>" + echap(refs.titre.value || "(sans titre)") + "</h1>";
       html += '<p class="apercu-meta">' + (rubrique === "actualites"
@@ -644,6 +704,14 @@
           + (photos.length > montrees.length ? " (les " + montrees.length + " premières sont montrées ici)" : "") + "</p>";
       }
       html += rendMarkdown(refs.texte.value);
+      /* Les pièces jointes, comme sous l'article en ligne ; un document pas
+         encore publié n'a pas d'adresse, son lien n'apparaît qu'en texte. */
+      if (documents.length) {
+        html += "<h2>" + (documents.length > 1 ? "Pièces jointes" : "Pièce jointe") + "</h2><ul>" + documents.map(function (d) {
+          var libelle = "Télécharger " + echap(d.titre.trim() || "le document") + " (PDF" + (d.taille ? ", " + echap(d.taille) : "") + ")";
+          return "<li>" + (/^\/assets\/docs\//.test(d.src) ? '<a href="' + echap(".." + d.src) + '">' + libelle + "</a>" : libelle) + "</li>";
+        }).join("") + "</ul>";
+      }
       cadreApercu.innerHTML = html;
     }
 
@@ -660,7 +728,8 @@
       if (!fichiersChoisis.length) return;
       var images = fichiersChoisis.filter(function (f) { return /^image\//.test(f.type) && f.size <= TAILLE_PHOTO_MAX; });
       var ecartees = fichiersChoisis.length - images.length;
-      if (ecartees > 0) toast(ecartees + (ecartees > 1 ? " fichiers écartés : " : " fichier écarté : ") + "ce ne sont pas des photos");
+      if (ecartees > 0) toast(ecartees + (ecartees > 1 ? " fichiers écartés : " : " fichier écarté : ") + "ce ne sont pas des photos"
+        + (inputDocuments && fichiersChoisis.some(estPdf) ? " (un PDF se joint dans « Documents à télécharger »)" : ""));
       if (!images.length) return;
 
       /* Une par une : cent photos décodées en même temps saturent la mémoire
@@ -695,6 +764,39 @@
       });
     });
 
+    if (inputDocuments) inputDocuments.addEventListener("change", function () {
+      var choisis = [].slice.call(inputDocuments.files || []);
+      inputDocuments.value = "";
+      if (!choisis.length) return;
+      var gardes = choisis.filter(function (f) { return estPdf(f) && f.size <= TAILLE_DOCUMENT_MAX; });
+      var ecartes = choisis.length - gardes.length;
+      if (ecartes > 0) {
+        toast(ecartes + (ecartes > 1 ? " fichiers écartés" : " fichier écarté") + " : seuls les documents PDF de 10 Mo au plus sont acceptés");
+      }
+      if (!gardes.length) return;
+      enPreparation = true;
+      majBoutons();
+      prepare(Promise.all(gardes.map(function (f) {
+        return litDocument(f).then(function (src) {
+          return { src: src, titre: String(f.name || "").replace(/\.pdf$/i, ""), taille: tailleLisible(f.size) };
+        }, function () { return null; });
+      }))).then(function (lus) {
+        enPreparation = false;
+        majBoutons();
+        /* L'éditeur a été fermé pendant la lecture : ces documents ne vont nulle part. */
+        if (!zoneDocuments.isConnected) {
+          toast("Les documents n'ont pas été ajoutés : l'article a été fermé avant la fin de leur lecture");
+          return;
+        }
+        var ajoutes = lus.filter(Boolean);
+        documents = documents.concat(ajoutes);
+        rendDocuments();
+        apercu();
+        if (ajoutes.length < lus.length) toast("Un document n'a pas pu être lu");
+        else toast(ajoutes.length > 1 ? ajoutes.length + " documents ajoutés" : "Document ajouté");
+      });
+    });
+
     function retourListe() { vue = { type: "liste", rubrique: rubrique }; rendre(); }
     boutonRetour.addEventListener("click", retourListe);
     boutonAnnuler.addEventListener("click", retourListe);
@@ -720,6 +822,9 @@
         texte: refs.texte.value
       };
       if (rubrique === "talents") valeurs.sous_titre = (refs.sousTitre.value || "").trim() || null;
+      if (rubrique === "actualites") {
+        valeurs.documents = documents.map(function (d) { return { src: d.src, titre: d.titre.trim(), taille: d.taille }; });
+      }
       if (creation) {
         surcouche.nouveaux[rubrique].push(Object.assign({ chemin: item.chemin }, valeurs));
       } else if (item.chemin.indexOf("nouveau:") === 0) {
@@ -773,6 +878,7 @@
     }
 
     rendPhotos();
+    rendDocuments();
     majBoutons();
 
     if (texteCharge) {
@@ -1126,12 +1232,15 @@
     return base + "#" + occurrences[base];
   }
 
-  /* Une photo choisie dans l'éditeur arrive en data: ; elle devient un fichier du site. */
-  function extraitPhoto(valeur, base, fichiers) {
+  /* Une photo choisie dans l'éditeur arrive en data: ; elle devient un fichier du site.
+     Avec pdf, c'est un document PDF joint : il devient assets/docs/….pdf, déposé
+     tel quel par le même circuit que les photos. */
+  function extraitPhoto(valeur, base, fichiers, pdf) {
     valeur = photoValide(valeur);
     if (!valeur || valeur.indexOf("data:") !== 0) return valeur;
     var m = String(valeur).match(/^data:([^;]+);base64,(.+)$/);
     if (!m) return null;
+    if (pdf && m[1] !== "application/pdf") return null;
 
     /* Photo déjà déposée lors d'une tentative précédente : sa référence est
        réutilisée au lieu de la renvoyer. C'est ce qui permet à une publication
@@ -1148,7 +1257,9 @@
     /* L'horodatage seul ne suffit pas : plusieurs photos d'un même article
        partent dans la même milliseconde et s'écraseraient l'une l'autre. */
     var marque = Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 7);
-    var chemin = "assets/img/" + slug(base) + "-" + marque + "." + (EXTENSIONS[m[1]] || "jpg");
+    var chemin = pdf
+      ? "assets/docs/" + slug(base) + "-" + marque + ".pdf"
+      : "assets/img/" + slug(base) + "-" + marque + "." + (EXTENSIONS[m[1]] || "jpg");
     fichiers.push({ chemin: chemin, base64: m[2] });
     reperesEnvoyes[chemin] = marqueur;
     return "/" + chemin;
@@ -1171,6 +1282,17 @@
       });
     }
     if (valeurs.video) lignes.push("video: " + yTexte(valeurs.video));
+    var documents = (valeurs.documents || []).map(function (d) {
+      return { src: extraitPhoto(d.src, d.titre || valeurs.titre, fichiers, true), titre: d.titre, taille: d.taille };
+    }).filter(function (d) { return d.src; });
+    if (documents.length) {
+      lignes.push("documents:");
+      documents.forEach(function (d) {
+        lignes.push("  - src: " + yTexte(d.src));
+        if (d.titre) lignes.push("    titre: " + yTexte(d.titre));
+        if (d.taille) lignes.push("    taille: " + yTexte(d.taille));
+      });
+    }
     lignes.push("---");
     var corps = corpsEcrit(valeurs.texte);
     return { chemin: chemin, texte: lignes.join("\n") + "\n" + corps + "\n" };

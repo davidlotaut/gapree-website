@@ -767,6 +767,29 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 
 .aide--vide { font-style: italic; margin: 0 0 0.6rem; }
 
+/* --- Documents PDF joints à une actualité ------------------------------------- */
+
+.document-ligne {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.6rem;
+  background: var(--blanc);
+  border: 1px solid var(--sauge);
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.document-champs { flex: 1; min-width: 0; }
+
+.document-champs label {
+  margin-bottom: 0.2rem;
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+}
+
+.document-ligne .lien-reinit { margin-left: 0; font-style: normal; flex-shrink: 0; }
+
 .apercu-galerie {
   display: grid;
   grid-auto-flow: column;
