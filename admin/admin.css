@@ -741,6 +741,12 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
   color: var(--prairie-fonce);
 }
 
+.photo-champs label {
+  margin-bottom: 0.2rem;
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+}
+
 .photo-champs input {
   width: 100%;
   font-family: inherit;

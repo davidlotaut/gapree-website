@@ -535,7 +535,9 @@
       '<div id="liste-photos"></div>' +
       '<input type="file" id="ch-images" accept="image/*" multiple>' +
       '<p class="aide">Vous pouvez en choisir plusieurs d\'un coup, telles qu\'elles sortent de votre appareil. ' +
-      'La première illustre l\'article dans les listes ; les suivantes défilent à côté d\'elle.</p></div>' +
+      'La première illustre l\'article dans les listes ; les suivantes défilent à côté d\'elle.</p>' +
+      '<p class="aide">Décrivez chaque photo en une phrase : la description est lue aux personnes malvoyantes. ' +
+      'Si la photo montre un document, recopiez son texte dans l\'article.</p></div>' +
       '<div class="champ"><label for="ch-video">Vidéo YouTube</label><input type="url" id="ch-video" value="' + echap(item.video || "") + '"><p class="aide">Facultatif. Collez le lien d\'une vidéo YouTube.</p></div>' +
       '<div class="champ"><label for="ch-texte">Texte</label>' +
       '<p class="etat-texte" id="etat-texte" hidden></p><textarea id="ch-texte"></textarea>' +
@@ -583,7 +585,8 @@
             '<img class="photo-vignette" src="' + echap(urlImage(ph.vignette || ph.src)) + '" alt="" loading="lazy" decoding="async">' +
             '<div class="photo-champs">' +
             (i === 0 ? '<p class="photo-role">Photo principale</p>' : "") +
-            '<input type="text" class="photo-alt" data-i="' + i + '" placeholder="Ce que montre la photo" value="' + echap(ph.alt) + '">' +
+            '<label for="photo-alt-' + i + '">Description, lue aux personnes malvoyantes</label>' +
+            '<input type="text" class="photo-alt" id="photo-alt-' + i + '" data-i="' + i + '" placeholder="Ce que montre la photo" value="' + echap(ph.alt) + '">' +
             "</div>" +
             '<div class="photo-boutons">' +
             (i > 0 ? '<button type="button" class="lien-reinit" data-monte="' + i + '" title="Mettre avant">&uarr;</button>' : "") +
@@ -699,6 +702,14 @@
     document.getElementById("btn-enregistrer").addEventListener("click", function () {
       if (!refs.titre.value.trim()) { toast("Le titre est obligatoire"); refs.titre.focus(); return; }
       if (!texteCharge) { toast("Le texte de l'article n'est pas encore chargé : enregistrement impossible pour l'instant"); return; }
+      /* Sans description, un lecteur d'écran saute la photo : on le rappelle pour
+         la photo principale, sans l'imposer (revue du 05/10/2026). */
+      if (photos.length && !(photos[0].alt || "").trim() &&
+        !confirm("La photo principale n'a pas de description : les personnes malvoyantes ne sauront pas ce qu'elle montre.\n\nEnregistrer quand même ?")) {
+        var champDescription = zonePhotos.querySelector(".photo-alt");
+        if (champDescription) champDescription.focus();
+        return;
+      }
       var valeurs = {
         titre: refs.titre.value.trim(),
         date: dateAEnregistrer(refs.date.value, item.date),
