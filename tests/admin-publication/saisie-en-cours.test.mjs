@@ -136,7 +136,7 @@ test("défaut 42 : l'onglet Accès ne compte pas comme un éditeur", async () =>
   await p.attends();
   p.onglet("acces");
   await p.attends();
-  p.saisit("ch-nouvel-email", "quelqu-un@exemple.fr");
+  p.saisit("ch-nouvel-email", "ADRESSE_A_INVITER");
   p.onglet("actualites");
   await p.attends();
   assert.equal(questionsSaisie(p).length, 0);

@@ -417,7 +417,7 @@ export function elu(nom, fonction, ordre, photo) {
   return l.join("\n") + "\n";
 }
 
-export const MAIRIE = 'adresse: |-\n  Mairie\n  Le bourg\ntelephone: "02 33 00 00 00"\nemail: "mairie@exemple.fr"\nhoraires:\n  - jours: "Jeudi"\n    heures: "9h30 à 12h30"\nnote_horaires: ""\ncarte: ""\n';
+export const MAIRIE = 'adresse: |-\n  Mairie\n  Le bourg\ntelephone: "02 33 00 00 00"\nemail: "ADRESSE_DE_LA_MAIRIE"\nhoraires:\n  - jours: "Jeudi"\n    heures: "9h30 à 12h30"\nnote_horaires: ""\ncarte: ""\n';
 export const ACCUEIL = 'photo: "/assets/img/accueil-mto4xq8j.jpg"\nalt_photo: "Repas communal"\nsous_titre: "Commune de l\'Orne"\ntexte: |-\n  Bienvenue.\n';
 
 /* Le petit site de départ commun à la plupart des essais. */
