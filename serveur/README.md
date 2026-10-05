@@ -71,8 +71,12 @@ wrangler kv namespace create COMPTES
 wrangler deploy
 
 # 4. (vous) créer un jeton GitHub « fine-grained » limité au seul dépôt
-#    gapree-website, avec la permission Contents : Read and write,
-#    puis le donner au serveur sans qu'il passe par un fichier :
+#    gapree-website, avec la permission Contents : Read and write et
+#    « Expiration : No expiration » (GitHub propose 30 jours par défaut : à
+#    l'échéance, plus aucune publication ne passe). Le jeton en service,
+#    « gapree-site », a été créé le 04/09/2026 sans expiration ; GitHub le
+#    révoque tout de même s'il reste un an sans servir. Puis le donner au
+#    serveur sans qu'il passe par un fichier :
 wrangler secret put JETON_GITHUB
 
 # 5. créer le premier compte, celui de la mairie
