@@ -408,6 +408,20 @@ async function publie(env, changements) {
     dejaVus.add(f.chemin);
     ecrits.push(f);
   }
+  /* Même rejet pour un chemin à la fois écrit et retiré (un élément retiré
+     puis recréé sous le même nom) : l'écriture l'emporte, le retrait est
+     ignoré. Un retrait cité deux fois ne compte qu'une fois. */
+  const retires = [];
+  for (const s of retraits) {
+    if (dejaVus.has(s.chemin)) {
+      if (ecrits.some((f) => f.chemin === s.chemin)) {
+        console.log("chemin écrit et retiré dans le même envoi, retrait ignoré : " + s.chemin);
+      }
+      continue;
+    }
+    dejaVus.add(s.chemin);
+    retires.push(s);
+  }
 
   const ref = await appelGitHub(env, "/git/ref/heads/" + branche);
   const shaCommit = ref.object.sha;
@@ -415,10 +429,10 @@ async function publie(env, changements) {
 
   /* Ce que porte main, fichier par fichier : sert aux retraits et au contrôle
      de version, lu seulement s'il y en a besoin. */
-  const aControler = retraits.length || ecrits.some((f) => f.base || f.nouveau === true);
+  const aControler = retires.length || ecrits.some((f) => f.base || f.nouveau === true);
   const surMain = aControler ? await empreintesArbre(env, commit.tree.sha) : null;
 
-  const conflits = await chercheConflits(env, ecrits, retraits, shaCommit, surMain);
+  const conflits = await chercheConflits(env, ecrits, retires, shaCommit, surMain);
   if (conflits.length) {
     throw refus("Rien n'a été publié : entre-temps, quelqu'un d'autre a changé " + conflits.join(", ")
       + ". Reprenez ces modifications à partir de la version en ligne.", 409, { conflits });
@@ -450,7 +464,7 @@ async function publie(env, changements) {
      cause. C'est ce qui a bloqué la mairie du 08 au 10/09/2026 : un article
      déjà retiré traînait dans les modifications en attente, et plus rien ne
      pouvait être publié. Un fichier déjà absent, c'est le résultat voulu. */
-  for (const { chemin } of retraits) {
+  for (const { chemin } of retires) {
     if (!surMain.has(chemin)) {
       console.log("suppression sans objet, ignorée : " + chemin);
       continue;
