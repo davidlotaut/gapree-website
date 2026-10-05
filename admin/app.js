@@ -1738,6 +1738,15 @@
       publicationEnCours = false;
       compteRendu(etapeFinale ? "publication" : "envoi des photos", e,
         textes.concat(deposees), changements.suppressions);
+      /* Session expirée (12 h) : se reconnecter sur place, le brouillon et
+         l'éditeur ouvert restent tels quels. Réappuyer sur Publier sans
+         session échouait à nouveau, sans moyen de se reconnecter. */
+      if (e && e.statut === 401) {
+        etat.textContent = "Votre session a expiré : reconnectez-vous, vos modifications sont conservées.";
+        bouton.disabled = false;
+        demandeReconnexion();
+        return;
+      }
       var gardees = Object.keys(surcouche.deposees || {}).length;
       var suite;
       if (e && e.conflits) conflitsSignales = e.conflits.slice();
@@ -1960,7 +1969,7 @@
   });
 
   window.addEventListener("beforeunload", function (e) {
-    if (pub.estConnecte() && (nombreEnAttente() > 0 || saisieEnCours())) {
+    if ((pub.estConnecte() || reconnexionDemandee) && (nombreEnAttente() > 0 || saisieEnCours())) {
       e.preventDefault();
       e.returnValue = "";
     }
@@ -2031,12 +2040,20 @@
     ouvreEspace();
   }
 
-  function ecranConnexion() {
+  /* Ce qui suit une connexion réussie : l'ouverture de l'espace au démarrage,
+     ou la reprise sur place après une session expirée. */
+  var suiteConnexion = null;
+  var formulaireConnexionPret = false;
+
+  function ecranConnexion(suite) {
     var connexion = document.getElementById("connexion");
     var erreur = document.getElementById("erreur-connexion");
     var bouton = document.getElementById("btn-connexion");
+    suiteConnexion = suite || apresConnexion;
     connexion.hidden = false;
     document.getElementById("ch-email").focus();
+    if (formulaireConnexionPret) return;
+    formulaireConnexionPret = true;
 
     document.getElementById("form-connexion").addEventListener("submit", function (e) {
       e.preventDefault();
@@ -2046,7 +2063,7 @@
       bouton.disabled = true;
       bouton.textContent = "Vérification…";
       pub.connecte(email, champMdp.value)
-        .then(apresConnexion)
+        .then(function () { return suiteConnexion(); })
         .catch(function (err) {
           erreur.textContent = err.message;
           erreur.hidden = false;
@@ -2058,6 +2075,36 @@
           bouton.textContent = "Entrer";
         });
     });
+  }
+
+  /* La session a expiré pendant le travail : l'écran de connexion passe
+     devant l'espace, qui reste en l'état derrière lui. */
+  var reconnexionDemandee = false;
+
+  function demandeReconnexion() {
+    reconnexionDemandee = true;
+    var qui = document.getElementById("entete-qui");
+    var champ = document.getElementById("ch-email");
+    if (!champ.value && qui.textContent) champ.value = qui.textContent;
+    document.getElementById("espace").hidden = true;
+    var erreur = document.getElementById("erreur-connexion");
+    erreur.textContent = "Votre session a expiré : reconnectez-vous pour publier. Vos modifications sont conservées.";
+    erreur.hidden = false;
+    ecranConnexion(repriseApresReconnexion);
+  }
+
+  function repriseApresReconnexion() {
+    var moi = pub.utilisateur();
+    if (moi && moi.doitChangerMotDePasse) return demandeNouveauMotDePasse();
+    reconnexionDemandee = false;
+    document.getElementById("connexion").hidden = true;
+    document.getElementById("espace").hidden = false;
+    var qui = document.getElementById("entete-qui");
+    qui.textContent = moi.email;
+    qui.hidden = false;
+    document.getElementById("onglet-acces").hidden = !moi.admin;
+    majBarrePublication();
+    toast("Vous êtes reconnecté : vous pouvez publier");
   }
 
   if (pub.estArme()) {
