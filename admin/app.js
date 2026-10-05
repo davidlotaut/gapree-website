@@ -789,6 +789,7 @@
         texte: document.getElementById("ch-texte-accueil").value.trim()
       });
       ecritSurcouche(surcouche);
+      majBarrePublication();
       toast("Enregistré. À publier pour que le site change.");
     });
 
@@ -800,6 +801,7 @@
         horaires: horaires.filter(function (h) { return (h.jours || h.heures || "").trim() !== ""; })
       });
       ecritSurcouche(surcouche);
+      majBarrePublication();
       toast("Enregistré. À publier pour que le site change.");
     });
   }
