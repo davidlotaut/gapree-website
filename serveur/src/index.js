@@ -83,6 +83,15 @@ function normaliseEmail(e) {
   return String(e || "").trim().toLowerCase();
 }
 
+/* Désigne un compte sans le nommer : « compte » suivi des 8 premiers
+   caractères de l'empreinte SHA-256 de son adresse. Les enregistrements du
+   dépôt sont publics : l'adresse de la personne qui publie n'y figure plus,
+   elle reste dans le journal du serveur. */
+async function libelleCompte(email) {
+  const h = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(email)));
+  return "compte " + Array.from(h.slice(0, 4), (o) => o.toString(16).padStart(2, "0")).join("");
+}
+
 /* --------------------------------------------------------------------- KV */
 
 const cleCompte = (email) => "compte:" + email;
@@ -490,8 +499,10 @@ export default {
           return erreur("Cet envoi est trop lourd pour être publié en une fois.", 413, requete, env);
         }
         const changements = await requete.json();
+        const qui = await libelleCompte(session.compte.email);
+        console.log("publication demandée par " + session.compte.email + " (" + qui + ")");
         const sha = await publie(env, {
-          message: (changements.message || "Mise à jour du site") + "\n\nPublié par " + session.compte.email + "\n",
+          message: (changements.message || "Mise à jour du site") + "\n\nPublié par " + qui + "\n",
           fichiers: changements.fichiers,
           suppressions: changements.suppressions
         });
