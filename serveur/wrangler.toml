@@ -11,7 +11,7 @@ BRANCHE = "main"
 ORIGINES = "https://davidlotaut.github.io,https://gapree.com,https://www.gapree.com"
 
 # Plafond de tentatives de connexion, compté chez Cloudflare sans rien écrire dans le
-# stockage (décision David du 06/10/2026) : 20 par minute, par connexion d'origine et par compte.
+# stockage (décision David du 06/10/2026) : 20 par minute et par connexion d'origine.
 [[ratelimits]]
 name = "LIMITE_CONNEXIONS"
 namespace_id = "61390"
