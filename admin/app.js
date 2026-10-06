@@ -1950,8 +1950,13 @@
     if (minuterieSuivi || !publicationsEnAttente().length) return;
     minuterieSuivi = setTimeout(function () {
       litContenuFrais().then(function (frais) {
-        /* Toujours en attente : la barre se relit, pour passer au message des dix minutes le moment venu. */
-        if (!oublieLesPubliees(frais.revision)) { majBarrePublication(); return; }
+        /* Toujours en attente : le message des dix minutes remplace seulement « Mise en ligne en cours »,
+           jamais le motif d'un échec affiché entre-temps (contre-vérification du 06/10/2026). */
+        if (!oublieLesPubliees(frais.revision)) {
+          var etat = document.getElementById("etat-publication");
+          if (etat.textContent === TEXTE_MISE_EN_LIGNE && miseEnLigneTropLongue()) etat.textContent = TEXTE_MISE_EN_LIGNE_LONGUE;
+          return;
+        }
         /* Le site montre désormais ce qui a été publié : ses données deviennent
            la base, et le texte se lira à cette révision. */
         donnees = frais;

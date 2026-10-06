@@ -324,3 +324,26 @@ test("décision David du 06/10 : après dix minutes sans mise en ligne, la barre
   await p.avance(15000);
   assert.equal(p.etat(), EN_LIGNE);
 });
+
+test("contre-vérification du 06/10 : un échec pendant la mise en ligne précédente garde son message", async () => {
+  for (const [nom, panne, attendu] of [
+    ["panne", () => { const e = new Error("Le serveur n'a pas répondu correctement."); e.statut = 502; throw e; }, /Le serveur n'a pas répondu correctement/],
+    ["conflit", () => { const e = new Error("Conflit."); e.statut = 409; e.conflits = [H]; throw e; }, /Rien n'a été publié/],
+  ]) {
+    const m = creeMonde(siteDeDepart());
+    const p = ouvrePage(m);
+    await p.attends();
+    await corrigeHalloween(p);
+    await publie(p);
+    p.onglet("actualites"); await p.attends();
+    p.ouvre(H); await p.attends();
+    p.saisit("ch-texte", "Seconde version.");
+    p.clic("btn-enregistrer"); await p.attends();
+    m.repondPublie = panne;
+    p.clic("btn-publier"); await p.attends();
+    await p.avance(3000);
+    assert.match(p.etat(), attendu, nom + " : message affiché");
+    await p.avance(15000);
+    assert.match(p.etat(), attendu, nom + " : message encore là 15 s plus tard");
+  }
+});
