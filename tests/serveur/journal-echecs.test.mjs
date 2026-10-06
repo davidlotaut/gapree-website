@@ -75,8 +75,9 @@ test("les refus du serveur sont gardés aussi : emplacement interdit, conflit, e
   }), banc.env);
   assert.equal(lourd.status, 413);
   const v = entrees(banc).map((e) => e.valeur);
-  assert.deepEqual(v.map((x) => x.statut), [403, 409, 413]);
-  assert.deepEqual(v[1].conflits, [X]);
+  /* Trois refus dans la même seconde : leurs clés ne départagent pas l'ordre, on compare le contenu. */
+  assert.deepEqual(v.map((x) => x.statut).sort(), [403, 409, 413]);
+  assert.deepEqual(v.find((x) => x.statut === 409).conflits, [X]);
 });
 
 test("/journal garde les comptes rendus d'erreur, pas ceux de départ", async () => {
