@@ -25,11 +25,15 @@ Courriel : {{ site.data.mairie.email }}
 
 Le site est hébergé par GitHub Pages, un service de GitHub, Inc., 88 Colin P. Kelly Jr. Street, San Francisco, CA 94107, États-Unis. Téléphone : +1 877 448 4820.
 
+L'espace d'administration, réservé aux personnes chargées de mettre le site à jour, s'appuie sur un service hébergé par Cloudflare, Inc., 101 Townsend Street, San Francisco, CA 94107, États-Unis. Téléphone : +1 650 319 8930.
+
 ## Données personnelles
 
 La commune de Gâprée est responsable des données personnelles que publie ce site.
 
 **Ce que le site publie.** Les actualités et les portraits de la rubrique « Nos talents » peuvent montrer ou nommer des habitants, des élus et des personnes qui prennent part à la vie de la commune, en texte et en photo. Ils sont publiés pour informer les habitants de la vie communale, mission d'intérêt public de la commune (article 6.1.e du règlement général sur la protection des données ; article L2141-1 du code général des collectivités territoriales). Les portraits de « Nos talents » sont publiés avec l'accord des personnes présentées. Ces publications restent en ligne tant qu'elles gardent un intérêt pour l'information des habitants.
+
+**Comptes de l'espace d'administration.** Les personnes chargées de mettre le site à jour ont un compte : leur adresse électronique, leur mot de passe sous forme chiffrée et un journal technique des échecs de publication, gardé 30 jours, sont conservés chez Cloudflare. Aucun visiteur du site n'y est enregistré.
 
 **Retirer une photo.** Si vous figurez sur une photo publiée sur ce site, la mairie la retire sur simple demande, par courriel à [{{ site.data.mairie.email }}](mailto:{{ site.data.mairie.email }}) ou à la permanence de la mairie.
 
