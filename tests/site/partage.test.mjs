@@ -8,7 +8,7 @@ import { lit, existe, taille, attributs, filtres } from "./outils.mjs";
 
 const head = lit("_includes/head.html");
 const metas = attributs(head).filter((a) => a.balise === "meta" && a.nom === "content");
-const IMAGE_PAR_DEFAUT = "/assets/img/hero-gapree.jpg";
+const IMAGE_PAR_DEFAUT = "/assets/img/partage-gapree.png";  // plaque de la commune, décision David du 06/10/2026
 
 function contenuDe(propriete) {
   const ligne = head.split("\n").find((l) => l.includes(propriete));
