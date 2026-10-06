@@ -103,6 +103,17 @@ const cleSession = (jeton) => "session:" + jeton;
    pas plus d'écritures qu'avant. */
 const cleEssais = (email, ip) => "essais:" + email + ":" + ip;
 
+/* Plafond compté chez Cloudflare, sans rien écrire dans le stockage (décision David du 06/10/2026) :
+   par connexion d'origine, pour qu'un flot d'adresses inventées ne remplisse pas le stockage, et par
+   compte, pour borner une attaque répartie sur beaucoup d'adresses. Le compteur du stockage garde en
+   plus la règle des dix essais faux par quart d'heure. Sans la liaison (tests, ancien déploiement),
+   pas de plafond. */
+async function sousLePlafond(env, ip, email) {
+  if (!env.LIMITE_CONNEXIONS) return true;
+  if (!(await env.LIMITE_CONNEXIONS.limit({ key: "ip:" + ip })).success) return false;
+  return (await env.LIMITE_CONNEXIONS.limit({ key: "compte:" + email })).success;
+}
+
 async function litCompte(env, email) {
   return await env.COMPTES.get(cleCompte(email), "json");
 }
@@ -563,6 +574,9 @@ export default {
         if (!email || !motDePasse) return erreur("Adresse et mot de passe requis.", 400, requete, env);
 
         const ip = requete.headers.get("CF-Connecting-IP") || "";
+        if (!(await sousLePlafond(env, ip, email))) {
+          return erreur("Trop de tentatives. Réessayez dans une minute.", 429, requete, env);
+        }
         const essais = parseInt(await env.COMPTES.get(cleEssais(email, ip)) || "0", 10);
         if (essais >= ESSAIS_MAX) {
           return erreur("Trop de tentatives. Réessayez dans un quart d'heure.", 429, requete, env);
