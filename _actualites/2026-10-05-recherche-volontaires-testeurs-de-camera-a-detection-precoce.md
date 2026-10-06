@@ -1,6 +1,6 @@
 ---
 title: "Recherche volontaires-testeurs de caméra à détection précoce de frelons asiatiques"
-date: 2026-10-05
+date: 2026-10-05 11:56:45 +0200
 image: "/assets/img/recherche-volontaires-testeurs-de-camera-a-detection-precoce-muv2s2kn-ecrcs.jpg"
 photos:
   - src: "/assets/img/recherche-volontaires-testeurs-de-camera-a-detection-precoce-muv2s2kn-1pki2.jpg"

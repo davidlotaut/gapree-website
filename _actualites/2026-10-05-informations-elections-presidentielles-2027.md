@@ -1,6 +1,6 @@
 ---
 title: "Informations élections présidentielles 2027"
-date: 2026-10-05
+date: 2026-10-05 12:06:58 +0200
 image: "/assets/img/informations-elections-presidentielles-2027-muv357vz-pl6f3.jpg"
 ---
 Mesdames, Messieurs,

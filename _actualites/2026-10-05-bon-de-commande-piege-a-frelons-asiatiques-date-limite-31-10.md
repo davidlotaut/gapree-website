@@ -1,6 +1,6 @@
 ---
 title: "Bon de commande piège à frelons asiatiques : date limite 31.10.2026"
-date: 2026-10-05
+date: 2026-10-05 11:36:53 +0200
 image: "/assets/img/bon-de-commande-piege-a-frelons-asiatiques-date-limite-31-10-muv22fbz-39bad.jpg"
 photos:
   - src: "/assets/img/bon-de-commande-piege-a-frelons-asiatiques-date-limite-31-10-muv22fbz-ps16g.jpg"

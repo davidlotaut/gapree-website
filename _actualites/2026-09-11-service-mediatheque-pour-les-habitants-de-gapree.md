@@ -1,6 +1,6 @@
 ---
 title: "Service médiathèque pour les habitants de Gâprée"
-date: 2026-09-11
+date: 2026-09-11 20:11:35 +0200
 image: "/assets/img/service-mediatheque-pour-les-habitants-de-gapree-mtx9vxsc-qdkr0.jpg"
 ---
 À la mairie de Gaprée, le samedi de 15h30 à 18h, Maryvonne, bénévole à la médiathèque de Courtomer vous propose de venir emprunter des livres aux mêmes conditions qu'à la médiathèque de Courtomer :

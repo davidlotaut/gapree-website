@@ -1,6 +1,6 @@
 ---
 title: "Notre cher François Rattier médaillé"
-date: 2026-09-11
+date: 2026-09-11 11:16:55 +0200
 image: "/assets/img/notre-cher-francois-rattier-medaille-mtwqse2v-rawoy.jpg"
 photos:
   - src: "/assets/img/notre-cher-francois-rattier-medaille-mtwqse2v-efw4c.jpg"

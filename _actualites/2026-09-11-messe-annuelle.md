@@ -1,6 +1,6 @@
 ---
 title: "Messe annuelle"
-date: 2026-09-11
+date: 2026-09-11 20:16:27 +0200
 image: "/assets/img/messe-annuelle-mtxa24qt-qaku6.jpg"
 ---
 Chaque année a lieu une messe annuelle.

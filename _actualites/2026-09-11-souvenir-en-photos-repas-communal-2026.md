@@ -1,6 +1,6 @@
 ---
 title: "Souvenir en photos - Repas communal 2026"
-date: 2026-09-11
+date: 2026-09-11 11:20:42 +0200
 image: "/assets/img/souvenir-en-photos-repas-communal-2026-mtwqwo4o-vjehn.jpg"
 photos:
   - src: "/assets/img/souvenir-en-photos-repas-communal-2026-mtwqwo4p-dkwmj.jpg"
