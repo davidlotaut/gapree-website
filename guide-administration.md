@@ -56,11 +56,11 @@ Après « Publier sur le site », il affiche « Publication en cours… » penda
 7. Cliquez sur « Enregistrer ».
 8. Cliquez sur « Publier sur le site », en haut, et confirmez.
 
-La page d'accueil montre les trois actualités les plus récentes, suivies d'une carte verte qui mène à la liste complète. Entre actualités du même jour, la dernière publiée passe devant.
+La page d'accueil montre les trois actualités les plus récentes, suivies d'une carte verte qui mène à la liste complète. Entre actualités du même jour, la plus récemment créée passe devant.
 
 Après chaque séance du conseil municipal, la loi demande de mettre en ligne dans la semaine la liste des délibérations et le procès-verbal : publiez-les en actualité, le procès-verbal en document PDF.
 
-Les mêmes étapes valent pour l'onglet « Nos talents » : un portrait a en plus un champ « Sous-titre » pour indiquer le métier ou l'activité.
+Les mêmes étapes valent pour l'onglet « Nos talents », sauf les documents PDF, réservés aux actualités : un portrait a en plus un champ « Sous-titre » pour indiquer le métier ou l'activité.
 
 ## Modifier ou supprimer un contenu
 
@@ -106,7 +106,7 @@ Quelqu'un quitte la mairie, ou un mot de passe a traîné sur un papier : retire
 
 - Les photos sont réduites automatiquement avant l'envoi : inutile de les retoucher. Seul un fichier de plus de 60 Mo est refusé. Les photos au format paysage rendent mieux dans les cartes.
 - Les vidéos ne sont pas stockées sur le site : elles doivent être sur YouTube, seul le lien est collé ici.
-- Si vous fermez la page, ou changez d'onglet, en laissant une saisie ou des modifications non publiées, l'espace vous prévient. Les modifications enregistrées vous attendent à votre retour, sur le même ordinateur et dans le même navigateur. Avec Safari (iPhone, iPad, Mac), publiez-les dans la semaine : au-delà de sept jours sans passer sur gapree.com, Safari peut les effacer.
+- Si vous fermez la page, ou changez d'onglet, en laissant une saisie ou des modifications non publiées, l'espace vous prévient, sauf sur iPhone et iPad, où le navigateur ne le permet pas : enregistrez avant de quitter. Les modifications enregistrées vous attendent à votre retour, sur le même ordinateur et dans le même navigateur. Avec Safari (iPhone, iPad, Mac), publiez-les dans la semaine : au-delà de sept jours sans passer sur gapree.com, Safari peut les effacer.
 - « Annuler les modifications non publiées » efface ce qui n'a pas encore été envoyé. Ce qui est déjà publié n'est pas touché.
 - Une publication ne supprime jamais l'historique : chaque version du site est conservée et peut être rétablie.
 - Ce guide n'apparaît pas dans les menus du site ; conservez son adresse.
@@ -120,3 +120,4 @@ Quelqu'un quitte la mairie, ou un mot de passe a traîné sur un papier : retire
 - « La mise en ligne prend anormalement longtemps » (au bout de dix minutes) : prévenez la personne qui a installé le site.
 - « La clé d'écriture du site n'est plus valable » ou « Le site doit être mis à jour par la personne qui l'a installé » : rien à faire de votre côté, prévenez cette personne.
 - Une photo refusée : le fichier dépasse 60 Mo, ou ce n'est pas une image. Un document PDF se joint dans « Documents à télécharger (PDF) ».
+- Une photo qui « n'a pas pu être lue » : c'est souvent une photo d'iPhone (format HEIC) ouverte sur un ordinateur Windows. Envoyez-la depuis l'iPhone lui-même, ou enregistrez-la d'abord en JPEG.
