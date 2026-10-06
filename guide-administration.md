@@ -43,7 +43,7 @@ C'est le seul point qui demande un peu d'attention, et il vaut pour toutes les r
 
 Le bandeau, en haut de l'espace, indique en permanence où vous en êtes : vert, « Le site en ligne est à jour. » ; orange, « 2 modifications ne sont pas encore en ligne. ».
 
-Après « Publier sur le site », il affiche « Publication en cours… » pendant l'envoi, puis « Mise en ligne en cours : cela prend en général une à trois minutes. », et enfin « En ligne. » quand les habitants voient le changement. Pendant l'envoi, l'espace refuse les enregistrements : attendez qu'il se termine. Une page du site déjà ouverte sur votre écran montre le changement une fois rechargée.
+Après « Publier sur le site », il affiche « Publication en cours… » pendant l'envoi, puis « Mise en ligne en cours : cela prend en général une à trois minutes. », et enfin « En ligne. » quand les habitants voient le changement (une page du site déjà ouverte sur votre écran ne change qu'une fois rechargée). Pendant l'envoi, l'espace refuse les enregistrements : attendez qu'il se termine.
 
 ## Publier une actualité
 
@@ -117,6 +117,6 @@ Quelqu'un quitte la mairie, ou un mot de passe a traîné sur un papier : retire
 - Mot de passe perdu : une personne qui gère les accès en fabrique un nouveau depuis l'onglet « Accès », en quelques secondes.
 - « … a été changé par quelqu'un d'autre depuis que vous l'avez ouvert » : votre version n'est pas publiée, pour ne pas effacer celle de l'autre personne. Utilisez « Retirer », puis refaites votre modification quelques minutes plus tard.
 - « Votre session a expiré » : reconnectez-vous, vos modifications sont conservées.
-- « Mise en ligne en cours » affiché depuis plus de dix minutes : prévenez la personne qui a installé le site.
+- « La mise en ligne prend anormalement longtemps » (au bout de dix minutes) : prévenez la personne qui a installé le site.
 - « La clé d'écriture du site n'est plus valable » ou « Le site doit être mis à jour par la personne qui l'a installé » : rien à faire de votre côté, prévenez cette personne.
 - Une photo refusée : le fichier dépasse 60 Mo, ou ce n'est pas une image. Un document PDF se joint dans « Documents à télécharger (PDF) ».

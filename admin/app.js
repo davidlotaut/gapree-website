@@ -1872,7 +1872,7 @@
     var miseEnLigne = publicationsEnAttente().length > 0;
     barre.classList.toggle("barre-publication--attente", n > 0 || miseEnLigne);
     etat.textContent = n === 0
-      ? (miseEnLigne ? TEXTE_MISE_EN_LIGNE : "Le site en ligne est à jour.")
+      ? (miseEnLigne ? (miseEnLigneTropLongue() ? TEXTE_MISE_EN_LIGNE_LONGUE : TEXTE_MISE_EN_LIGNE) : "Le site en ligne est à jour.")
       : (n > 1
         ? n + " modifications ne sont pas encore en ligne."
         : "1 modification n'est pas encore en ligne.");
@@ -1910,6 +1910,11 @@
      la saisie en cours et, quand la construction durait plus (jusqu'à 330 s
      le 05/10/2026), laissait l'éditeur rouvrir l'état d'avant.              */
   var TEXTE_MISE_EN_LIGNE = "Mise en ligne en cours : cela prend en général une à trois minutes.";
+  /* Au-delà, une construction ratée laisserait « en cours » affiché sans fin (décision David du 06/10/2026). */
+  var MISE_EN_LIGNE_LONGUE = 10 * 60 * 1000;
+  var TEXTE_MISE_EN_LIGNE_LONGUE = "La mise en ligne prend anormalement longtemps : prévenez la personne qui a installé le site.";
+  /* Le navigateur garde chaque page du site dix minutes : une page déjà ouverte ne change qu'une fois rechargée. */
+  var TEXTE_EN_LIGNE = "En ligne. Si une page du site est déjà ouverte, rechargez-la pour voir le changement.";
   var SUIVI_MISE_EN_LIGNE = 15000;
   var MISE_EN_LIGNE_SANS_REVISION = 10 * 60 * 1000;
   var minuterieSuivi = null;
@@ -1937,17 +1942,22 @@
     return faites.length;
   }
 
+  function miseEnLigneTropLongue() {
+    return publicationsEnAttente().some(function (p) { return Date.now() - (p.quand || Date.now()) >= MISE_EN_LIGNE_LONGUE; });
+  }
+
   function suisLaMiseEnLigne() {
     if (minuterieSuivi || !publicationsEnAttente().length) return;
     minuterieSuivi = setTimeout(function () {
       litContenuFrais().then(function (frais) {
-        if (!oublieLesPubliees(frais.revision)) return;
+        /* Toujours en attente : la barre se relit, pour passer au message des dix minutes le moment venu. */
+        if (!oublieLesPubliees(frais.revision)) { majBarrePublication(); return; }
         /* Le site montre désormais ce qui a été publié : ses données deviennent
            la base, et le texte se lira à cette révision. */
         donnees = frais;
         majBarrePublication();
         if (!publicationEnCours && !nombreEnAttente() && !publicationsEnAttente().length) {
-          document.getElementById("etat-publication").textContent = "En ligne.";
+          document.getElementById("etat-publication").textContent = TEXTE_EN_LIGNE;
         }
       }, function () { /* coupure passagère : on relira au prochain tour */ }).then(function () {
         minuterieSuivi = null;

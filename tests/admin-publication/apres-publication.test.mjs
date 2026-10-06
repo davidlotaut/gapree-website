@@ -13,6 +13,7 @@ import { creeMonde, ouvrePage, siteDeDepart, vide, litEnTete, article } from "./
 const H = "_actualites/2026-10-01-halloween.md";
 const PB = "_elus/pierre-breton.md";
 const MISE_EN_LIGNE = "Mise en ligne en cours : cela prend en général une à trois minutes.";
+const EN_LIGNE = "En ligne. Si une page du site est déjà ouverte, rechargez-la pour voir le changement.";
 
 const texteDe = (corps, chemin) => (corps.fichiers.find((f) => f.chemin === chemin) || {}).texte;
 
@@ -89,7 +90,7 @@ test("contrat 8 : contenu.json est relu toutes les 15 s, sans cache, jusqu'au co
 
   m.construit("c1");
   await p.avance(15000);
-  assert.equal(p.etat(), "En ligne.");
+  assert.equal(p.etat(), EN_LIGNE);
   const apres = m.lecturesContenu.length;
   await p.avance(60000);
   assert.equal(m.lecturesContenu.length, apres, "plus de relecture une fois en ligne");
@@ -113,7 +114,7 @@ test("contrat 8 : un commit postérieur au commit publié vaut mise en ligne", a
   m.applique({ fichiers: [{ chemin: "_actualites/2026-10-06-autre.md", texte: article("Autre", "2026-10-06", "Autre.") }], suppressions: [] });
   m.construit("c2");
   await p.avance(15000);
-  assert.equal(p.etat(), "En ligne.");
+  assert.equal(p.etat(), EN_LIGNE);
 });
 
 test("contrat 8 : une révision plus ancienne, construite avant la publication mais jamais vue par la page, ne vaut pas mise en ligne", async () => {
@@ -129,7 +130,7 @@ test("contrat 8 : une révision plus ancienne, construite avant la publication m
   assert.equal(p.etat(), MISE_EN_LIGNE, "c1 était déjà en ligne avant la publication (c2)");
   m.construit("c2");
   await p.avance(15000);
-  assert.equal(p.etat(), "En ligne.");
+  assert.equal(p.etat(), EN_LIGNE);
 });
 
 test("défauts 10 et 3 : rechargée pendant la construction, la page garde les valeurs publiées et suit toujours la mise en ligne", async () => {
@@ -147,7 +148,7 @@ test("défauts 10 et 3 : rechargée pendant la construction, la page garde les v
   assert.equal(q.el("ch-texte").value, "Rendez-vous le 24 octobre.");
   m.construit("c1");
   await q.avance(15000);
-  assert.equal(q.etat(), "En ligne.");
+  assert.equal(q.etat(), EN_LIGNE);
   const r = ouvrePage(m);
   await r.attends();
   assert.equal(r.etat(), "Le site en ligne est à jour.");
@@ -242,7 +243,7 @@ test("contrat 8 : sans révision dans contenu.json, la mise en ligne est tenue p
   await p.avance(5 * 60000);
   assert.equal(p.etat(), MISE_EN_LIGNE);
   await p.avance(6 * 60000);
-  assert.equal(p.etat(), "En ligne.");
+  assert.equal(p.etat(), EN_LIGNE);
 });
 
 test("contrat 7 : une réponse « inchangé » vide le brouillon et dit « Le site était déjà à jour. »", async () => {
@@ -307,4 +308,19 @@ test("défauts 10 et 45 : « Annuler les modifications non publiées » ne fait 
   p.ouvre(H);
   await p.attends();
   assert.equal(p.el("ch-titre").value, "Halloween 2026", "toujours la version publiée");
+});
+
+test("décision David du 06/10 : après dix minutes sans mise en ligne, la barre demande de prévenir, puis « En ligne. » reprend", async () => {
+  const m = creeMonde(siteDeDepart());
+  const p = ouvrePage(m);
+  await p.attends();
+  await corrigeHalloween(p);
+  await publie(p);
+  await p.avance(9 * 60 * 1000);
+  assert.equal(p.etat(), MISE_EN_LIGNE, "avant dix minutes, le message habituel");
+  await p.avance(75 * 1000);
+  assert.equal(p.etat(), "La mise en ligne prend anormalement longtemps : prévenez la personne qui a installé le site.");
+  m.construit("c1");
+  await p.avance(15000);
+  assert.equal(p.etat(), EN_LIGNE);
 });
